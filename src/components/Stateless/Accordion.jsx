@@ -1,0 +1,60 @@
+import * as React from "react";
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+const borderColor = "rgba(70, 160, 35, 1)";
+
+export default function AccordionExpand() {
+  return (
+    <div>
+      <Accordion
+        sx={{
+          boxShadow: "none",
+          border: "none",
+          borderRadius: "0 !important",
+          "&:before": {
+            display: "none",
+          },
+        }}
+      >
+        <AccordionSummary
+          expandIcon={
+            <ExpandMoreIcon sx={{ color: borderColor, fontSize: "40px" }} />
+          }
+          aria-controls="panel-content"
+          id="panel-header"
+          sx={{
+            borderBottom: `3px solid ${borderColor}`,
+            marginBottom: "20px",
+          }}
+        >
+          <Typography
+            component="span"
+            sx={{
+              fontFamily: '"Roboto", sans-serif',
+              fontSize: "20px",
+            }}
+          >
+            What is a Catalogue?
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography
+            sx={{
+              fontFamily: '"Roboto", sans-serif',
+              fontSize: "16px",
+            }}
+          >
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
+            malesuada lacus ex, sit amet blandit leo lobortis eget.
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
+    </div>
+  );
+}

@@ -1,5 +1,18 @@
+/* Disable horizontal scrolling on mobile devices */
+body {
+  overflow-x: hidden;
+}
+
+/* Set maximum width to the device width on mobile devices */
+@media (max-width: 767px) {
+  body {
+    max-width: 100%;
+  }
+}
+
 .App {
   text-align: center;
+  height: 100%;
 }
 
 .App-logo {
@@ -37,3 +50,12 @@
   }
 }
 
+.ag-center-cols-container .cell-fail {
+  text-align: center;
+  font-weight: bold;
+  background-color: #f44336 !important;
+}
+
+.ag-center-cols-container .rag-grey-outer {
+  background-color: #ecf0f1;
+}
