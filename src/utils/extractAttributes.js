@@ -1,3 +1,4 @@
+// PULL ATTRIBUTE LABELS FROM SPECIFIC DEPENDENCY OVERLAY
 function extractLabelsFromDependency(dependency, lang) {
     const labelOverlays = dependency?.overlays?.label;
     if (!labelOverlays || !Array.isArray(labelOverlays)) return {};
@@ -9,6 +10,7 @@ function extractLabelsFromDependency(dependency, lang) {
     return overlayForLang.attribute_labels || {};
 }
 
+// PULL ATTRIBUTE ENTRIES FROM SPECIFIC DEPENDENCY OVERLAY
 function extractEntriesFromDependency(dependency, lang) {
     const entryOverlays = dependency?.overlays?.entry;
     if (!entryOverlays || !Array.isArray(entryOverlays)) return {};
@@ -29,6 +31,7 @@ function extractEntriesFromDependency(dependency, lang) {
     return entryValuesMap;
 }
 
+// PULL TOP-LEVEL ATTRIBUTE LABELS FROM MAIN BUNDLE OVERLAYS
 function extractBundleLabelsByLanguage(jsonData, lang) {
     const overlays = jsonData?.oca_bundle?.bundle?.overlays;
     if (!overlays || !Array.isArray(overlays.label)) return {};
@@ -40,6 +43,7 @@ function extractBundleLabelsByLanguage(jsonData, lang) {
     return overlayForLang.attribute_labels || {};
 }
 
+// IDENTIFY PREFERRED ATTRIBUTE ORDERING FROM EXTENSIONS
 function getAttributeOrdering(jsonData) {
     const extensions = jsonData?.extensions || [];
     for (const ext of extensions) {
@@ -51,6 +55,7 @@ function getAttributeOrdering(jsonData) {
     return [];
 }
 
+// REORDER THE EXTRACTED FIELDS
 function sortFieldsByOrdering(fields, ordering) {
     const orderMap = new Map(ordering.map((name, index) => [name, index]));
     return fields.sort((a, b) => {
@@ -60,6 +65,7 @@ function sortFieldsByOrdering(fields, ordering) {
     });
 }
 
+// PULL ENTRY VALUES (HUMAN-READABLE) FROM MAIN BUNDLE OVERLAYS
 function extractLocalizedEntryValues(jsonData, lang = "eng") {
     // Access overlays in bundle
     const overlays = jsonData?.oca_bundle?.bundle?.overlays;
@@ -86,28 +92,7 @@ function extractLocalizedEntryValues(jsonData, lang = "eng") {
     return entryValuesMap;
 }
 
-// function extractLabelsByLanguage(jsonData, lang) {
-//     const overlays = jsonData?.oca_bundle?.bundle?.overlays;
-//     if (!overlays || !Array.isArray(overlays.label)) return {};
-
-//     const labelOverlays = overlays.label;
-
-//     // Find the overlay with matching language
-//     const overlayForLang = labelOverlays.find((overlay) => overlay.language === lang);
-//     if (!overlayForLang) return {};
-
-//     const attributeLabels = overlayForLang.attribute_labels || {};
-//     const labelValuesMap = {};
-
-//     // Iterate over each attribute in attribute_labels
-//     for (const attrName in attributeLabels) {
-//         // Extract the values which are the human-readable labels
-//         labelValuesMap[attrName] = attributeLabels[attrName];
-//     }
-//     return labelValuesMap;
-// }
-
-// Helper to extract attributes given a captureBase object
+// RECURSIVELY PROCESS `capture_base`
 function extractAttributesFromCaptureBase(captureBase, dependencies, visitedRefs, lang, labels, entryCodes, conformances, cardinalities) {
     const attributes = captureBase.attributes || {};
     const fields = [];
@@ -116,18 +101,20 @@ function extractAttributesFromCaptureBase(captureBase, dependencies, visitedRefs
         let fieldType = value;
         let children = [];
 
+        // RESOLVE REFERENCES
         if (typeof value === "string" && value.startsWith("refs:")) {
             const refKey = value.replace("refs:", "");
             if (!visitedRefs.has(refKey)) {
                 visitedRefs.add(refKey);
                 const dep = dependencies.find((dep) => dep.d === refKey);
                 if (dep && dep.capture_base) {
-                    // Extract overlays from this dependency
+                    // EXTRACT OVERLAYS FROM DEPENDENCY
                     const depLabels = extractLabelsFromDependency(dep, lang);
                     const depEntries = extractEntriesFromDependency(dep, lang);
                     const depConformances = dep.overlays?.conformance?.attribute_conformance || {};
                     const depCardinalities = dep.overlays?.cardinality?.attribute_cardinality || {};
 
+                    // ATTACH CHILDREN
                     children = extractAttributesFromCaptureBase(
                         dep.capture_base,
                         dependencies,
@@ -143,6 +130,7 @@ function extractAttributesFromCaptureBase(captureBase, dependencies, visitedRefs
             fieldType = "object";
         }
 
+        // ATTACH LABELS, CATEGORIES, REQUIRED/MULTIPLE FLAGS
         const required = conformances[key] === "M";
         const multiple = cardinalities[key]?.includes("n");
         const categories = entryCodes[key] || null;
@@ -162,7 +150,7 @@ function extractAttributesFromCaptureBase(captureBase, dependencies, visitedRefs
 }
 
 
-// Helper to extract format patterns from dependencies
+// COLLECT REGEX VALIDATION PATTERN FOR ATTRIBUTES FROM DEPENDENCIES
 function extractFormatPatterns(dependencies) {
     const formatPatterns = {};
 
@@ -185,17 +173,20 @@ function extractFormatPatterns(dependencies) {
     return formatPatterns;
 }
 
+// MAIN EXPORT (ORACHESTRATES EVERYTHING)
 export function extractAttributes(jsonData, baseKey = "capture_base", visitedRefs = new Set(), lang = "eng") {
     const bundle = jsonData?.oca_bundle?.bundle;
     const dependencies = jsonData?.oca_bundle?.dependencies || [];
     if (!bundle) return [];
 
-    // Call helper to get format regex patterns from dependencies
+    // GET FORMAT PATTERNS FROM DEPENDENCIES
     const formatPatterns = extractFormatPatterns(dependencies);
 
+    // READ `capture_base` FROM THE BUNDLE
     const captureBase = bundle[baseKey];
     if (!captureBase) return [];
 
+    // GET CARDINALITIES, CONFORMANCES, LABELS, ENTRY CODES
     const cardinalities = bundle.overlays?.cardinality?.attribute_cardinality || {};
     const conformances = bundle.overlays?.conformance?.attribute_conformance || {};
     const entryCodes = extractLocalizedEntryValues(jsonData, lang);
@@ -203,6 +194,7 @@ export function extractAttributes(jsonData, baseKey = "capture_base", visitedRef
 
     let fields = [];
 
+    // RECURSIVELY BUILD ATTRIBUTE FIELD DEFINITIONS
     const attributes = captureBase.attributes || {};
     for (const [key, value] of Object.entries(attributes)) {
         let fieldType = value;
@@ -258,9 +250,9 @@ export function extractAttributes(jsonData, baseKey = "capture_base", visitedRef
         });
     }
 
-    // Get attribute ordering from extensions
+    // GET ATTRIBUTE ORDERING FROM EXTENSIONS
     const ordering = getAttributeOrdering(jsonData);
-    // Sort fields by ordering array
+    // APPLY ORDERING
     fields = sortFieldsByOrdering(fields, ordering);
 
     return { fields, formatPatterns };
