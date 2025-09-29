@@ -201,7 +201,7 @@ function FormPage() {
         />
       </div>
       {/* <pre>{JSON.stringify(fields, null, 2)}</pre> */}
-      <Box sx={{ maxWidth: 600, margin: "auto", padding: 2 }}>
+      <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
         <DynamicForm jsonData={jsonData} language={language} />
       </Box>
     </div>
