@@ -95,7 +95,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
     const newErrors = {};
 
     const validateRecursively = (fields, parentKey = "") => {
-      fields.forEach(({ name, required, multiple, children }) => {
+      fields.forEach(({ name, required, multiple, children, label }) => {
         const key = parentKey ? `${parentKey}.${name}` : name;
         const val = getNestedValue(stateToValidate, key);
 
@@ -112,7 +112,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
           const baseName = key.split(".").slice(-1)[0];
           const pattern = formatPatterns[baseName];
           if (pattern && val && !pattern.test(val)) {
-            newErrors[key] = `Invalid format for ${name}`;
+            newErrors[key] = `Invalid format for ${label || name}`;
           }
         }
       });
@@ -196,6 +196,47 @@ function DynamicForm({ jsonData, language = "eng" }) {
   // FIND CURRENT FIELD BY MATCHING OPEN PATH AGAINST FIELDS ARRAY
   const popupField = findFieldByPath(fields, dialogOpen);
 
+  //
+  const isValueFilled = (val) => {
+    if (val === null || val === undefined) return false;
+    if (typeof val === "string") return val.trim() !== "";
+    if (Array.isArray(val)) return val.length > 0;
+    if (typeof val === "object") return Object.keys(val).length > 0;
+    return true; // For numbers or booleans
+  };
+
+  //
+  const isPopupSaveEnabled = () => {
+    if (!popupField) return false;
+
+    // Validate all fields first
+    const errors = validateFieldsForState(
+      popupField.children || [popupField],
+      popupValue
+    );
+    if (Object.keys(errors).length > 0) {
+      return false; // has validation errors, disable save
+    }
+
+    const fieldsToCheck =
+      popupField.children && popupField.children.length > 0
+        ? popupField.children
+        : [popupField];
+
+    const requiredFields = fieldsToCheck.filter((f) => f.required);
+
+    if (requiredFields.length > 0) {
+      // All required fields must be filled
+      const allRequiredFilled = requiredFields.every((f) =>
+        isValueFilled(popupValue[f.name])
+      );
+      return allRequiredFilled;
+    } else {
+      // No required fields, enable Save if at least one field is filled
+      return fieldsToCheck.some((f) => isValueFilled(popupValue[f.name]));
+    }
+  };
+
   // ON MOUNT OR WHEN jsonData/language CHANGES
   useEffect(() => {
     //
@@ -277,6 +318,16 @@ function DynamicForm({ jsonData, language = "eng" }) {
     }
   }, [dialogOpen, fields, findFieldByPath, editingIndex]);
 
+  useEffect(() => {
+    if (!popupField) return;
+
+    const errors = validateFieldsForState(
+      popupField.children || [popupField],
+      popupValue
+    );
+    setPopupErrors(errors);
+  }, [popupValue, popupField]);
+
   // UPDATE FORM STATE WHEN INPUTS CHANGE
   const handleChange = (path, value) => {
     console.log("handleChange", path, value);
@@ -292,7 +343,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
 
     // RECURSIVELY CHECK FIELDS
     const validateFields = (fields, parentKey = "") => {
-      fields.forEach(({ name, required, multiple, children }) => {
+      fields.forEach(({ name, required, multiple, children, label }) => {
         const key = parentKey ? `${parentKey}.${name}` : name;
         const val = getNestedValue(formState, key);
 
@@ -315,7 +366,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
 
           // POPULATE ERRORS
           if (pattern && val && !pattern.test(val)) {
-            newErrors[key] = `Invalid format for ${name}`;
+            newErrors[key] = `Invalid format for ${label || name}`;
           }
         }
       });
@@ -442,6 +493,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
                             setEditingIndex(idx);
                             setDialogOpen(path);
                           }}
+                          sx={{ mr: 1 }}
                         >
                           Edit
                         </Button>
@@ -637,6 +689,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
             <Button
               variant="contained"
               onClick={handlePopupSave}
+              disabled={!isPopupSaveEnabled()} // Disable if all fields empty
               sx={{ backgroundColor: "rgba(70, 160, 35, 1)" }}
             >
               Save
