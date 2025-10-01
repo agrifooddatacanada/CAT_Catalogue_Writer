@@ -63,8 +63,8 @@ function useDynamicFormState(jsonData, language = "eng") {
         const addPathToFields = (fields, parentPath = "") => {
             return fields.map((field) => {
                 const currentPath = parentPath
-                ? `${parentPath}.${field.name}`
-                : field.name;
+                    ? `${parentPath}.${field.name}`
+                    : field.name;
                 return {
                     ...field,
                     path: currentPath,
@@ -263,6 +263,7 @@ function useDynamicFormState(jsonData, language = "eng") {
         setEditingIndex,
         formatPatterns,
         validate,
+        handleDialogSave,
         handleItemDelete,
         handlePopupSave,
         findFieldByPath,

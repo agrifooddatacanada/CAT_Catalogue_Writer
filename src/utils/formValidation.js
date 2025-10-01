@@ -12,7 +12,7 @@ export const validateFieldsForState = (fieldsToValidate, stateToValidate, format
         validateRecursively(children, key);
       } else {
         if (required && (val === "" || (Array.isArray(val) && val.length === 0))) {
-          newErrors[key] = "This field is required";
+          newErrors[key] = ""; // This field is required message can be shown here
         }
         const baseName = key.split(".").slice(-1)[0];
         const pattern = formatPatterns[baseName];

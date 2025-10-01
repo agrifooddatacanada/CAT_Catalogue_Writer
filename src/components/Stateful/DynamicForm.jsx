@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Box, Typography } from "@mui/material";
 import FormInputSingle from "./DynamicFormComponents/FormInputSingle";
 import FormInputMultiple from "./DynamicFormComponents/FormInputMultiple";
@@ -7,6 +7,27 @@ import PopupDialog from "./DynamicFormComponents/PopupDialog";
 import { getNestedValue, setNestedValue } from "../../utils/formStateUtils";
 import { validateFieldsForState } from "../../utils/formValidation";
 import useDynamicFormState from "../../hooks/useDynamicFormState";
+
+//
+const checkMultipleEntriesFilled = (fields, state) => {
+  for (const field of fields) {
+    // Only enforce check if field is required & multiple
+    if (field.required && field.multiple) {
+      const val = getNestedValue(state, field.path);
+      // If missing or empty array, fail validity
+      if (!Array.isArray(val) || val.length === 0) {
+        return false; // empty required multiple field disables Submit
+      }
+    }
+
+    if (field.children && field.children.length > 0) {
+      if (!checkMultipleEntriesFilled(field.children, state)) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
 
 // COMPONENT STATE
 function DynamicForm({ jsonData, language = "eng" }) {
@@ -23,6 +44,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
     setEditingIndex,
     formatPatterns,
     validate,
+    _,
     handleItemDelete,
     handlePopupSave,
     findFieldByPath,
@@ -31,6 +53,18 @@ function DynamicForm({ jsonData, language = "eng" }) {
 
   // 
   const popupField = findFieldByPath(fields, dialogOpen);
+
+  // 
+  const [isFormValid, setIsFormValid] = useState();
+
+  // 
+  useEffect(() => {
+    console.log("Fields for validation check:", fields);
+    // Validate whole form state, including multiple-entry arrays
+    const errors = validateFieldsForState(fields, formState, formatPatterns);
+    const multipleFilled = checkMultipleEntriesFilled(fields, formState);
+    setIsFormValid(Object.keys(errors).length === 0 && multipleFilled);
+  }, [formState, fields, formatPatterns]);
 
   //
   const isValueFilled = (val) => {
@@ -161,13 +195,13 @@ function DynamicForm({ jsonData, language = "eng" }) {
         onSubmit={(e) => {
           e.preventDefault();
           if (!validate()) return;
-          console.log("Form submitted:", formState);
         }}
       >
         {fields.map((field) => renderInput({ ...field, path: field.name }))}
         <Button
           variant="contained"
           type="submit"
+          disabled={!isFormValid}
           sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
         >
           Submit

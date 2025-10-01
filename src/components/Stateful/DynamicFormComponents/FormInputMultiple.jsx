@@ -13,6 +13,7 @@ const FormInputMultiple = ({
   setDialogOpen, // Handler from DynamicForm to control popup editing
   handleItemDelete, // Function to delete an entry in parent state
   depth = 0, // For styling
+  required
 }) => {
   const columns =
     children && children.length > 0
@@ -33,9 +34,17 @@ const FormInputMultiple = ({
     return val;
   };
 
+  // Determine if any child is required
+  //const hasRequiredChild = children.some((child) => child.required);
+
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography variant={depth === 0 ? "h6" : "h8"}>{label || name}</Typography>
+      <Typography variant={depth === 0 ? "h6" : "h8"}>
+        {label || name}
+        {required && (
+          <span style={{ color: "red", marginLeft: 4 }}>*</span>
+        )}
+      </Typography>
 
       {/* Table showing existing entries */}
       {value.length > 0 && (

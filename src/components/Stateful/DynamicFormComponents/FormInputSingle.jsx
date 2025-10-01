@@ -33,6 +33,9 @@ const FormInputSingle = ({
         sx={{ mb: 0.5, display: "block" }}
       >
         {label || name}
+        {required && (
+          <span style={{ color: "red", marginLeft: 4 }}>*</span>
+        )}
       </Typography>
 
       {categories && categories.length > 0 ? (

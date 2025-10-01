@@ -5,11 +5,15 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-const FormInputGroup = ({ children, label, name, path, depth = 0, renderInput }) => {
+const FormInputGroup = ({ children, label, name, path, depth = 0, renderInput, required }) => {
   return (
     <Box>
       <Typography variant={depth === 0 ? "h6" : "h8"} gutterBottom>
         {label || name}
+        {/* Show asterisk only if group itself is required, otherwise nothing */}
+        {required && (
+          <span style={{ color: "red", marginLeft: 4 }}>*</span>
+        )}
       </Typography>
       {children.map((child) =>
         renderInput(
