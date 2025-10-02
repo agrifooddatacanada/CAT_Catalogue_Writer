@@ -29,6 +29,16 @@ const checkMultipleEntriesFilled = (fields, state) => {
   return true;
 };
 
+// 
+const filterMandatoryFields = (fields) => {
+  return fields
+    .filter(field => field.required) // keep only required parents and singles
+    .map(field => ({
+      ...field,
+      children: field.children ? filterMandatoryFields(field.children) : [],
+    }));
+};
+
 // COMPONENT STATE
 function DynamicForm({ jsonData, language = "eng" }) {
   const {
@@ -44,7 +54,6 @@ function DynamicForm({ jsonData, language = "eng" }) {
     setEditingIndex,
     formatPatterns,
     validate,
-    _,
     handleItemDelete,
     handlePopupSave,
     findFieldByPath,
@@ -56,6 +65,12 @@ function DynamicForm({ jsonData, language = "eng" }) {
 
   // 
   const [isFormValid, setIsFormValid] = useState();
+
+  // 
+  const [showMandatoryOnly, setShowMandatoryOnly] = useState(true);
+
+  // 
+  const displayedFields = showMandatoryOnly ? filterMandatoryFields(fields) : fields;
 
   // 
   useEffect(() => {
@@ -139,6 +154,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
       return (
         <FormInputMultiple
           key={key}
+          required={required}
           label={label}
           name={name}
           path={path}
@@ -190,6 +206,54 @@ function DynamicForm({ jsonData, language = "eng" }) {
   // RETURN JSX
   return (
     <>
+      <Box sx={{ mb: 2, display: 'flex', gap: 2, justifyContent: "center" }}>
+        <Button
+          variant={showMandatoryOnly ? "contained" : "outlined"}
+          onClick={() => setShowMandatoryOnly(true)}
+          sx={{ 
+            mb: 2, 
+            backgroundColor: showMandatoryOnly ? "rgba(70, 160, 35, 1)" : "rgba(255, 255, 255, 1)",
+            color: showMandatoryOnly ? "rgba(255, 255, 255, 1)" : "rgba(70, 160, 35, 1)",
+            borderColor: showMandatoryOnly ? "rgba(255, 255, 255, 1)" : "rgba(70, 160, 35, 1)",
+          }}
+        >
+          Mandatory
+        </Button>
+        <Button
+          variant={
+            //showMandatoryOnly ? "contained" : 
+            "outlined"
+          }
+          //onClick={() => setShowMandatoryOnly(true)}
+          sx={{ 
+            mb: 2, 
+            backgroundColor: //showMandatoryOnly ? 
+              "rgba(255, 255, 255, 1)", 
+              //: "rgba(70, 160, 35, 1)",
+            color: //showMandatoryOnly ? 
+              "rgba(70, 160, 35, 1)",
+              //: "rgba(255, 255, 255, 1)",
+            borderColor: //showMandatoryOnly ? 
+              "rgba(70, 160, 35, 1)",
+              //: "rgba(255, 255, 255, 1)",
+          }}
+        >
+          Recommended
+        </Button>
+        <Button
+          variant={!showMandatoryOnly ? "contained" : "outlined"}
+          onClick={() => setShowMandatoryOnly(false)}
+          sx={{ 
+            mb: 2, 
+            backgroundColor: showMandatoryOnly ? "rgba(255, 255, 255, 1)" : "rgba(70, 160, 35, 1)",
+            color: showMandatoryOnly ? "rgba(70, 160, 35, 1)" : "rgba(255, 255, 255, 1)",
+            borderColor: showMandatoryOnly ? "rgba(70, 160, 35, 1)" : "rgba(255, 255, 255, 1)",
+          }}
+        >
+          Complete
+        </Button>
+      </Box>
+
       {/* GENERATED FORM (RECURSICE INPUT RENDERING + SUBMIT BUTTON) */}
       <form
         onSubmit={(e) => {
@@ -197,7 +261,9 @@ function DynamicForm({ jsonData, language = "eng" }) {
           if (!validate()) return;
         }}
       >
-        {fields.map((field) => renderInput({ ...field, path: field.name }))}
+        {displayedFields.map((field) =>
+          renderInput({ ...field, path: field.name })
+        )}
         <Button
           variant="contained"
           type="submit"
@@ -224,7 +290,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
       />
 
       {/* DEBUG PANEL SHOWING EXTRACTED FIELDS JSON FOR VERIFICATION */}
-      <Box
+      {/* <Box
         sx={{
           mt: 4,
           p: 2,
@@ -238,7 +304,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
           Extracted Fields (for verification):
         </Typography>
         <pre>{JSON.stringify(fields, null, 2)}</pre>
-      </Box>
+      </Box> */}
     </>
   );
 }

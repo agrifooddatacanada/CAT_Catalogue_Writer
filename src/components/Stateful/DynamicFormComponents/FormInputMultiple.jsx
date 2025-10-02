@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 
 const FormInputMultiple = ({
+  required,
   label,
   name,
   path,
@@ -13,7 +14,6 @@ const FormInputMultiple = ({
   setDialogOpen, // Handler from DynamicForm to control popup editing
   handleItemDelete, // Function to delete an entry in parent state
   depth = 0, // For styling
-  required
 }) => {
   const columns =
     children && children.length > 0
@@ -33,9 +33,6 @@ const FormInputMultiple = ({
     if (typeof val === "object") return JSON.stringify(val, null, 2);
     return val;
   };
-
-  // Determine if any child is required
-  //const hasRequiredChild = children.some((child) => child.required);
 
   return (
     <Box sx={{ mb: 2 }}>

@@ -263,7 +263,6 @@ function useDynamicFormState(jsonData, language = "eng") {
         setEditingIndex,
         formatPatterns,
         validate,
-        handleDialogSave,
         handleItemDelete,
         handlePopupSave,
         findFieldByPath,
