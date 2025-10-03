@@ -18,7 +18,7 @@ const initializeEmptyObject = (childrenFields) => {
   return obj;
 };
 
-function useDynamicFormState(jsonData, language = "eng") {
+function useDynamicFormState(jsonData, language = "eng", initialData = null) {
     // FORM SCHEMA EXTRACTED FROM JSON
     const [fields, setFields] = useState([]);
     
@@ -74,7 +74,7 @@ function useDynamicFormState(jsonData, language = "eng") {
                 };
             });
         };
-    
+
         // EXTRACT SCHEMA FIELDS
         const localizedCategories = extractEntryValuesByLanguage(
             jsonData,
@@ -114,7 +114,7 @@ function useDynamicFormState(jsonData, language = "eng") {
         };
         initNestedState(enrichedFieldsWithPaths);
         setFormState(initState);
-    }, [jsonData, language]);
+    }, [jsonData, language, initialData]);
 
     // INITIALIZE `popupValue` WHEN POPUP DIALOG OPENS
     useEffect(() => {

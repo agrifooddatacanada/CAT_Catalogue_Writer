@@ -16,8 +16,8 @@ function HomePage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const json = JSON.parse(e.target.result);
-        setJsonContent(json);
+        const jsonData = JSON.parse(e.target.result);
+        setJsonContent(jsonData);
         setUploadedFiles(files);
       } catch (e) {
         alert("Invalid JSON file");
@@ -29,6 +29,13 @@ function HomePage() {
   const handleViewClick = () => {
     if (jsonContent) {
       navigate("/review", { state: { jsonContent } });
+    }
+  };
+
+  // 
+  const handleEditClick = () => {
+    if (jsonContent) {
+      navigate("/form", { state: { jsonContent } });
     }
   };
 
@@ -261,6 +268,8 @@ function HomePage() {
             </Button>
             <Button
               variant="contained"
+              disabled={!uploadedFiles}
+              onClick={handleEditClick}
               sx={{
                 width: "75%",
                 backgroundColor: uploadedFiles
@@ -270,7 +279,6 @@ function HomePage() {
                 boxShadow: uploadedFiles ? undefined : "none",
                 cursor: uploadedFiles ? "pointer" : "default",
               }}
-              disabled={!uploadedFiles}
             >
               Edit Catalogue
             </Button>

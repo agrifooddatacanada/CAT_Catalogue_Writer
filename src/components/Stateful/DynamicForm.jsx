@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box } from "@mui/material";
 import FormInputSingle from "./DynamicFormComponents/FormInputSingle";
 import FormInputMultiple from "./DynamicFormComponents/FormInputMultiple";
 import FormInputGroup from "./DynamicFormComponents/FormInputGroup";
@@ -7,6 +7,7 @@ import PopupDialog from "./DynamicFormComponents/PopupDialog";
 import { getNestedValue, setNestedValue } from "../../utils/formStateUtils";
 import { validateFieldsForState } from "../../utils/formValidation";
 import useDynamicFormState from "../../hooks/useDynamicFormState";
+import { v4 as uuidv4 } from 'uuid';
 
 //
 const checkMultipleEntriesFilled = (fields, state) => {
@@ -38,6 +39,23 @@ const filterMandatoryFields = (fields) => {
       children: field.children ? filterMandatoryFields(field.children) : [],
     }));
 };
+
+//
+function unflatten(formState) {
+  const result = {};
+  Object.keys(formState).forEach(flatKey => {
+    const keys = flatKey.split(".");
+    keys.reduce((acc, key, idx) => {
+      if (idx === keys.length - 1) {
+        acc[key] = formState[flatKey];
+        return null;
+      }
+      if (!acc[key]) acc[key] = {};
+      return acc[key];
+    }, result);
+  });
+  return result;
+}
 
 // COMPONENT STATE
 function DynamicForm({ jsonData, language = "eng" }) {
@@ -73,8 +91,37 @@ function DynamicForm({ jsonData, language = "eng" }) {
   const displayedFields = showMandatoryOnly ? filterMandatoryFields(fields) : fields;
 
   // 
+  const handleSubmit = () => {
+    const nestedState = unflatten(formState);
+    // Add a unique file identifier
+    const formDataWithId = {
+      "@context": "https://schema.org",
+      "@type": "Catalogue",
+      "catalogue_id": uuidv4(),
+      ...nestedState,
+    };
+
+    // Convert to JSON-LD string
+    const jsonLdString = JSON.stringify(formDataWithId, null, 2);
+
+    // Create a Blob with MIME type application/ld+json
+    const blob = new Blob([jsonLdString], { type: 'application/ld+json' });
+
+    // Create a URL for the Blob and trigger download
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `catalogue-${formDataWithId.catalogue_id}.jsonld`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // 
   useEffect(() => {
-    console.log("Fields for validation check:", fields);
+    console.log("formState: ", formState);
+    console.log("Type of formState: ", typeof formState);
     // Validate whole form state, including multiple-entry arrays
     const errors = validateFieldsForState(fields, formState, formatPatterns);
     const multipleFilled = checkMultipleEntriesFilled(fields, formState);
@@ -256,10 +303,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
 
       {/* GENERATED FORM (RECURSICE INPUT RENDERING + SUBMIT BUTTON) */}
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!validate()) return;
-        }}
+        onSubmit={handleSubmit}
       >
         {displayedFields.map((field) =>
           renderInput({ ...field, path: field.name })

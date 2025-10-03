@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Stack, Box } from "@mui/system";
-//import { useLocation } from "react-router-dom";
+//import { v4 as uuidv4 } from 'uuid';
 import {
   Button,
   MenuItem,
@@ -8,22 +8,17 @@ import {
   Select,
   FormHelperText,
 } from "@mui/material";
-//import { extractAttributes } from "../utils/extractAttributes";
+//import useDynamicFormState from "../hooks/useDynamicFormState";
 import DynamicForm from "../components/Stateful/DynamicForm";
 //import SelectLanguage from "../components/Stateful/LanguageSelector";
 
 function FormPage() {
-  //const location = useLocation();
-  //const { jsonContent } = location.state || {};
-
   const [language, setLanguage] = React.useState("eng");
   const [jsonData, setJsonData] = useState(null);
 
   const handleChange = (e) => {
     setLanguage(e.target.value);
   };
-
-  //const [fields, setFields] = useState([]);
 
   useEffect(() => {
     fetch("./OpenAIRE_OCA_package.json")
