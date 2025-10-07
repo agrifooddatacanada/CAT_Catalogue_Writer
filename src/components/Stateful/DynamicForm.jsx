@@ -59,7 +59,7 @@ function unflatten(formState) {
 }
 
 // COMPONENT STATE
-function DynamicForm({ jsonData, language = "eng", initialData = null }) {
+function DynamicForm({ jsonData, language = "eng", initialData = null, isEditMode }) {
   // 
   const {
     fields,
@@ -341,7 +341,7 @@ function DynamicForm({ jsonData, language = "eng", initialData = null }) {
           disabled={!isFormValid  || !isModified}
           sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
         >
-          Submit
+          {isEditMode ? "Save Changes" : "Submit"}
         </Button>
       </form>
 

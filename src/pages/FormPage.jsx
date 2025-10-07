@@ -204,7 +204,12 @@ function FormPage() {
       </div>
       {/* <pre>{JSON.stringify(fields, null, 2)}</pre> */}
       <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
-        <DynamicForm jsonData={jsonSchema} language={language} initialData={uploadedJson} />
+        <DynamicForm 
+          jsonData={jsonSchema}
+          language={language}
+          initialData={uploadedJson}
+          isEditMode={!!uploadedJson} // TRUE when editing existing data
+        />
       </Box>
     </div>
   );
