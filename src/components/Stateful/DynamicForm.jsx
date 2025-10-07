@@ -59,7 +59,13 @@ function unflatten(formState) {
 }
 
 // COMPONENT STATE
-function DynamicForm({ jsonData, language = "eng", initialData = null, isEditMode }) {
+function DynamicForm({
+  jsonData,
+  language = "eng",
+  initialData = null,
+  readOnly = false,
+  isEditMode = false
+}) {
   // 
   const {
     fields,
@@ -149,7 +155,6 @@ function DynamicForm({ jsonData, language = "eng", initialData = null, isEditMod
   // 
   useEffect(() => {
     if (!initialFormStateRef.current) return;
-
     // Compare current formState with initial
     const modified = !isEqual(formState, initialFormStateRef.current);
     setIsModified(modified);
@@ -240,6 +245,8 @@ function DynamicForm({ jsonData, language = "eng", initialData = null, isEditMod
           setDialogOpen={setDialogOpen}
           handleItemDelete={handleItemDelete}
           depth={depth}
+          readOnly={readOnly}
+          isEditMode={isEditMode}
         />
       );
     }
@@ -254,6 +261,8 @@ function DynamicForm({ jsonData, language = "eng", initialData = null, isEditMod
           path={path}
           depth={depth}
           renderInput={renderInput}
+          readOnly={readOnly}
+          isEditMode={isEditMode}
         />
       );
     }
@@ -273,6 +282,8 @@ function DynamicForm({ jsonData, language = "eng", initialData = null, isEditMod
         onChange={onChange}
         required={required}
         depth={depth}
+        readOnly={readOnly}
+        isEditMode={isEditMode}
       />
     );
   };
@@ -335,14 +346,16 @@ function DynamicForm({ jsonData, language = "eng", initialData = null, isEditMod
         {displayedFields.map((field) =>
           renderInput({ ...field, path: field.name })
         )}
-        <Button
-          variant="contained"
-          type="submit"
-          disabled={!isFormValid  || !isModified}
-          sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
-        >
-          {isEditMode ? "Save Changes" : "Submit"}
-        </Button>
+        {!readOnly &&
+          <Button
+            variant="contained"
+            type="submit"
+            disabled={!isFormValid  || !isModified}
+            sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
+          >
+            {isEditMode ? "Save Changes" : "Submit"}
+          </Button>
+        }
       </form>
 
       {/* DIALOG POP-UP JSX 

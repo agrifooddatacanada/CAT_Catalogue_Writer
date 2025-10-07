@@ -69,7 +69,7 @@ export default function UploadButton({ onFileSelect }) {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      Upload a Previous Catalogue file (.json) Or drag and drop one
+      Upload a previous Catalogue file (.json) Or drag and drop one
       <input type="file" accept=".json" hidden onChange={handleFileChange} />
     </Button>
   );

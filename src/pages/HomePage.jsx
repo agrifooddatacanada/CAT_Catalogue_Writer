@@ -28,7 +28,7 @@ function HomePage() {
 
   const handleViewClick = () => {
     if (jsonContent) {
-      navigate("/review", { state: { jsonContent } });
+      navigate("/view", { state: { jsonContent } });
     }
   };
 

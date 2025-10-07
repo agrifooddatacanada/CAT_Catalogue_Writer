@@ -14,6 +14,8 @@ const FormInputMultiple = ({
   setDialogOpen, // Handler from DynamicForm to control popup editing
   handleItemDelete, // Function to delete an entry in parent state
   depth = 0, // For styling
+  readOnly,
+  isEditMode
 }) => {
   const columns =
     children && children.length > 0
@@ -62,7 +64,7 @@ const FormInputMultiple = ({
                     {labelMap[col] || col}
                   </th>
                 ))}
-                <th
+                {!readOnly? <th
                   style={{
                     border: "1px solid #ccc",
                     padding: "8px",
@@ -71,7 +73,7 @@ const FormInputMultiple = ({
                   }}
                 >
                   Actions
-                </th>
+                </th> : null}
               </tr>
             </thead>
             <tbody>
@@ -89,7 +91,7 @@ const FormInputMultiple = ({
                       {formatValue(entry[col])}
                     </td>
                   ))}
-                  <td
+                  {!readOnly? <td
                     style={{
                       border: "1px solid #ccc",
                       padding: "8px",
@@ -116,7 +118,7 @@ const FormInputMultiple = ({
                     >
                       Delete
                     </Button>
-                  </td>
+                  </td> : null}
                 </tr>
               ))}
             </tbody>
@@ -124,20 +126,34 @@ const FormInputMultiple = ({
         </Box>
       )}
 
-      <Button
-        sx={{
-          color: "rgba(70, 160, 35, 1)",
-          borderColor: "rgba(70, 160, 35, 1)",
-        }}
-        variant="outlined"
-        onClick={() => {
-          setPopupValue(multiple ? {} : "");
-          setEditingIndex(null);
-          setDialogOpen(path);
-        }}
-      >
-        Add {label || name}
-      </Button>
+      {!readOnly? (
+        <Button
+          sx={{
+            color: "rgba(70, 160, 35, 1)",
+            borderColor: "rgba(70, 160, 35, 1)",
+          }}
+          variant="outlined"
+          onClick={() => {
+            setPopupValue(multiple ? {} : "");
+            setEditingIndex(null);
+            setDialogOpen(path);
+          }}
+        >
+          Add {label || name}
+        </Button>
+      ) : (
+        (!isEditMode && value.length === 0)? (
+            <span 
+              style={{ 
+                paddingLeft: "10px", 
+                fontStyle: "italic", 
+                color:"rgba(100, 100, 100, 1)" 
+              }}
+            >
+              No data exist for {label || name}
+            </span>
+        ) : (null)
+      )}
     </Box>
   );
 };

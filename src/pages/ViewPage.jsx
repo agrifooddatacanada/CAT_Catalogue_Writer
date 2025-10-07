@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import { Stack, Box } from "@mui/system";
 import { useLocation } from "react-router-dom";
 import {
@@ -10,16 +10,30 @@ import {
   FormHelperText,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import SelectLanguage from "../components/Stateful/LanguageSelector";
+//import SelectLanguage from "../components/Stateful/LanguageSelector";
+import DynamicForm from "../components/Stateful/DynamicForm"
 
-function ReviewPage() {
+function ViewPage() {
   const location = useLocation();
-  const { jsonContent } = location.state || {};
+  const uploadedJson = location.state?.jsonContent || null;
 
   const [language, setLanguage] = React.useState("EN");
+  const [jsonSchema, setJsonSchema] = useState(null);
 
-  if (!jsonContent) {
-    return <p>No catalogue loaded. Please upload and view a file first.</p>;
+  // LOAD FORM SCHEMA JSON ONCE
+  useEffect(() => {
+    fetch("./OpenAIRE_OCA_package.json")
+      .then((res) => res.json())
+      .then(setJsonSchema)
+      .catch((err) => console.error(err));
+  }, []);
+
+  if (!jsonSchema) {
+    return <div>Loading schema...</div>;
+  }
+
+  if (!uploadedJson) {
+    return <p>No catalogue loaded. Please upload a file first and only then can you view it.</p>;
   }
 
   const handleChange = (e) => {
@@ -27,7 +41,7 @@ function ReviewPage() {
   };
 
   return (
-    <div className="ReviewPage">
+    <div className="ViewPage">
       <div className="Header">
         <Stack
           direction={"row"}
@@ -96,10 +110,10 @@ function ReviewPage() {
                 margin: "0px",
               }}
             >
-              Review Catalogue Record
+              View Catalogue Record
             </p>
             <Tooltip
-              title="Before finishing your catalogue record you can preview the final contents on this page."
+              title="You can view your catalogue record in a human-readable form on this page."
               arrow
             >
               <HelpOutlineIcon
@@ -203,14 +217,22 @@ function ReviewPage() {
             borderTop: "1px rgba(195, 195, 195, 1) solid",
           }}
         />
-        <div style={{ padding: "20px" }}>
+        {/* <div style={{ padding: "20px" }}>
           <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
             {JSON.stringify(jsonContent, null, 2)}
           </pre>
-        </div>
+        </div> */}
       </div>
+      <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
+        <DynamicForm 
+          jsonData={jsonSchema}
+          language={language}
+          initialData={uploadedJson}
+          readOnly={true} // Prop for view mode
+        />
+      </Box>
     </div>
   );
 }
 
-export default ReviewPage;
+export default ViewPage;

@@ -5,7 +5,15 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-const FormInputGroup = ({ children, label, name, path, depth = 0, renderInput, required }) => {
+const FormInputGroup = ({ 
+  children, 
+  label, 
+  name, 
+  path, 
+  depth = 0, 
+  renderInput, 
+  required
+}) => {
   return (
     <Box>
       <Typography variant={depth === 0 ? "h6" : "h8"} gutterBottom>

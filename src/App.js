@@ -1,7 +1,7 @@
 import React from "react";
 import HomePage from "./pages/HomePage";
 import FormPage from "./pages/FormPage";
-import ReviewPage from "./pages/ReviewPage";
+import ViewPage from "./pages/ViewPage";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/form" element={<FormPage />} />
-        <Route path="/review" element={<ReviewPage />} />
+        <Route path="/view" element={<ViewPage />} />
       </Routes>
     </Router>
   );
