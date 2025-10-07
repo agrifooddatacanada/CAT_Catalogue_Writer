@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { isEqual } from "lodash";
 import { Button, Box } from "@mui/material";
 import FormInputSingle from "./DynamicFormComponents/FormInputSingle";
 import FormInputMultiple from "./DynamicFormComponents/FormInputMultiple";
@@ -7,7 +8,7 @@ import PopupDialog from "./DynamicFormComponents/PopupDialog";
 import { getNestedValue, setNestedValue } from "../../utils/formStateUtils";
 import { validateFieldsForState } from "../../utils/formValidation";
 import useDynamicFormState from "../../hooks/useDynamicFormState";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 //
 const checkMultipleEntriesFilled = (fields, state) => {
@@ -58,7 +59,8 @@ function unflatten(formState) {
 }
 
 // COMPONENT STATE
-function DynamicForm({ jsonData, language = "eng" }) {
+function DynamicForm({ jsonData, language = "eng", initialData = null }) {
+  // 
   const {
     fields,
     formState,
@@ -71,12 +73,12 @@ function DynamicForm({ jsonData, language = "eng" }) {
     setPopupValue,
     setEditingIndex,
     formatPatterns,
-    validate,
     handleItemDelete,
     handlePopupSave,
     findFieldByPath,
     matches,
-  } = useDynamicFormState(jsonData, language);
+    flatten
+  } = useDynamicFormState(jsonData, language, initialData); // Pass `initialData` here
 
   // 
   const popupField = findFieldByPath(fields, dialogOpen);
@@ -89,6 +91,12 @@ function DynamicForm({ jsonData, language = "eng" }) {
 
   // 
   const displayedFields = showMandatoryOnly ? filterMandatoryFields(fields) : fields;
+
+  //
+  const initialFormStateRef = useRef(null);
+  
+  // 
+  const [isModified, setIsModified] = useState(false);
 
   // 
   const handleSubmit = () => {
@@ -111,7 +119,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `catalogue-${formDataWithId.catalogue_id}.jsonld`;
+    link.download = `catalogue-${formDataWithId.catalogue_id}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -127,6 +135,25 @@ function DynamicForm({ jsonData, language = "eng" }) {
     const multipleFilled = checkMultipleEntriesFilled(fields, formState);
     setIsFormValid(Object.keys(errors).length === 0 && multipleFilled);
   }, [formState, fields, formatPatterns]);
+
+  // 
+  useEffect(() => {
+    // When `formState` or `initialData` changes, update the reference
+    if (initialData) {
+      initialFormStateRef.current = flatten(initialData);
+    } else {
+      initialFormStateRef.current = {};
+    }
+  }, [initialData, flatten]);
+
+  // 
+  useEffect(() => {
+    if (!initialFormStateRef.current) return;
+
+    // Compare current formState with initial
+    const modified = !isEqual(formState, initialFormStateRef.current);
+    setIsModified(modified);
+  }, [formState]);
 
   //
   const isValueFilled = (val) => {
@@ -311,7 +338,7 @@ function DynamicForm({ jsonData, language = "eng" }) {
         <Button
           variant="contained"
           type="submit"
-          disabled={!isFormValid}
+          disabled={!isFormValid  || !isModified}
           sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
         >
           Submit

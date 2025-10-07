@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Stack, Box } from "@mui/system";
-//import { v4 as uuidv4 } from 'uuid';
 import {
   Button,
   MenuItem,
@@ -8,26 +8,33 @@ import {
   Select,
   FormHelperText,
 } from "@mui/material";
-//import useDynamicFormState from "../hooks/useDynamicFormState";
 import DynamicForm from "../components/Stateful/DynamicForm";
 //import SelectLanguage from "../components/Stateful/LanguageSelector";
 
 function FormPage() {
-  const [language, setLanguage] = React.useState("eng");
-  const [jsonData, setJsonData] = useState(null);
+  const location = useLocation();
+  const uploadedJson = location.state?.jsonContent || null;
+
+  const [language, setLanguage] = useState("eng");
+  const [jsonSchema, setJsonSchema] = useState(null);
 
   const handleChange = (e) => {
     setLanguage(e.target.value);
   };
 
   useEffect(() => {
+    console.log("FormPage jsonSchema:", jsonSchema);
+  }, [jsonSchema]);
+
+
+  useEffect(() => {
     fetch("./OpenAIRE_OCA_package.json")
       .then((res) => res.json())
-      .then(setJsonData)
+      .then(setJsonSchema)
       .catch((err) => console.error(err));
   }, []);
 
-  if (!jsonData) return <div>Loading...</div>;
+  if (!jsonSchema) return <div>Loading...</div>;
 
   return (
     <div className="FormPage">
@@ -197,7 +204,7 @@ function FormPage() {
       </div>
       {/* <pre>{JSON.stringify(fields, null, 2)}</pre> */}
       <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
-        <DynamicForm jsonData={jsonData} language={language} />
+        <DynamicForm jsonData={jsonSchema} language={language} initialData={uploadedJson} />
       </Box>
     </div>
   );

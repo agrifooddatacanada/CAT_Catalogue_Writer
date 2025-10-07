@@ -18,6 +18,21 @@ const initializeEmptyObject = (childrenFields) => {
   return obj;
 };
 
+// FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
+function flatten(obj, parentKey = "", result = {}) {
+    for (const key in obj) {
+        if (!obj.hasOwnProperty(key)) continue;
+        const value = obj[key];
+        const newKey = parentKey ? `${parentKey}.${key}`: key;
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+            flatten(value, newKey, result);
+        } else {
+            result[newKey] = value;
+        }
+    }
+    return result;
+}
+
 function useDynamicFormState(jsonData, language = "eng", initialData = null) {
     // FORM SCHEMA EXTRACTED FROM JSON
     const [fields, setFields] = useState([]);
@@ -29,7 +44,7 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
     const [formState, setFormState] = useState({});
     
     // VALIDATION ERROR MESSAGES
-    const [errors, setErrors] = useState({});
+    const [errors] = useState({});
     
     // VALIDATION ERRORS FOR POPUPS
     const [popupErrors, setPopupErrors] = useState({});
@@ -59,6 +74,11 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
 
     // ON MOUNT OR WHEN jsonData/language CHANGES
     useEffect(() => {
+        if (!jsonData) {
+            setFields([]);
+            return;
+        }
+
         //
         const addPathToFields = (fields, parentPath = "") => {
             return fields.map((field) => {
@@ -86,6 +106,12 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
             jsonData,
             "capture_base"
         );
+
+        if (!Array.isArray(extractedFields)) {
+            console.error("extractAttributes returned invalid fields:", extractedFields);
+            setFields([]);
+            return;
+        }
     
         // MERGE IN LOCALIZED CATEGORIES
         const enrichedFields = extractedFields.map((field) => {
@@ -95,24 +121,36 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
             return field;
         });
     
+        // ADD PATH TO FIELD SCHEMA OBJECTS
         const enrichedFieldsWithPaths = addPathToFields(enrichedFields);
     
+        // SET FIELDS AND VALIDATION PATTERNS
         setFields(enrichedFieldsWithPaths);
-        setFormatPatterns(formatPatterns); // store patterns for validation
-    
-        // INITIALIZE EMPTY FORM STATE STRUCTURE WITH NESTED ATTRIBUTES
-        const initState = {};
-        const initNestedState = (fields, parentKey = "") => {
-            fields.forEach(({ name, multiple, children, path }) => {
-                const key = path || (parentKey ? `${parentKey}.${name}` : name);
-                if (children && children.length > 0) {
-                    initNestedState(children, key);
-                } else {
-                    initState[key] = multiple ? [] : "";
-                }
-            });
-        };
-        initNestedState(enrichedFieldsWithPaths);
+        setFormatPatterns(formatPatterns);
+
+        // PREPARE FLATTENED INITIAL `formState` (IF EDITING)
+        let initState = {};
+
+        // Initialize form state depending on initialData existence
+        if (initialData) {
+            // Flatten nested initialData to flat key structure
+            initState = flatten(initialData);
+        } else {
+            // Create empty initial state based on schema paths
+            const emptyState = {};
+            const initNestedState = (fields, parentKey = "") => {
+                fields.forEach(({ name, multiple, children, path }) => {
+                    const key = path || (parentKey ? `${parentKey}.${name}` : name);
+                    if (children && children.length > 0) {
+                        initNestedState(children, key);
+                    } else {
+                        emptyState[key] = multiple ? [] : "";
+                    }
+                });
+            };
+            initNestedState(enrichedFieldsWithPaths);
+            initState = emptyState;
+        }
         setFormState(initState);
     }, [jsonData, language, initialData]);
 
@@ -150,45 +188,45 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         setPopupErrors(errors);
     }, [popupValue, dialogOpen, fields, formatPatterns, findFieldByPath]);
 
-    // FUNCTION TO VALIDATE FULL FORM BEFORE SUBMIT
-    const validate = () => {
-        const newErrors = {};
+    // // FUNCTION TO VALIDATE FULL FORM BEFORE SUBMIT
+    // const validate = () => {
+    //     const newErrors = {};
 
-        // RECURSIVELY CHECK FIELDS
-        const validateFields = (fields, parentKey = "") => {
-            fields.forEach(({ name, required, multiple, children, label }) => {
-                const key = parentKey ? `${parentKey}.${name}` : name;
-                const val = getNestedValue(formState, key);
+    //     // RECURSIVELY CHECK FIELDS
+    //     const validateFields = (fields, parentKey = "") => {
+    //         fields.forEach(({ name, required, multiple, children, label }) => {
+    //             const key = parentKey ? `${parentKey}.${name}` : name;
+    //             const val = getNestedValue(formState, key);
 
-                // ENFORCE REQUIRED FIELDS
-                if (children && children.length > 0) {
-                    validateFields(children, key);
-                } else {
-                    // Required field validation
-                    if (
-                        required &&
-                        (val === "" || (Array.isArray(val) && val.length === 0))
-                    ) {
-                        newErrors[key] = "This field is required";
-                    }
+    //             // ENFORCE REQUIRED FIELDS
+    //             if (children && children.length > 0) {
+    //                 validateFields(children, key);
+    //             } else {
+    //                 // Required field validation
+    //                 if (
+    //                     required &&
+    //                     (val === "" || (Array.isArray(val) && val.length === 0))
+    //                 ) {
+    //                     newErrors[key] = "This field is required";
+    //                 }
 
-                    // APPLY REGEX FORMAT CHECKS
-                    // Extract base attribute name (last segment)
-                    const baseName = key.split(".").slice(-1)[0];
-                    const pattern = formatPatterns[baseName];
+    //                 // APPLY REGEX FORMAT CHECKS
+    //                 // Extract base attribute name (last segment)
+    //                 const baseName = key.split(".").slice(-1)[0];
+    //                 const pattern = formatPatterns[baseName];
 
-                    // POPULATE ERRORS
-                    if (pattern && val && !pattern.test(val)) {
-                        newErrors[key] = `Invalid format for ${label || name}`;
-                    }
-                }
-            });
-        };
+    //                 // POPULATE ERRORS
+    //                 if (pattern && val && !pattern.test(val)) {
+    //                     newErrors[key] = `Invalid format for ${label || name}`;
+    //                 }
+    //             }
+    //         });
+    //     };
 
-        validateFields(fields);
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+    //     validateFields(fields);
+    //     setErrors(newErrors);
+    //     return Object.keys(newErrors).length === 0;
+    // };
 
     // ON SAVE, APPEND THE CONSTRUCTED MINI-OBJECT TO ARRAY
     const handleDialogSave = (path, value) => {
@@ -262,11 +300,11 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         setPopupValue,
         setEditingIndex,
         formatPatterns,
-        validate,
         handleItemDelete,
         handlePopupSave,
         findFieldByPath,
         matches,
+        flatten
     };
 }
 
