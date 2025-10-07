@@ -111,7 +111,7 @@ function DynamicForm({
     const formDataWithId = {
       "@context": "https://schema.org",
       "@type": "Catalogue",
-      "catalogue_id": uuidv4(),
+      catalogue_id: uuidv4(),
       ...nestedState,
     };
 

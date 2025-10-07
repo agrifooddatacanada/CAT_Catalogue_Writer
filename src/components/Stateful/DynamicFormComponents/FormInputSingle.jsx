@@ -44,7 +44,10 @@ const FormInputSingle = ({
         (readOnly && value.length === 0)? (
           <span 
             style={{ 
-              paddingLeft: "10px", 
+              display: "inline-block",
+              paddingLeft: "14px",
+              paddingTop: "16.5px",
+              paddingBottom: "16.5px",
               fontStyle: "italic", 
               color:"rgba(100, 100, 100, 1)" 
             }}
@@ -54,7 +57,26 @@ const FormInputSingle = ({
         ) : (
           <FormControl fullWidth {...errorProps}>
             <Select
-              inputProps={readOnly ? { readOnly: true } : undefined}
+              disabled={readOnly}
+              sx={{
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "white",       // border color always white
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "white",       // prevent hover changing border color
+                },
+                "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "white",       // disabled state border color white
+                },
+                "& .MuiSelect-select.Mui-disabled": {
+                  WebkitTextFillColor: "black", // disabled text color
+                }
+              }}
+              // slotProps={{
+              //   htmlInput:{
+              //     readOnly:readOnly
+              //   }
+              // }}
               value={value}
               onChange={(e) => onChange(path, e.target.value)}
               multiple={multiple}
@@ -89,9 +111,12 @@ const FormInputSingle = ({
         )
       ) : type === "DateTime" ? (
         (readOnly && value.length === 0)? (
-          <span 
+          <span
             style={{ 
-              paddingLeft: "10px", 
+              display: "inline-block",
+              paddingLeft: "14px",
+              paddingTop: "16.5px",
+              paddingBottom: "16.5px",
               fontStyle: "italic", 
               color:"rgba(100, 100, 100, 1)" 
             }}
@@ -100,13 +125,22 @@ const FormInputSingle = ({
           </span>
         ) : (
           <TextField
-            slotProps={{
-              htmlInput:{
-                readOnly:readOnly
+            disabled={readOnly}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "white",       // border color always white
+                },
+                "&:hover fieldset": {
+                  borderColor: "white",       // prevent hover changing border color
+                },
+                "&.Mui-disabled fieldset": {
+                  borderColor: "white",       // disabled state border color white
+                },
               },
-              inputLabel: {
-                shrink: true
-              }
+              "& .MuiInputBase-input.Mui-disabled": {
+                WebkitTextFillColor: "black", // disabled text color (adjust as needed)
+              },
             }}
             type="date"
             fullWidth
@@ -117,9 +151,12 @@ const FormInputSingle = ({
         )
       ) : (
         (readOnly && value.length === 0)? (
-          <span 
+          <span
             style={{ 
-              paddingLeft: "10px", 
+              display: "inline-block",
+              paddingLeft: "14px",
+              paddingTop: "16.5px",
+              paddingBottom: "16.5px",
               fontStyle: "italic", 
               color:"rgba(100, 100, 100, 1)" 
             }}
@@ -128,10 +165,22 @@ const FormInputSingle = ({
           </span>
         ) : (
           <TextField
-            slotProps={{
-              htmlInput:{
-                readOnly:readOnly
-              }
+            disabled={readOnly}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "white",       // border color always white
+                },
+                "&:hover fieldset": {
+                  borderColor: "white",       // prevent hover changing border color
+                },
+                "&.Mui-disabled fieldset": {
+                  borderColor: "white",       // disabled state border color white
+                },
+              },
+              "& .MuiInputBase-input.Mui-disabled": {
+                WebkitTextFillColor: "black", // disabled text color (adjust as needed)
+              },
             }}
             fullWidth
             value={value}

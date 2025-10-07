@@ -47,7 +47,13 @@ const FormInputMultiple = ({
 
       {/* Table showing existing entries */}
       {value.length > 0 && (
-        <Box sx={{ overflowX: "auto", mb: 2 }}>
+        <Box 
+          sx={{ 
+            overflowX: "auto", 
+            mt: "16.5px",
+            mb: "16.5px",
+          }}
+        >
           <table style={{ borderCollapse: "collapse", width: "100%" }}>
             <thead>
               <tr>
@@ -145,7 +151,10 @@ const FormInputMultiple = ({
         (!isEditMode && value.length === 0)? (
             <span 
               style={{ 
-                paddingLeft: "10px", 
+                display: "inline-block",
+                paddingLeft: "14px",
+                paddingTop: "16.5px",
+                paddingBottom: "16.5px",
                 fontStyle: "italic", 
                 color:"rgba(100, 100, 100, 1)" 
               }}
