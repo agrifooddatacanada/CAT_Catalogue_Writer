@@ -58,7 +58,7 @@ const FormInputSingle = ({
           <FormControl fullWidth {...errorProps}>
             <Select
               disabled={readOnly}
-              sx={{
+              sx={readOnly ? {
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderColor: "white",       // border color always white
                 },
@@ -71,7 +71,7 @@ const FormInputSingle = ({
                 "& .MuiSelect-select.Mui-disabled": {
                   WebkitTextFillColor: "black", // disabled text color
                 }
-              }}
+              } :{}}
               // slotProps={{
               //   htmlInput:{
               //     readOnly:readOnly
@@ -126,7 +126,7 @@ const FormInputSingle = ({
         ) : (
           <TextField
             disabled={readOnly}
-            sx={{
+            sx={readOnly ? {
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
                   borderColor: "white",       // border color always white
@@ -141,7 +141,7 @@ const FormInputSingle = ({
               "& .MuiInputBase-input.Mui-disabled": {
                 WebkitTextFillColor: "black", // disabled text color (adjust as needed)
               },
-            }}
+            } : {}}
             type="date"
             fullWidth
             value={value}
@@ -166,7 +166,7 @@ const FormInputSingle = ({
         ) : (
           <TextField
             disabled={readOnly}
-            sx={{
+            sx={readOnly ? {
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
                   borderColor: "white",       // border color always white
@@ -181,7 +181,7 @@ const FormInputSingle = ({
               "& .MuiInputBase-input.Mui-disabled": {
                 WebkitTextFillColor: "black", // disabled text color (adjust as needed)
               },
-            }}
+            } : {}}
             fullWidth
             value={value}
             onChange={(e) => onChange(path, e.target.value)}
