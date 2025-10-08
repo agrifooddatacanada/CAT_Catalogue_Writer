@@ -9,6 +9,8 @@ import { getNestedValue, setNestedValue } from "../../utils/formStateUtils";
 import { validateFieldsForState } from "../../utils/formValidation";
 import useDynamicFormState from "../../hooks/useDynamicFormState";
 import { v4 as uuidv4 } from "uuid";
+import SaveIcon from "@mui/icons-material/Save";
+import SendIcon from '@mui/icons-material/Send';
 
 //
 const checkMultipleEntriesFilled = (fields, state) => {
@@ -105,13 +107,10 @@ function DynamicForm({
   const [isModified, setIsModified] = useState(false);
 
   // 
-  const [lastSavedId, setLastSavedId] = useState(null);
-
-  // 
   const handleSubmit = () => {
     const nestedState = unflatten(formState);
 
-    alert("Old catalogue_id: " + nestedState.catalogue_id);
+    //alert("Old catalogue_id: " + nestedState.catalogue_id);
 
     // Remove existing catalogue_id if any
     if ("catalogue_id" in nestedState) {
@@ -125,9 +124,7 @@ function DynamicForm({
       ...nestedState,
     };
 
-    setLastSavedId(formDataWithId.catalogue_id);
-
-    alert("Saving file with catalogue_id: " + formDataWithId.catalogue_id);
+    //alert("Saving file with catalogue_id: " + formDataWithId.catalogue_id);
 
     // Convert to JSON-LD string
     const jsonLdString = JSON.stringify(formDataWithId, null, 2);
@@ -367,15 +364,11 @@ function DynamicForm({
               type="submit"
               disabled={!isFormValid  || !isModified}
               sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
+              startIcon={isEditMode && <SaveIcon />}
+              endIcon={!isEditMode && <SendIcon />}
             >
               {isEditMode ? "Save Changes" : "Submit"}
             </Button>
-        
-            {lastSavedId && (
-              <Box sx={{ mt: 2, color: "rgba(70, 160, 35, 1)", fontWeight: "bold" }}>
-                Last saved catalogue ID: {lastSavedId}
-              </Box>
-            )}
           </>
         )}
       </form>

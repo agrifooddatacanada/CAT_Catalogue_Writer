@@ -3,6 +3,7 @@
 
 import React from "react";
 import { Dialog, Box, Typography, TextField, Button } from "@mui/material";
+import SaveIcon from '@mui/icons-material/Save';
 
 const PopupDialog = ({
   open, // Boolean for dialog visibility from `dialogOpen`
@@ -53,6 +54,7 @@ const PopupDialog = ({
             onClick={handlePopupSave}
             disabled={!isPopupSaveEnabled()} // Disable if invalid
             sx={{ backgroundColor: "rgba(70, 160, 35, 1)" }}
+            startIcon={<SaveIcon />}
           >
             Save
           </Button>

@@ -1,14 +1,19 @@
 // UploadButton.jsx
 import React, { useState } from "react";
 import { Button } from "@mui/material";
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone';
 
 export default function UploadButton({ onFileSelect }) {
   const [dragOver, setDragOver] = useState(false);
+
+  const [isUploaded, setIsUploaded] = useState(false);
 
   const handleFileChange = (event) => {
     const files = event.target.files;
     if (files && files.length > 0) {
       onFileSelect(files);
+      setIsUploaded(true);
     }
   };
 
@@ -28,6 +33,7 @@ export default function UploadButton({ onFileSelect }) {
     const files = event.dataTransfer.files;
     if (files && files.length > 0) {
       onFileSelect(files);
+      setIsUploaded(true);
       event.dataTransfer.clearData();
     }
   };
@@ -42,10 +48,10 @@ export default function UploadButton({ onFileSelect }) {
         width: "85%",
         height: "100px",
         padding: {
-          xs: "50px",
-          md: "50px",
-          lg: "30px",
-          xl: "30px",
+          xs: "35px",
+          md: "30px",
+          lg: "25px",
+          xl: "20px",
         },
         textAlign: "center",
         border: "1px solid black",
@@ -68,6 +74,7 @@ export default function UploadButton({ onFileSelect }) {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      startIcon={isUploaded ? <FileDownloadDoneIcon /> : <FileUploadIcon />}
     >
       Upload a previous Catalogue file (.json) Or drag and drop one
       <input type="file" accept=".json" hidden onChange={handleFileChange} />

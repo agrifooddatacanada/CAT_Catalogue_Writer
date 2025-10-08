@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Stack, Box } from "@mui/system";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Tooltip,
   Button,
@@ -12,9 +12,11 @@ import {
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 //import SelectLanguage from "../components/Stateful/LanguageSelector";
 import DynamicForm from "../components/Stateful/DynamicForm"
+import EditIcon from '@mui/icons-material/Edit';
 
 function ViewPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const uploadedJson = location.state?.jsonContent || null;
 
   const [language, setLanguage] = React.useState("EN");
@@ -223,6 +225,7 @@ function ViewPage() {
           </pre>
         </div> */}
       </div>
+
       <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
         <DynamicForm 
           jsonData={jsonSchema}
@@ -230,7 +233,51 @@ function ViewPage() {
           initialData={uploadedJson}
           readOnly={true} // Prop for view mode
         />
+
+        <Button 
+          variant="contained"
+          type="submit"
+          sx={{ backgroundColor: "rgba(70, 160, 35, 1)" }}
+          onClick={() => navigate("/form", { state: { jsonContent: uploadedJson } })}
+          startIcon={<EditIcon />}
+        >
+          Edit
+        </Button>
       </Box>
+      <hr
+        style={{
+          maxWidth: "100%",
+          borderTop: "1px rgba(220, 220, 220, 1) solid",
+          marginTop: "20px",
+          marginBottom: "3px",
+        }}
+      />
+      <div className="Footer" style={{ padding: "32px" }}>
+        <p style={{ margin: "0px" }}>Powered by</p>
+        <a
+          href="https://agrifooddatacanada.ca/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img
+            src="/assets/images/agri-logo.png"
+            alt="Agri-Food Data Canada at UoG Logo"
+            style={{ width: "200px", marginBottom: "15px" }}
+          />
+        </a>
+        <p style={{ margin: "0px" }}>Supported by</p>
+        <a
+          href="https://www.cfref-apogee.gc.ca/home-accueil-eng.aspx"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img
+            src="/assets/images/research-excellent-fund.png"
+            alt="Canada First Research Excellence Fund Logo"
+            style={{ height: "120px" }}
+          />
+        </a>
+      </div>
     </div>
   );
 }

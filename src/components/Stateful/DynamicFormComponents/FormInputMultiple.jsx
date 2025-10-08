@@ -1,5 +1,8 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 
 const FormInputMultiple = ({
   required,
@@ -114,6 +117,7 @@ const FormInputMultiple = ({
                         setDialogOpen(path);
                       }}
                       sx={{ mr: 1 }}
+                      startIcon={<EditIcon />}
                     >
                       Edit
                     </Button>
@@ -121,6 +125,7 @@ const FormInputMultiple = ({
                       size="small"
                       color="error"
                       onClick={() => handleItemDelete(path, idx)}
+                      endIcon={<DeleteIcon />}
                     >
                       Delete
                     </Button>
@@ -144,6 +149,7 @@ const FormInputMultiple = ({
             setEditingIndex(null);
             setDialogOpen(path);
           }}
+          startIcon={<AddIcon />}
         >
           Add {label || name}
         </Button>
