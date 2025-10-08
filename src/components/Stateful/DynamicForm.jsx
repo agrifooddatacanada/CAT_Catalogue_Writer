@@ -105,8 +105,18 @@ function DynamicForm({
   const [isModified, setIsModified] = useState(false);
 
   // 
+  const [lastSavedId, setLastSavedId] = useState(null);
+
+  // 
   const handleSubmit = () => {
     const nestedState = unflatten(formState);
+
+    alert("Old catalogue_id: " + nestedState.catalogue_id);
+
+    // Remove existing catalogue_id if any
+    if ("catalogue_id" in nestedState) {
+      delete nestedState.catalogue_id;
+    }
     // Add a unique file identifier
     const formDataWithId = {
       "@context": "https://schema.org",
@@ -114,6 +124,10 @@ function DynamicForm({
       catalogue_id: uuidv4(),
       ...nestedState,
     };
+
+    setLastSavedId(formDataWithId.catalogue_id);
+
+    alert("Saving file with catalogue_id: " + formDataWithId.catalogue_id);
 
     // Convert to JSON-LD string
     const jsonLdString = JSON.stringify(formDataWithId, null, 2);
@@ -346,16 +360,24 @@ function DynamicForm({
         {displayedFields.map((field) =>
           renderInput({ ...field, path: field.name })
         )}
-        {!readOnly &&
-          <Button
-            variant="contained"
-            type="submit"
-            disabled={!isFormValid  || !isModified}
-            sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
-          >
-            {isEditMode ? "Save Changes" : "Submit"}
-          </Button>
-        }
+        {!readOnly && (
+          <>
+            <Button
+              variant="contained"
+              type="submit"
+              disabled={!isFormValid  || !isModified}
+              sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
+            >
+              {isEditMode ? "Save Changes" : "Submit"}
+            </Button>
+        
+            {lastSavedId && (
+              <Box sx={{ mt: 2, color: "rgba(70, 160, 35, 1)", fontWeight: "bold" }}>
+                Last saved catalogue ID: {lastSavedId}
+              </Box>
+            )}
+          </>
+        )}
       </form>
 
       {/* DIALOG POP-UP JSX 
