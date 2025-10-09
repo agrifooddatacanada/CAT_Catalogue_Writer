@@ -1493,25 +1493,35 @@
               "interaction": [
                 {
                   "arguments": {
-                    "creatorName": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "Family-Name, Given-Name",
-                        "fra": "Family-Name, Given-Name"
+                    "creator": {
+                      "type": "object",
+                      "children": {
+                        "creatorName": {
+                          "type": "textarea",
+                          "placeholder": {
+                            "eng": "Family-Name, Given-Name",
+                            "fra": "Family-Name, Given-Name"
+                          }
+                        },
+                        "schemeURI": {
+                          "type": "textarea",
+                          "placeholder": {
+                            "eng": "https://example.com",
+                            "fra": "https://example.com"
+                          }
+                        }
                       }
                     },
-                    "schemeURI": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "https://example.com",
-                        "fra": "https://example.com"
-                      }
-                    },
-                    "rightsURI": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "https://example.com",
-                        "fra": "https://example.com"
+                    "rights": {
+                      "type": "object",
+                      "children": {
+                        "rightsURI": {
+                          "type": "textarea",
+                          "placeholder": {
+                            "eng": "https://example.com",
+                            "fra": "https://example.com"
+                          }
+                        }
                       }
                     },
                     "publicationYear": {

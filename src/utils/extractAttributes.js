@@ -45,14 +45,46 @@ function extractBundleLabelsByLanguage(jsonData, lang) {
 
 // IDENTIFY PREFERRED ATTRIBUTE ORDERING FROM EXTENSIONS
 function getAttributeOrdering(jsonData) {
-    const extensions = jsonData?.extensions || [];
-    for (const ext of extensions) {
+    const adcExtensions = jsonData?.extensions?.adc || [];
+    for (const ext of Object.values(adcExtensions)) {
         const ordering = ext?.overlays?.ordering;
         if (ordering && ordering.attribute_ordering) {
             return ordering.attribute_ordering;
         }
     }
     return [];
+}
+
+//
+function extractPlaceholdersFromFormExtension(extensions, lang) {
+  const placeholders = {};
+
+  // extensions.adc is an object keyed by IDs
+  const adcExtensions = extensions?.adc || {};
+
+  for (const key in adcExtensions) {
+    const overlays = adcExtensions[key]?.overlays;
+    if (!overlays?.form) continue;
+
+    const forms = overlays.form;
+    for (const form of forms) {
+      if (!form.interaction) continue;
+
+      for (const interactionKey of form.interaction) {
+        if (!interactionKey.arguments) continue;
+
+        const args = interactionKey.arguments || {};
+        for (const [attrName, argDef] of Object.entries(args)) {
+          const placeholderObj = argDef.placeholder;
+          if (placeholderObj && placeholderObj[lang]) {
+            placeholders[attrName] = placeholderObj[lang];
+          }
+        }
+      }
+    }
+  }
+
+  return placeholders;
 }
 
 // REORDER THE EXTRACTED FIELDS
@@ -93,7 +125,16 @@ function extractLocalizedEntryValues(jsonData, lang = "eng") {
 }
 
 // RECURSIVELY PROCESS `capture_base`
-function extractAttributesFromCaptureBase(captureBase, dependencies, visitedRefs, lang, labels, entryCodes, conformances, cardinalities) {
+function extractAttributesFromCaptureBase(
+    captureBase,
+    dependencies,
+    visitedRefs,
+    lang,
+    labels,
+    entryCodes,
+    conformances,
+    cardinalities
+) {
     const attributes = captureBase.attributes || {};
     const fields = [];
 
@@ -113,7 +154,7 @@ function extractAttributesFromCaptureBase(captureBase, dependencies, visitedRefs
                     const depEntries = extractEntriesFromDependency(dep, lang);
                     const depConformances = dep.overlays?.conformance?.attribute_conformance || {};
                     const depCardinalities = dep.overlays?.cardinality?.attribute_cardinality || {};
-
+                    
                     // ATTACH CHILDREN
                     children = extractAttributesFromCaptureBase(
                         dep.capture_base,
@@ -191,6 +232,7 @@ export function extractAttributes(jsonData, baseKey = "capture_base", visitedRef
     const conformances = bundle.overlays?.conformance?.attribute_conformance || {};
     const entryCodes = extractLocalizedEntryValues(jsonData, lang);
     const mainLabels = extractBundleLabelsByLanguage(jsonData, lang);
+    const placeholders = extractPlaceholdersFromFormExtension(jsonData?.extensions || {}, lang);
 
     let fields = [];
 
@@ -238,10 +280,12 @@ export function extractAttributes(jsonData, baseKey = "capture_base", visitedRef
         const multiple = cardinalities[key]?.includes("n");
         const categories = entryCodes[key] || null;
         const label = mainLabels[key] || key;
+        const placeholder = placeholders[key] || "";
 
         fields.push({
             name: key,
             label,
+            placeholder,
             type: fieldType,
             required,
             multiple,

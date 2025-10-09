@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from "react";
 import { isEqual } from "lodash";
-import { Button, Box } from "@mui/material";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import FormInputSingle from "./DynamicFormComponents/FormInputSingle";
 import FormInputMultiple from "./DynamicFormComponents/FormInputMultiple";
 import FormInputGroup from "./DynamicFormComponents/FormInputGroup";
@@ -221,7 +223,7 @@ function DynamicForm({
     mode = "form",
     errorState = {}
   ) => {
-    const { name, label, type, multiple, categories, children, path, required } = field;
+    const { name, label, placeholder, type, multiple, categories, children, path, required } = field;
 
     const value =
       mode === "popup"
@@ -295,6 +297,7 @@ function DynamicForm({
         depth={depth}
         readOnly={readOnly}
         isEditMode={isEditMode}
+        placeholder={placeholder}
       />
     );
   };
@@ -389,7 +392,7 @@ function DynamicForm({
       />
 
       {/* DEBUG PANEL SHOWING EXTRACTED FIELDS JSON FOR VERIFICATION */}
-      {/* <Box
+      <Box
         sx={{
           mt: 4,
           p: 2,
@@ -403,7 +406,7 @@ function DynamicForm({
           Extracted Fields (for verification):
         </Typography>
         <pre>{JSON.stringify(fields, null, 2)}</pre>
-      </Box> */}
+      </Box>
     </>
   );
 }

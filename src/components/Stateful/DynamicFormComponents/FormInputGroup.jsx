@@ -7,7 +7,8 @@ import { Box, Typography } from "@mui/material";
 
 const FormInputGroup = ({ 
   children, 
-  label, 
+  label,
+  placeholder,
   name, 
   path, 
   depth = 0, 

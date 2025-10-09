@@ -13,6 +13,7 @@ import {
 const FormInputSingle = ({
   name,
   label,
+  placeholder,
   type,
   multiple,
   categories,
@@ -22,8 +23,7 @@ const FormInputSingle = ({
   onChange,
   required,
   depth = 0,
-  readOnly,
-  isEditMode
+  readOnly
 }) => {
   const errorProps = error ? { error: true, helperText: error } : {};
 
@@ -78,6 +78,7 @@ const FormInputSingle = ({
               //   }
               // }}
               value={value}
+              displayEmpty
               onChange={(e) => onChange(path, e.target.value)}
               multiple={multiple}
               renderValue={(selected) =>
@@ -88,7 +89,7 @@ const FormInputSingle = ({
                     ))}
                   </Box>
                 ) : (
-                  selected || <em>None</em>
+                  selected || <em>Select one</em>
                 )
               }
             >
@@ -145,6 +146,7 @@ const FormInputSingle = ({
             type="date"
             fullWidth
             value={value}
+            label={placeholder}
             onChange={(e) => onChange(path, e.target.value)}
             {...errorProps}
           />
@@ -184,6 +186,7 @@ const FormInputSingle = ({
             } : {}}
             fullWidth
             value={value}
+            placeholder={placeholder}
             onChange={(e) => onChange(path, e.target.value)}
             {...errorProps}
           />

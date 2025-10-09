@@ -1,6 +1,6 @@
 // UploadButton.jsx
 import React, { useState } from "react";
-import { Button } from "@mui/material";
+import Button from "@mui/material/Button";
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone';
 

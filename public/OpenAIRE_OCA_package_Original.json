@@ -1414,124 +1414,42 @@
       }
     ]
   },
-  "extensions": {
-    "adc" : {
-      "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC" : {
-        "d": "EKQQI3VidGhzMSwYYgxMbXSlLriWFbnvE1WJcDqM8aF2",
-        "type": "community/adc/extension/1.0",
-        "bundle_digest": "ECCmcOBQWZc_Ck5q4BmDvlrvPabUTuXQkXYt_2TeAyNV",
-        "overlays": {
-          "ordering": {
-            "d": "EJzB4B_sFyi9DswKkyVI4mLLU1Jyw3XSBIUYhdQupFGD",
-            "type": "community/overlays/adc/ordering/1.0",
-            "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
-            "attribute_ordering": [
-              "identifier",
-              "identifierType",
-              "creator",
-              "title",
-              "publisher",
-              "publicationYear",
-              "subject",
-              "contributor",
-              "date",
-              "language",
-              "resourceType",
-              "alternateIdentifier",
-              "relatedIdentifier",
-              "size",
-              "format",
-              "version",
-              "rights",
-              "description",
-              "geoLocation"
-            ],
-            "entry_code_ordering": {
-              "identifierType": ["ARK", "DOI", "Handle", "PURL", "URL", "URN"]
-            }
-          },
-          "form": [
-            {
-              "d": "###presentationDigest###",
-              "type": "###presentationType###",
-              "language": [
-                "eng",
-                "fra"
-              ],
-              "pages": [
-                {
-                  "named_section": "page-1"
-                }
-              ],
-              "page_order": [
-                "page-1"
-              ],
-              "page_labels": {
-                "eng": {
-                  "page-1": "Page 1: Catalogue Writer"
-                },
-                "fra": {
-                  "page-1": "Page 1: Catalogue Writer"
-                }
-              },
-              "sidebar_label": {
-                "eng": {
-                  "page-1": "sidebar: Catalogue Writer"
-                },
-                "fra": {
-                  "page-1": "sidebar: Catalogue Writer"
-                }
-              },
-              "subheading": {
-                "eng": {
-                  "page-1": "subheading: Catalogue Writer"
-                },
-                "fra": {
-                  "page-1": "subheading: Catalogue Writer"
-                }
-              },
-              "interaction": [
-                {
-                  "arguments": {
-                    "creatorName": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "Family-Name, Given-Name",
-                        "fra": "Family-Name, Given-Name"
-                      }
-                    },
-                    "schemeURI": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "https://example.com",
-                        "fra": "https://example.com"
-                      }
-                    },
-                    "rightsURI": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "https://example.com",
-                        "fra": "https://example.com"
-                      }
-                    },
-                    "publicationYear": {
-                      "type": "DateTime",
-                      "placeholder": {
-                        "eng": "yyyy",
-                        "fra": "yyyy"
-                      }
-                    }
-                  }
-                }
-              ],
-              "title": {
-                "eng": "Catalogue Writer",
-                "fra": "Catalogue Writer"
-              }
-            }
-          ]
+  "extensions": [
+    {
+      "d": "EKQQI3VidGhzMSwYYgxMbXSlLriWFbnvE1WJcDqM8aF2",
+      "type": "community/adc/extension/1.0",
+      "bundle_digest": "ECCmcOBQWZc_Ck5q4BmDvlrvPabUTuXQkXYt_2TeAyNV",
+      "overlays": {
+        "ordering": {
+          "d": "EJzB4B_sFyi9DswKkyVI4mLLU1Jyw3XSBIUYhdQupFGD",
+          "type": "community/overlays/adc/ordering/1.0",
+          "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
+          "attribute_ordering": [
+            "identifier",
+            "identifierType",
+            "creator",
+            "title",
+            "publisher",
+            "publicationYear",
+            "subject",
+            "contributor",
+            "date",
+            "language",
+            "resourceType",
+            "alternateIdentifier",
+            "relatedIdentifier",
+            "size",
+            "format",
+            "version",
+            "rights",
+            "description",
+            "geoLocation"
+          ],
+          "entry_code_ordering": {
+            "identifierType": ["ARK", "DOI", "Handle", "PURL", "URL", "URN"]
+          }
         }
       }
     }
-  }
+  ]
 }

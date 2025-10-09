@@ -7,6 +7,7 @@ import AddIcon from '@mui/icons-material/Add';
 const FormInputMultiple = ({
   required,
   label,
+  placeholder,
   name,
   path,
   children,
