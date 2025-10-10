@@ -1493,6 +1493,13 @@
               "interaction": [
                 {
                   "arguments": {
+                    "contributorName": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "Family-Name, Given-Name",
+                        "fra": "Family-Name, Given-Name"
+                      }
+                    },
                     "creatorName": {
                       "type": "textarea",
                       "placeholder": {
@@ -1500,18 +1507,46 @@
                         "fra": "Family-Name, Given-Name"
                       }
                     },
-                    "schemeURI": {
+                    "date": {
                       "type": "textarea",
                       "placeholder": {
-                        "eng": "https://example.com",
-                        "fra": "https://example.com"
+                        "eng": "yyyy- mm-dd",
+                        "fra": "yyyy- mm-dd"
                       }
                     },
-                    "rightsURI": {
+                    "format": {
                       "type": "textarea",
                       "placeholder": {
-                        "eng": "https://example.com",
-                        "fra": "https://example.com"
+                        "eng": "\"PDF\", \"XML\", \"application/pdf\", or \"text/xml\"",
+                        "fra": "\"PDF\", \"XML\", \"application/pdf\", or \"text/xml\""
+                      }
+                    },
+                    "geoLocationBox": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "Lower-corner Upper-corner: \"41.090 -71.032 42.893 -68.211\"",
+                        "fra": "Lower-corner Upper-corner: \"41.090 -71.032 42.893 -68.211\""
+                      }
+                    },
+                    "geoLocationPoint": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "Latitude Longitude: \"31.233 -67.302\"",
+                        "fra": "Latitude Longitude: \"31.233 -67.302\""
+                      }
+                    },
+                    "identifier": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "\"10.1234/foo\"",
+                        "fra": "\"10.1234/foo\""
+                      }
+                    },
+                    "language": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "\"en-CA\", or \"en\"",
+                        "fra": "\"en-CA\", or \"en\""
                       }
                     },
                     "publicationYear": {
@@ -1519,6 +1554,41 @@
                       "placeholder": {
                         "eng": "yyyy",
                         "fra": "yyyy"
+                      }
+                    },
+                    "relatedMetadataScheme": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "Use only with relation pair: ['HasMetadata' / 'IsMetadataFor']",
+                        "fra": "Use only with relation pair: ['HasMetadata' / 'IsMetadataFor']"
+                      }
+                    },
+                    "rightsURI": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "https://an.example.com/rightsURI",
+                        "fra": "https://an.example.com/rightsURI"
+                      }
+                    },
+                    "schemeType": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "Use only with relation pair: ['HasMetadata' / 'IsMetadataFor']",
+                        "fra": "Use only with relation pair: ['HasMetadata' / 'IsMetadataFor']"
+                      }
+                    },
+                    "schemeURI": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "https://an.example.com/schemeURI",
+                        "fra": "https://an.example.com/schemeURI"
+                      }
+                    },
+                    "size": {
+                      "type": "textarea",
+                      "placeholder": {
+                        "eng": "\"15 pages\", or \"6 MB\"",
+                        "fra": "\"15 pages\", or \"6 MB\""
                       }
                     }
                   }
