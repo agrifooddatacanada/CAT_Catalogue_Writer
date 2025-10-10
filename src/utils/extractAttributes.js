@@ -83,7 +83,6 @@ function extractPlaceholdersFromFormExtension(extensions, lang) {
       }
     }
   }
-
   return placeholders;
 }
 
@@ -133,7 +132,8 @@ function extractAttributesFromCaptureBase(
     labels,
     entryCodes,
     conformances,
-    cardinalities
+    cardinalities,
+    placeholders
 ) {
     const attributes = captureBase.attributes || {};
     const fields = [];
@@ -164,7 +164,8 @@ function extractAttributesFromCaptureBase(
                         depLabels,
                         depEntries,
                         depConformances,
-                        depCardinalities
+                        depCardinalities,
+                        placeholders
                     );
                 }
             }
@@ -176,10 +177,12 @@ function extractAttributesFromCaptureBase(
         const multiple = cardinalities[key]?.includes("n");
         const categories = entryCodes[key] || null;
         const label = labels[key] || key;  // This will now use dependency-specific labels
+        const placeholder = placeholders[key] || "";
 
         fields.push({
             name: key,
             label,
+            placeholder,
             type: fieldType,
             required,
             multiple,
@@ -266,7 +269,8 @@ export function extractAttributes(jsonData, baseKey = "capture_base", visitedRef
                         depLabels,
                         depEntries,
                         depConformances,
-                        depCardinalities
+                        depCardinalities,
+                        placeholders
                     );
                 } else {
                     // fallabck: extract normally from bundle if key present

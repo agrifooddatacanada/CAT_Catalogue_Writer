@@ -244,6 +244,7 @@ function DynamicForm({
     // RENDER ADD BUTTON AND DISPLAY EXISTING ITEMS AS LIST FOR FIELDS THAT CAN HAVE MULTIPLE VALUES
     if (multiple) {
       return (
+        console.log("placeholder in children condition: ", children),
         <FormInputMultiple
           key={key}
           required={required}

@@ -13,7 +13,6 @@ import {
 const FormInputSingle = ({
   name,
   label,
-  placeholder,
   type,
   multiple,
   categories,
@@ -23,7 +22,8 @@ const FormInputSingle = ({
   onChange,
   required,
   depth = 0,
-  readOnly
+  readOnly,
+  placeholder
 }) => {
   const errorProps = error ? { error: true, helperText: error } : {};
 
@@ -89,7 +89,7 @@ const FormInputSingle = ({
                     ))}
                   </Box>
                 ) : (
-                  selected || <em>Select one</em>
+                  selected || <em>Select {label}</em>
                 )
               }
             >
@@ -146,7 +146,7 @@ const FormInputSingle = ({
             type="date"
             fullWidth
             value={value}
-            label={placeholder}
+            label={placeholder || `Enter ${label}`}
             onChange={(e) => onChange(path, e.target.value)}
             {...errorProps}
           />
@@ -186,7 +186,7 @@ const FormInputSingle = ({
             } : {}}
             fullWidth
             value={value}
-            placeholder={placeholder}
+            placeholder={placeholder || `Enter ${label}`}
             onChange={(e) => onChange(path, e.target.value)}
             {...errorProps}
           />
