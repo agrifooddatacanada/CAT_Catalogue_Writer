@@ -393,7 +393,7 @@ function DynamicForm({
       />
 
       {/* DEBUG PANEL SHOWING EXTRACTED FIELDS JSON FOR VERIFICATION */}
-      <Box
+      {/* <Box
         sx={{
           mt: 4,
           p: 2,
@@ -407,7 +407,7 @@ function DynamicForm({
           Extracted Fields (for verification):
         </Typography>
         <pre>{JSON.stringify(fields, null, 2)}</pre>
-      </Box>
+      </Box> */}
     </>
   );
 }

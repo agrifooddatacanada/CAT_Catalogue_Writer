@@ -237,7 +237,7 @@ function ViewPage() {
         <Button 
           variant="contained"
           type="submit"
-          sx={{ backgroundColor: "rgba(70, 160, 35, 1)" }}
+          sx={{ backgroundColor: "rgba(70, 160, 35, 1)", mt:"2px" }}
           onClick={() => navigate("/form", { state: { jsonContent: uploadedJson } })}
           startIcon={<EditIcon />}
         >

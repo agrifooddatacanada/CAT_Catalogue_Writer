@@ -1510,8 +1510,8 @@
                     "date": {
                       "type": "textarea",
                       "placeholder": {
-                        "eng": "yyyy- mm-dd",
-                        "fra": "yyyy- mm-dd"
+                        "eng": "YYYY-MM-DD",
+                        "fra": "YYYY-MM-DD"
                       }
                     },
                     "format": {
@@ -1552,8 +1552,8 @@
                     "publicationYear": {
                       "type": "DateTime",
                       "placeholder": {
-                        "eng": "yyyy",
-                        "fra": "yyyy"
+                        "eng": "YYYY",
+                        "fra": "YYYY"
                       }
                     },
                     "relatedMetadataScheme": {
