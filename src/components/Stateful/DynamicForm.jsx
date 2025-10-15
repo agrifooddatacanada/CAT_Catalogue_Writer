@@ -68,7 +68,8 @@ function DynamicForm({
   language = "eng",
   initialData = null,
   readOnly = false,
-  isEditMode = false
+  isEditMode = false,
+  onSave
 }) {
   // 
   const {
@@ -109,7 +110,9 @@ function DynamicForm({
   const [isModified, setIsModified] = useState(false);
 
   // 
-  const handleSubmit = () => {
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
     const nestedState = unflatten(formState);
 
     //alert("Old catalogue_id: " + nestedState.catalogue_id);
@@ -128,21 +131,26 @@ function DynamicForm({
 
     //alert("Saving file with catalogue_id: " + formDataWithId.catalogue_id);
 
-    // Convert to JSON-LD string
-    const jsonLdString = JSON.stringify(formDataWithId, null, 2);
+    // Instead of download, call onSave with data
+    if (typeof onSave === "function") {
+      onSave(formDataWithId, isModified);
+    }
+    
+    // // Convert to JSON-LD string
+    // const jsonLdString = JSON.stringify(formDataWithId, null, 2);
 
-    // Create a Blob with MIME type application/ld+json
-    const blob = new Blob([jsonLdString], { type: 'application/ld+json' });
+    // // Create a Blob with MIME type application/ld+json
+    // const blob = new Blob([jsonLdString], { type: 'application/ld+json' });
 
-    // Create a URL for the Blob and trigger download
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `catalogue-${formDataWithId.catalogue_id}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // // Create a URL for the Blob and trigger download
+    // const url = URL.createObjectURL(blob);
+    // const link = document.createElement('a');
+    // link.href = url;
+    // link.download = `catalogue-${formDataWithId.catalogue_id}.json`;
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+    // URL.revokeObjectURL(url);
   };
 
   // 
@@ -371,7 +379,7 @@ function DynamicForm({
               startIcon={isEditMode && <SaveIcon />}
               endIcon={!isEditMode && <SendIcon />}
             >
-              {isEditMode ? "Save Changes" : "Submit"}
+              {isEditMode ? "Save Changes" : "Review"}
             </Button>
           </>
         )}

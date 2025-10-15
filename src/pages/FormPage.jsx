@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Stack, Box } from "@mui/system";
 import {
   Button,
@@ -13,7 +13,13 @@ import DynamicForm from "../components/Stateful/DynamicForm";
 
 function FormPage() {
   const location = useLocation();
+  const navigate = useNavigate();
+
   const uploadedJson = location.state?.jsonContent || null;
+
+  const handleSave = (formData, isModified) => {
+    navigate("/view", { state: { jsonContent: formData, isModified: isModified } });
+  };
 
   const [language, setLanguage] = useState("eng");
   const [jsonSchema, setJsonSchema] = useState(null);
@@ -209,6 +215,7 @@ function FormPage() {
           language={language}
           initialData={uploadedJson}
           isEditMode={!!uploadedJson} // TRUE when editing existing data
+          onSave={handleSave}
         />
       </Box>
       <hr

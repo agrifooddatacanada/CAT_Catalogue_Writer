@@ -13,14 +13,30 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 //import SelectLanguage from "../components/Stateful/LanguageSelector";
 import DynamicForm from "../components/Stateful/DynamicForm"
 import EditIcon from '@mui/icons-material/Edit';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 function ViewPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  
   const uploadedJson = location.state?.jsonContent || null;
+  const isModified = location.state?.isModified || false;
 
   const [language, setLanguage] = React.useState("EN");
   const [jsonSchema, setJsonSchema] = useState(null);
+
+  const downloadJson = (jsonData) => {
+    const jsonLdString = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([jsonLdString], { type: 'application/ld+json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `catalogue-${jsonData.catalogue_id || 'export'}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   // LOAD FORM SCHEMA JSON ONCE
   useEffect(() => {
@@ -112,7 +128,7 @@ function ViewPage() {
                 margin: "0px",
               }}
             >
-              View Catalogue Record
+              {isModified ? "Review": "View"} Catalogue Record
             </p>
             <Tooltip
               title="You can view your catalogue record in a human-readable form on this page."
@@ -237,11 +253,21 @@ function ViewPage() {
         <Button 
           variant="contained"
           type="submit"
-          sx={{ backgroundColor: "rgba(70, 160, 35, 1)", mt:"2px" }}
+          sx={{ backgroundColor: "rgba(70, 160, 35, 1)", mt: "2px", mr: "10px" }}
           onClick={() => navigate("/form", { state: { jsonContent: uploadedJson } })}
           startIcon={<EditIcon />}
         >
           Edit
+        </Button>
+        <Button 
+          variant="contained"
+          type="submit"
+          disabled={!isModified}
+          sx={{ backgroundColor: "rgba(70, 160, 35, 1)", mt: "2px", ml: "10px" }}
+          onClick={() => downloadJson(uploadedJson)}
+          startIcon={<FileDownloadIcon />}
+        >
+          Download (.json)
         </Button>
       </Box>
       <hr
