@@ -12,27 +12,6 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { styled } from '@mui/material/styles';
-
-const StyledDatePickerWrapper = styled('div')(({ theme }) => ({
-  '& .MuiPickersTextField-root.Mui-disabled': {
-    // Disable default focus outline
-    '&:focus-visible': {
-      outline: 'none !important',
-    },
-  },
-  '& .MuiPickersTextField-root.Mui-disabled .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'white !important',
-  },
-  '& .MuiPickersTextField-root.Mui-disabled input': {
-    color: 'black !important',
-    WebkitTextFillColor: 'black !important',
-  },
-  '& .MuiPickersTextField-root.Mui-disabled .MuiInputLabel-root': {
-    color: 'black !important',
-  },
-}));
-
 
 const FormInputSingle = ({
   name,
@@ -143,49 +122,80 @@ const FormInputSingle = ({
           >
             No data exist for {label || name}
           </span>
+        ) : readOnly ? (
+          // Show formatted date text in readOnly mode instead of DatePicker
+          <TextField
+            disabled
+            fullWidth
+            value={value}
+            placeholder={placeholder || `Enter ${label}`}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "white",
+                },
+                "&:hover fieldset": {
+                  borderColor: "white",
+                },
+                "&.Mui-disabled fieldset": {
+                  borderColor: "white",
+                },
+              },
+              "& .MuiInputBase-input.Mui-disabled": {
+                WebkitTextFillColor: "black",
+                color: "black",
+              },
+            }}
+            {...errorProps}
+          />
         ) : (
+          // Show interactive DatePicker when not readOnly
           <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <StyledDatePickerWrapper>
             <DatePicker
               views={placeholder === "YYYY" ? ["year"] : undefined}
-              value={value ? new Date(Number(value), 0, 1) : null}
+              value={
+                value
+                  ? placeholder === "YYYY"
+                    ? new Date(Number(value), 0, 1)
+                    : (() => {
+                      // Parse yyyy-MM-dd as local date to avoid timezone shift
+                      const parts = value.split("-");
+                      if (parts.length === 3) {
+                        return new Date(
+                          Number(parts[0]),
+                          Number(parts[1]) - 1,
+                          Number(parts[2])
+                        );
+                      }
+                      return new Date(value); // fallback
+                    })()
+                  : null
+              }
               // onChange={(e) => onChange(path, e.target.value)}
               onChange={(date) => {
-                onChange(path, date ? date.getFullYear().toString() : "");
+                if (date) {
+                  if (placeholder === "YYYY") {
+                    onChange(path, date.getFullYear().toString());
+                  } else {
+                    // Store in yyyy-MM-dd format
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    onChange(path, `${year}-${month}-${day}`);
+                  }
+                } else {
+                  onChange(path, "");
+                }
               }}
-              readOnly={readOnly}
-              fullWidth
-              // inputFormat={placeholder === "YYYY" ? "yyyy" : undefined}
+              inputFormat={placeholder === "YYYY" ? "yyyy" : "yyyy-MM-dd"}
               renderInput={(params) => (
                 <TextField
                   {...params}
+                  fullWidth
                   {...errorProps}
-                  disabled={readOnly}
-                  sx={{
-                    ...(readOnly && {
-                      '& .MuiPickersOutlinedInput-notchedOutline': {
-                        borderColor: 'white !important',
-                      },
-                      // // optionally remove focus outline if needed
-                      // '&:focus-visible': {
-                      //   outline: 'none',
-                      // },
-                      // black text color for actual input
-                      '& .MuiPickersInputBase-root-MuiPickersOutlinedInput-root': {
-                        color: 'black !important',
-                        borderColor: "white !important",
-                        WebkitTextFillColor: 'black !important',
-                      },
-                      // black label color (if applicable)
-                      '& .MuiInputLabel-root': {
-                        color: 'black !important',
-                      },
-                    }),
-                  }}
                 />
               )}
             />
-            </StyledDatePickerWrapper>
           </LocalizationProvider>
         )
       ) : (
