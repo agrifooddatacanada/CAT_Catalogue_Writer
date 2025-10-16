@@ -1,0 +1,51 @@
+{
+    "homepage": {
+        "semantic_engine": "Semantic Engine",
+        "catalogue": "Catalogue",
+        "content_heading": "Cataloguez votre travail",
+        "content": "Facilitez la tâche aux autres pour suivre votre travail et citer ce que vous créez",
+        "quick_start_heading": "Démarrage rapide:",
+        "step_1": "1. ",
+        "watch_tutorial_video": "Regardez notre vidéo tutorielle sur la création d’un catalogue.",
+        "or": " Ou ",
+        "read_the_tutorial": "lisez le tutoriel ",
+        "instead": "à la place.",
+        "step_2": "2. Rédigez votre catalogue et générez un fichier .json.",
+        "step_3": "3. Utilisez votre catalogue ici pour visualiser et générer un JSON-LD destiné à l’entrée des données conforme aux standards de métadonnées Open-AIRE.",
+        "step_4": "4. Stockez vos fichiers de catalogue avec vos données, placez-les dans un dépôt ou collaborez en les partageant avec d’autres.",
+        "accordion_question_1": "1. Qu’est-ce qu’un catalogue ?",
+        "accordion_summary_1": "1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+        "accordion_question_2": "2. Qu’est-ce qu’un catalogue ?",
+        "accordion_summary_2": "2. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+        "accordion_question_3": "3. Qu’est-ce qu’un catalogue ?",
+        "accordion_summary_3": "3. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+        "quick_links": "Liens rapides",
+        "write": "Rédigez un enregistrement de catalogue",
+        "upload_file": "Téléchargez un enregistrement de catalogue précédent ou glissez-déposez un fichier (.json)",
+        "file_uploaded": "Fichier téléchargé : ",
+        "view": "Voir l’enregistrement du catalogue",
+        "edit": "Modifier l’enregistrement du catalogue"
+    },
+    "formpage": {
+        "edit_header": "Modifier l’enregistrement du catalogue",
+        "write_header": "Rédiger un enregistrement du catalogue"
+    },
+    "dynamicform": {
+        "mandatory": "Obligatoire",
+        "recommended": "Recommandé",
+        "complete": "Complété",
+        "save_changes": "Enregistrer les modifications",
+        "review": "Réviser"
+    },
+    "viewpage": {
+        "loading": "Chargement du schéma...",
+        "no_catalogue": "Aucun catalogue chargé. Veuillez d'abord télécharger un fichier pour pouvoir le visualiser ensuite.",
+        "review": "Réviser l’enregistrement du catalogue",
+        "view": "Voir l’enregistrement du catalogue",
+        "edit": "Modifier",
+        "download": "Télécharger (.json)"
+    },
+    "powered_by": "Propulsé par",
+    "supported_by": "Soutenu par",
+    "page_help": "Aide pour cette page"
+}

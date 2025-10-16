@@ -1,0 +1,51 @@
+{
+    "homepage": {
+        "semantic_engine": "Semantic Engine",
+        "catalogue": "Catalogue",
+        "content_heading": "Catalogue your work",
+        "content": "Make it easier for others to track your work and cite what you make",
+        "quick_start_heading": "Quick-Start:",
+        "step_1": "1. ",
+        "watch_tutorial_video": "Watch our tutorial video on creating a catalogue.",
+        "or": " Or ",
+        "read_the_tutorial": "read the tutorial ",
+        "instead": "instead.",
+        "step_2": "2. Write your catalogue and generate a .json.",
+        "step_3": "3. Use your catalogue here to view, and generate a JSON-LD for data input aligned with Open-AIRE metadata standards.",
+        "step_4": "4. Store your catalogue files with your data, put them in a repository, or collaborate by sharing them with others.",
+        "accordion_question_1": "1. What is a Catalogue?",
+        "accordion_summary_1": "1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+        "accordion_question_2": "2. What is a Catalogue?",
+        "accordion_summary_2": "2. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+        "accordion_question_3": "3. What is a Catalogue?",
+        "accordion_summary_3": "3. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+        "quick_links": "Quick Links",
+        "write": "Write a Catalogue Record",
+        "upload_file": "Upload a previous Catalogue Record or drag and drop one (.json file)",
+        "file_uploaded": "File uploaded: ",
+        "view": "View Catalogue Record",
+        "edit": "Edit Catalogue Record"
+    },
+    "formpage": {
+        "edit_header": "Edit Catalogue Record",
+        "write_header": "Write Catalogue Record"
+    },
+    "dynamicform": {
+        "mandatory": "Mandatory",
+        "recommended": "Recommended",
+        "complete": "Complete",
+        "save_changes": "Save Changes",
+        "review": "Review"
+    },
+    "viewpage": {
+        "loading": "Loading schema...",
+        "no_catalogue": "No catalogue loaded. Please upload a file first and only then can you view it.",
+        "review": "Reiew Catalogue Record",
+        "view": "View Catalogue Record",
+        "edit": "Edit",
+        "download": "Download (.json)"
+    },
+    "powered_by": "Powered by",
+    "supported_by": "Supported by",
+    "page_help": "Help with this Page"
+}

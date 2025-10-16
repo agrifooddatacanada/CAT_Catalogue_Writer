@@ -3,27 +3,26 @@ import { Stack, Box } from "@mui/system";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Tooltip,
-  Button,
-  MenuItem,
-  FormControl,
-  Select,
-  FormHelperText,
+  Button
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-//import SelectLanguage from "../components/Stateful/LanguageSelector";
+import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
+import Footer from "../components/Stateless/Footer";
+import SelectLanguage from "../components/Stateful/LanguageSelector";
 import DynamicForm from "../components/Stateful/DynamicForm"
 import EditIcon from '@mui/icons-material/Edit';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 function ViewPage() {
+  const { t, lang } = useTranslation();  // use translation function
+
   const location = useLocation();
   const navigate = useNavigate();
   
   const uploadedJson = location.state?.jsonContent || null;
   const isModified = location.state?.isModified || false;
 
-  const [language, setLanguage] = React.useState("EN");
-  const [jsonSchema, setJsonSchema] = useState(null);
+   const [jsonSchema, setJsonSchema] = useState(null);
 
   const downloadJson = (jsonData) => {
     const jsonLdString = JSON.stringify(jsonData, null, 2);
@@ -47,16 +46,12 @@ function ViewPage() {
   }, []);
 
   if (!jsonSchema) {
-    return <div>Loading schema...</div>;
+    return <div>{t("viewpage.loading")}</div>;
   }
 
   if (!uploadedJson) {
-    return <p>No catalogue loaded. Please upload a file first and only then can you view it.</p>;
+    return <p>{t("viewpage.no_catalogue")}</p>;
   }
-
-  const handleChange = (e) => {
-    setLanguage(e.target.value);
-  };
 
   return (
     <div className="ViewPage">
@@ -128,7 +123,7 @@ function ViewPage() {
                 margin: "0px",
               }}
             >
-              {isModified ? "Review": "View"} Catalogue Record
+              {isModified ? t("viewpage.review"): t("viewpage.view")}
             </p>
             <Tooltip
               title="You can view your catalogue record in a human-readable form on this page."
@@ -159,73 +154,18 @@ function ViewPage() {
               cursor: "pointer",
             }}
           >
-            Help with this page
+            {t("page_help")}
           </Button>
           <Box>
-            <FormControl sx={{ maxWidth: 90 }}>
-              <FormHelperText
-                sx={{
-                  color: "rgba(70, 160, 35, 1)",
-                  fontSize: { xs: "7.5px", sm: "8.25px", lg: "9px" },
-                  lineHeight: 1.2,
-                  margin: "0px",
-                }}
-              >
-                Sélectionnez le Français ici
-                {/*Select English here*/}
-              </FormHelperText>
-              <Select
-                value={language}
-                onChange={handleChange}
-                displayEmpty
-                sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  color: "rgba(70, 160, 35, 1)",
-                  fontSize: { xs: "18px", sm: "21px", md: "24px" },
-                  height: "25px",
-                  marginTop: "2px",
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      backgroundColor: "rgba(235, 235, 235, 0.95)",
-                      color: "rgba(70, 160, 35, 1)",
-                    },
-                  },
-                }}
-              >
-                <MenuItem
-                  value="EN"
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "rgba(215, 215, 215, 1)",
-                      color: "rgba(175, 175, 175, 1)",
-                    },
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                    },
-                  }}
-                >
-                  EN
-                </MenuItem>
-                <MenuItem
-                  value="FR"
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "rgba(215, 215, 215, 1)",
-                      color: "rgba(175, 175, 175, 1)",
-                    },
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                    },
-                  }}
-                >
-                  FR
-                </MenuItem>
-              </Select>
-            </FormControl>
+            <SelectLanguage
+              helperText_color="rgba(70, 160, 35, 1)"
+              select_bgColor="white"
+              select_color="rgba(70, 160, 35, 1)"
+              menu_bgColor="rgba(235, 235, 235, 0.95)"
+              menu_color="rgba(70, 160, 35, 1)"
+              selected_item_bgColor="rgba(215, 215, 215, 1)"
+              selected_item_color="rgba(175, 175, 175, 1)"
+            />
           </Box>
         </Stack>
         <hr
@@ -245,7 +185,7 @@ function ViewPage() {
       <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
         <DynamicForm 
           jsonData={jsonSchema}
-          language={language}
+          language={lang}
           initialData={uploadedJson}
           readOnly={true} // Prop for view mode
         />
@@ -257,7 +197,7 @@ function ViewPage() {
           onClick={() => navigate("/form", { state: { jsonContent: uploadedJson } })}
           startIcon={<EditIcon />}
         >
-          Edit
+          {t("viewpage.edit")}
         </Button>
         <Button 
           variant="contained"
@@ -267,43 +207,13 @@ function ViewPage() {
           onClick={() => downloadJson(uploadedJson)}
           startIcon={<FileDownloadIcon />}
         >
-          Download (.json)
+          {t("viewpage.download")}
         </Button>
       </Box>
-      <hr
-        style={{
-          maxWidth: "100%",
-          borderTop: "1px rgba(220, 220, 220, 1) solid",
-          marginTop: "20px",
-          marginBottom: "3px",
-        }}
+      <Footer
+        powered_by={t("powered_by")}
+        supported_by={t("supported_by")}
       />
-      <div className="Footer" style={{ padding: "32px" }}>
-        <p style={{ margin: "0px" }}>Powered by</p>
-        <a
-          href="https://agrifooddatacanada.ca/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <img
-            src="/assets/images/agri-logo.png"
-            alt="Agri-Food Data Canada at UoG Logo"
-            style={{ width: "200px", marginBottom: "15px" }}
-          />
-        </a>
-        <p style={{ margin: "0px" }}>Supported by</p>
-        <a
-          href="https://www.cfref-apogee.gc.ca/home-accueil-eng.aspx"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <img
-            src="/assets/images/research-excellent-fund.png"
-            alt="Canada First Research Excellence Fund Logo"
-            style={{ height: "120px" }}
-          />
-        </a>
-      </div>
     </div>
   );
 }

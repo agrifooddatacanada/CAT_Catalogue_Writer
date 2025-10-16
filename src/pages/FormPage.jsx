@@ -9,9 +9,13 @@ import {
   FormHelperText,
 } from "@mui/material";
 import DynamicForm from "../components/Stateful/DynamicForm";
-//import SelectLanguage from "../components/Stateful/LanguageSelector";
+import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
+import Footer from "../components/Stateless/Footer";
+import SelectLanguage from "../components/Stateful/LanguageSelector";
 
 function FormPage() {
+  const { t } = useTranslation();  // use translation function
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -112,7 +116,7 @@ function FormPage() {
                 margin: "0px",
               }}
             >
-              Write Catalogue Record
+              { uploadedJson ? t("formpage.edit_header") : t("formpage.write_header") }
             </p>
           </Stack>
           <Button
@@ -131,73 +135,18 @@ function FormPage() {
               cursor: "pointer",
             }}
           >
-            Help with this page
+            {t("page_help")}
           </Button>
           <Box>
-            <FormControl sx={{ maxWidth: 90 }}>
-              <FormHelperText
-                sx={{
-                  color: "rgba(70, 160, 35, 1)",
-                  fontSize: { xs: "7.5px", sm: "8.25px", lg: "9px" },
-                  lineHeight: 1.2,
-                  margin: "0px",
-                }}
-              >
-                Sélectionnez le Français ici
-                {/*Select English here*/}
-              </FormHelperText>
-              <Select
-                value={language}
-                onChange={handleChange}
-                displayEmpty
-                sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  color: "rgba(70, 160, 35, 1)",
-                  fontSize: { xs: "18px", sm: "21px", md: "24px" },
-                  height: "25px",
-                  marginTop: "2px",
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      backgroundColor: "rgba(235, 235, 235, 0.95)",
-                      color: "rgba(70, 160, 35, 1)",
-                    },
-                  },
-                }}
-              >
-                <MenuItem
-                  value="eng"
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "rgba(215, 215, 215, 1)",
-                      color: "rgba(175, 175, 175, 1)",
-                    },
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                    },
-                  }}
-                >
-                  EN
-                </MenuItem>
-                <MenuItem
-                  value="fre"
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "rgba(215, 215, 215, 1)",
-                      color: "rgba(175, 175, 175, 1)",
-                    },
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                    },
-                  }}
-                >
-                  FR
-                </MenuItem>
-              </Select>
-            </FormControl>
+            <SelectLanguage
+              helperText_color="rgba(70, 160, 35, 1)"
+              select_bgColor="white"
+              select_color="rgba(70, 160, 35, 1)"
+              menu_bgColor="rgba(235, 235, 235, 0.95)"
+              menu_color="rgba(70, 160, 35, 1)"
+              selected_item_bgColor="rgba(215, 215, 215, 1)"
+              selected_item_color="rgba(175, 175, 175, 1)"
+            />
           </Box>
         </Stack>
         <hr
@@ -218,40 +167,10 @@ function FormPage() {
           onSave={handleSave}
         />
       </Box>
-      <hr
-        style={{
-          maxWidth: "100%",
-          borderTop: "1px rgba(220, 220, 220, 1) solid",
-          marginTop: "20px",
-          marginBottom: "3px",
-        }}
+      <Footer
+        powered_by={t("powered_by")}
+        supported_by={t("supported_by")}
       />
-      <div className="Footer" style={{ padding: "32px" }}>
-        <p style={{ margin: "0px" }}>Powered by</p>
-        <a
-          href="https://agrifooddatacanada.ca/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <img
-            src="/assets/images/agri-logo.png"
-            alt="Agri-Food Data Canada at UoG Logo"
-            style={{ width: "200px", marginBottom: "15px" }}
-          />
-        </a>
-        <p style={{ margin: "0px" }}>Supported by</p>
-        <a
-          href="https://www.cfref-apogee.gc.ca/home-accueil-eng.aspx"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <img
-            src="/assets/images/research-excellent-fund.png"
-            alt="Canada First Research Excellence Fund Logo"
-            style={{ height: "120px" }}
-          />
-        </a>
-      </div>
     </div>
   );
 }

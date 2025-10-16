@@ -9,7 +9,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const borderColor = "rgba(70, 160, 35, 1)";
 
-export default function AccordionExpand() {
+export default function AccordionExpand({ accordion_question, accordion_summary }) {
   return (
     <div>
       <Accordion
@@ -40,7 +40,7 @@ export default function AccordionExpand() {
               fontSize: "20px",
             }}
           >
-            What is a Catalogue?
+            {accordion_question}
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
@@ -50,8 +50,7 @@ export default function AccordionExpand() {
               fontSize: "16px",
             }}
           >
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-            malesuada lacus ex, sit amet blandit leo lobortis eget.
+            {accordion_summary}
           </Typography>
         </AccordionDetails>
       </Accordion>

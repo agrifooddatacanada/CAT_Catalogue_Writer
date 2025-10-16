@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone';
 
-export default function UploadButton({ onFileSelect }) {
+export default function UploadButton({ onFileSelect, upload_file }) {
   const [dragOver, setDragOver] = useState(false);
 
   const [isUploaded, setIsUploaded] = useState(false);
@@ -76,7 +76,7 @@ export default function UploadButton({ onFileSelect }) {
       onDrop={handleDrop}
       startIcon={isUploaded ? <FileDownloadDoneIcon /> : <FileUploadIcon />}
     >
-      Upload a previous Catalogue file (.json) Or drag and drop one
+      {upload_file}
       <input type="file" accept=".json" hidden onChange={handleFileChange} />
     </Button>
   );

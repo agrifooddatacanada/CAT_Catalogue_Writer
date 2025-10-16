@@ -13,6 +13,7 @@ import useDynamicFormState from "../../hooks/useDynamicFormState";
 import { v4 as uuidv4 } from "uuid";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from '@mui/icons-material/Send';
+import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 
 //
 const checkMultipleEntriesFilled = (fields, state) => {
@@ -91,6 +92,8 @@ function DynamicForm({
     flatten
   } = useDynamicFormState(jsonData, language, initialData); // Pass `initialData` here
 
+  const { t } = useTranslation();  // use translation function
+
   // 
   const popupField = findFieldByPath(fields, dialogOpen);
 
@@ -135,22 +138,6 @@ function DynamicForm({
     if (typeof onSave === "function") {
       onSave(formDataWithId, isModified);
     }
-    
-    // // Convert to JSON-LD string
-    // const jsonLdString = JSON.stringify(formDataWithId, null, 2);
-
-    // // Create a Blob with MIME type application/ld+json
-    // const blob = new Blob([jsonLdString], { type: 'application/ld+json' });
-
-    // // Create a URL for the Blob and trigger download
-    // const url = URL.createObjectURL(blob);
-    // const link = document.createElement('a');
-    // link.href = url;
-    // link.download = `catalogue-${formDataWithId.catalogue_id}.json`;
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
-    // URL.revokeObjectURL(url);
   };
 
   // 
@@ -325,7 +312,7 @@ function DynamicForm({
             borderColor: showMandatoryOnly ? "rgba(255, 255, 255, 1)" : "rgba(70, 160, 35, 1)",
           }}
         >
-          Mandatory
+          {t("dynamicform.mandatory")}
         </Button>
         <Button
           variant={
@@ -346,7 +333,7 @@ function DynamicForm({
               //: "rgba(255, 255, 255, 1)",
           }}
         >
-          Recommended
+          {t("dynamicform.recommended")}
         </Button>
         <Button
           variant={!showMandatoryOnly ? "contained" : "outlined"}
@@ -358,7 +345,7 @@ function DynamicForm({
             borderColor: showMandatoryOnly ? "rgba(70, 160, 35, 1)" : "rgba(255, 255, 255, 1)",
           }}
         >
-          Complete
+          {t("dynamicform.complete")}
         </Button>
       </Box>
 
@@ -379,7 +366,7 @@ function DynamicForm({
               startIcon={isEditMode && <SaveIcon />}
               endIcon={!isEditMode && <SendIcon />}
             >
-              {isEditMode ? "Save Changes" : "Review"}
+              {isEditMode ? t("dynamicform.save_changes") : t("dynamicform.review")}
             </Button>
           </>
         )}
