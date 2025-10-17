@@ -28,7 +28,8 @@
     },
     "formpage": {
         "edit_header": "Edit Catalogue Record",
-        "write_header": "Write Catalogue Record"
+        "write_header": "Write Catalogue Record",
+        "loading": "Loading..."
     },
     "dynamicform": {
         "mandatory": "Mandatory",
@@ -40,7 +41,7 @@
     "viewpage": {
         "loading": "Loading schema...",
         "no_catalogue": "No catalogue loaded. Please upload a file first and only then can you view it.",
-        "review": "Reiew Catalogue Record",
+        "review": "Review Catalogue Record",
         "view": "View Catalogue Record",
         "edit": "Edit",
         "download": "Download (.json)"
@@ -60,6 +61,14 @@
         "add": "Add",
         "cancel": "Cancel",
         "save": "Save"
+    },
+    "viewhelppage": {
+        "review": "Help with Review Catalogue Page",
+        "view": "Help with View Catalogue Page"
+    },
+    "formhelppage": {
+        "edit": "Help with Edit Catalogue Page",
+        "write": "Help with Write Catalogue Page"
     },
     "no_data": "No data exist for",
     "powered_by": "Powered by",

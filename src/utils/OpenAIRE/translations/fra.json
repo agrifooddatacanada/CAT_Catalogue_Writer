@@ -28,7 +28,8 @@
     },
     "formpage": {
         "edit_header": "Modifier l’enregistrement du catalogue",
-        "write_header": "Rédiger un enregistrement du catalogue"
+        "write_header": "Rédiger un enregistrement du catalogue",
+        "loading": "Loading..."
     },
     "dynamicform": {
         "mandatory": "Obligatoire",
@@ -45,7 +46,7 @@
         "edit": "Modifier",
         "download": "Télécharger (.json)"
     },
-        "forminputmultiple": {
+    "forminputmultiple": {
         "actions": "Actions",
         "edit": "Modifier",
         "delete": "Supprimer",

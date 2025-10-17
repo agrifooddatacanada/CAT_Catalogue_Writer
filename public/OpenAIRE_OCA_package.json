@@ -1573,8 +1573,8 @@
                     "schemeType": {
                       "type": "textarea",
                       "placeholder": {
-                        "eng": "Use only with relation pair: ['HasMetadata' / 'IsMetadataFor']",
-                        "fra": "Use only with relation pair: ['HasMetadata' / 'IsMetadataFor']"
+                        "eng": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)",
+                        "fra": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)"
                       }
                     },
                     "schemeURI": {
