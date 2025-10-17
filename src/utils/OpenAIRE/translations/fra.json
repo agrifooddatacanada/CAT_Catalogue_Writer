@@ -45,6 +45,23 @@
         "edit": "Modifier",
         "download": "Télécharger (.json)"
     },
+        "forminputmultiple": {
+        "actions": "Actions",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "add": "Ajouter"
+    },
+    "forminputsingle": {
+        "select": "Sélectionner",
+        "none": "Aucun",
+        "enter": "Entrer"
+    },
+    "popupdialog": {
+        "add": "Ajouter",
+        "cancel": "Annuler",
+        "save": "Enregistrer"
+    },
+    "no_data": "Aucune donnée n’existe pour",
     "powered_by": "Propulsé par",
     "supported_by": "Soutenu par",
     "page_help": "Aide pour cette page"

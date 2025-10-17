@@ -3,6 +3,7 @@ import { Box, Typography, Button } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 
 const FormInputMultiple = ({
   required,
@@ -20,6 +21,9 @@ const FormInputMultiple = ({
   readOnly,
   isEditMode
 }) => {
+
+  const { t } = useTranslation();  // use translation function
+
   const columns =
     children && children.length > 0
       ? children.map((child) => child.name)
@@ -81,7 +85,7 @@ const FormInputMultiple = ({
                     backgroundColor: "#eee",
                   }}
                 >
-                  Actions
+                  {t("forminputmultiple.actions")}
                 </th> : null}
               </tr>
             </thead>
@@ -119,7 +123,7 @@ const FormInputMultiple = ({
                       sx={{ mr: 1 }}
                       startIcon={<EditIcon />}
                     >
-                      Edit
+                      {t("forminputmultiple.edit")}
                     </Button>
                     <Button
                       size="small"
@@ -127,7 +131,7 @@ const FormInputMultiple = ({
                       onClick={() => handleItemDelete(path, idx)}
                       endIcon={<DeleteIcon />}
                     >
-                      Delete
+                      {t("forminputmultiple.delete")}
                     </Button>
                   </td> : null}
                 </tr>
@@ -151,7 +155,7 @@ const FormInputMultiple = ({
           }}
           startIcon={<AddIcon />}
         >
-          Add {label || name}
+          {t("forminputmultiple.add")} {label || name}
         </Button>
       ) : (
         (!isEditMode && value.length === 0)? (
@@ -165,7 +169,7 @@ const FormInputMultiple = ({
                 color:"rgba(100, 100, 100, 1)" 
               }}
             >
-              No data exist for {label || name}
+              {t("no_data")} {label || name}
             </span>
         ) : (null)
       )}

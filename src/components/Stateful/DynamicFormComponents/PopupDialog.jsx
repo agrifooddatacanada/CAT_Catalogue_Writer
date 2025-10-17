@@ -4,6 +4,7 @@
 import React from "react";
 import { Dialog, Box, Typography, TextField, Button } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
+import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 
 const PopupDialog = ({
   open, // Boolean for dialog visibility from `dialogOpen`
@@ -17,11 +18,12 @@ const PopupDialog = ({
   isPopupSaveEnabled, // Function that returns boolean to enable/disable Save
   renderInput, // Main input rendering fucntion to render popup fields recursively
 }) => {
+  const { t } = useTranslation();  // use translation function
   return (
     <Dialog maxWidth="lg" fullScreen={matches} open={open} onClose={onClose}>
       <Box sx={{ p: 5, minWidth: { sm: 400, md: 500, lg: 600 } }}>
         <Typography variant="h5" align="center" gutterBottom>
-          {`Add ${popupField?.label || "Add Entry"}`}
+          {`${t("popupdialog.add")} ${popupField?.label || "Entry"}`}
         </Typography>
         {popupField && popupField.children?.length > 0 ? (
           popupField.children.map((child) =>
@@ -47,7 +49,7 @@ const PopupDialog = ({
         )}
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
           <Button sx={{ color: "rgba(70, 160, 35, 1)" }} onClick={onClose}>
-            Cancel
+            {t("popupdialog.cancel")}
           </Button>
           <Button
             variant="contained"
@@ -56,7 +58,7 @@ const PopupDialog = ({
             sx={{ backgroundColor: "rgba(70, 160, 35, 1)" }}
             startIcon={<SaveIcon />}
           >
-            Save
+            {t("popupdialog.save")}
           </Button>
         </Box>
       </Box>

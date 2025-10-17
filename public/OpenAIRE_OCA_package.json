@@ -1508,7 +1508,7 @@
                       }
                     },
                     "date": {
-                      "type": "textarea",
+                      "type": "DateTime",
                       "placeholder": {
                         "eng": "YYYY-MM-DD",
                         "fra": "YYYY-MM-DD"
@@ -1517,15 +1517,15 @@
                     "format": {
                       "type": "textarea",
                       "placeholder": {
-                        "eng": "\"PDF\", \"XML\", \"application/pdf\", or \"text/xml\"",
-                        "fra": "\"PDF\", \"XML\", \"application/pdf\", or \"text/xml\""
+                        "eng": "PDF, XML, application/pdf, text/xml, etc...",
+                        "fra": "PDF, XML, application/pdf, text/xml, etc..."
                       }
                     },
                     "geoLocationBox": {
                       "type": "textarea",
                       "placeholder": {
-                        "eng": "Lower-corner Upper-corner: \"41.090 -71.032 42.893 -68.211\"",
-                        "fra": "Lower-corner Upper-corner: \"41.090 -71.032 42.893 -68.211\""
+                        "eng": "(Lower-corner) (Upper-corner): \"41.090 -71.032 42.893 -68.211\"",
+                        "fra": "(Lower-corner) (Upper-corner): \"41.090 -71.032 42.893 -68.211\""
                       }
                     },
                     "geoLocationPoint": {
@@ -1538,15 +1538,15 @@
                     "identifier": {
                       "type": "textarea",
                       "placeholder": {
-                        "eng": "\"10.1234/foo\"",
-                        "fra": "\"10.1234/foo\""
+                        "eng": "10.1234/foo",
+                        "fra": "10.1234/foo"
                       }
                     },
                     "language": {
                       "type": "textarea",
                       "placeholder": {
-                        "eng": "\"en-CA\", or \"en\"",
-                        "fra": "\"en-CA\", or \"en\""
+                        "eng": "en-CA, en, etc...",
+                        "fra": "en-CA, en, etc..."
                       }
                     },
                     "publicationYear": {
@@ -1559,8 +1559,8 @@
                     "relatedMetadataScheme": {
                       "type": "textarea",
                       "placeholder": {
-                        "eng": "Use only with relation pair: ['HasMetadata' / 'IsMetadataFor']",
-                        "fra": "Use only with relation pair: ['HasMetadata' / 'IsMetadataFor']"
+                        "eng": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)",
+                        "fra": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)"
                       }
                     },
                     "rightsURI": {

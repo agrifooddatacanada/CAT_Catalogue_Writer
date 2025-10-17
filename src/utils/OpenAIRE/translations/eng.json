@@ -45,6 +45,23 @@
         "edit": "Edit",
         "download": "Download (.json)"
     },
+    "forminputmultiple": {
+        "actions": "Actions",
+        "edit": "Edit",
+        "delete": "Delete",
+        "add": "Add"
+    },
+    "forminputsingle": {
+        "select": "Select",
+        "none": "None",
+        "enter": "Enter"
+    },
+    "popupdialog": {
+        "add": "Add",
+        "cancel": "Cancel",
+        "save": "Save"
+    },
+    "no_data": "No data exist for",
     "powered_by": "Powered by",
     "supported_by": "Supported by",
     "page_help": "Help with this Page"

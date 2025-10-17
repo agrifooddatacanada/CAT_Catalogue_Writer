@@ -12,6 +12,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 
 const FormInputSingle = ({
   name,
@@ -28,6 +29,9 @@ const FormInputSingle = ({
   readOnly,
   placeholder
 }) => {
+
+  const { t } = useTranslation();  // use translation function
+
   const errorProps = error ? { error: true, helperText: error } : {};
 
   return (
@@ -55,7 +59,7 @@ const FormInputSingle = ({
               color:"rgba(100, 100, 100, 1)" 
             }}
           >
-            No data exist for {label || name}
+            {t("no_data")} {label || name}
           </span>
         ) : (
           <FormControl fullWidth {...errorProps}>
@@ -87,13 +91,13 @@ const FormInputSingle = ({
                     ))}
                   </Box>
                 ) : (
-                  selected || <em>Select {label}</em>
+                  selected || <em>{t("forminputsingle.select")} {label}</em>
                 )
               }
             >
               {!required && (
                 <MenuItem value="">
-                  <em>None</em>
+                  <em>{t("forminputsingle.none")}</em>
                 </MenuItem>
               )}
               {categories.map((option) => {
@@ -120,7 +124,7 @@ const FormInputSingle = ({
               color:"rgba(100, 100, 100, 1)" 
             }}
           >
-            No data exist for {label || name}
+            {t("no_data")} {label || name}
           </span>
         ) : readOnly ? (
           // Show formatted date text in readOnly mode instead of DatePicker
@@ -210,7 +214,7 @@ const FormInputSingle = ({
               color:"rgba(100, 100, 100, 1)" 
             }}
           >
-            No data exist for {label || name}
+            {t("no_data")} {label || name}
           </span>
         ) : (
           <TextField
@@ -233,7 +237,7 @@ const FormInputSingle = ({
             } : {}}
             fullWidth
             value={value}
-            placeholder={placeholder || `Enter ${label}`}
+            placeholder={placeholder || `${t("forminputsingle.enter")} ${label}`}
             onChange={(e) => onChange(path, e.target.value)}
             {...errorProps}
           />

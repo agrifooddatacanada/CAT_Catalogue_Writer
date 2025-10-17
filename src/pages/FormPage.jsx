@@ -1,20 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Stack, Box } from "@mui/system";
-import {
-  Button,
-  MenuItem,
-  FormControl,
-  Select,
-  FormHelperText,
-} from "@mui/material";
+import { Button } from "@mui/material";
 import DynamicForm from "../components/Stateful/DynamicForm";
+import SelectLanguage from "../components/Stateful/LanguageSelector";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
 import Footer from "../components/Stateless/Footer";
-import SelectLanguage from "../components/Stateful/LanguageSelector";
 
 function FormPage() {
-  const { t } = useTranslation();  // use translation function
+  const { t, lang } = useTranslation();  // use translation function
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -25,12 +19,7 @@ function FormPage() {
     navigate("/view", { state: { jsonContent: formData, isModified: isModified } });
   };
 
-  const [language, setLanguage] = useState("eng");
   const [jsonSchema, setJsonSchema] = useState(null);
-
-  const handleChange = (e) => {
-    setLanguage(e.target.value);
-  };
 
   useEffect(() => {
     console.log("FormPage jsonSchema:", jsonSchema);
@@ -161,7 +150,7 @@ function FormPage() {
       <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
         <DynamicForm 
           jsonData={jsonSchema}
-          language={language}
+          language={lang}
           initialData={uploadedJson}
           isEditMode={!!uploadedJson} // TRUE when editing existing data
           onSave={handleSave}

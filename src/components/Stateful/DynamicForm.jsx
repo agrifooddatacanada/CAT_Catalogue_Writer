@@ -218,7 +218,17 @@ function DynamicForm({
     mode = "form",
     errorState = {}
   ) => {
-    const { name, label, placeholder, type, multiple, categories, children, path, required } = field;
+    const { 
+      name, 
+      label, 
+      placeholder, 
+      type, 
+      multiple, 
+      categories, 
+      children, 
+      path, 
+      required 
+    } = field;
 
     const value =
       mode === "popup"
@@ -239,7 +249,6 @@ function DynamicForm({
     // RENDER ADD BUTTON AND DISPLAY EXISTING ITEMS AS LIST FOR FIELDS THAT CAN HAVE MULTIPLE VALUES
     if (multiple) {
       return (
-        console.log("placeholder in children condition: ", children),
         <FormInputMultiple
           key={key}
           required={required}
