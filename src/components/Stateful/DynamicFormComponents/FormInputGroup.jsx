@@ -2,8 +2,10 @@
 // currrent `path`, current `depth`, and `renderInput` function as props.
 // It renders a header for the group
 
+
 import React from "react";
 import { Box, Typography } from "@mui/material";
+
 
 const FormInputGroup = ({ 
   children, 
@@ -36,5 +38,6 @@ const FormInputGroup = ({
     </Box>
   );
 };
+
 
 export default FormInputGroup;

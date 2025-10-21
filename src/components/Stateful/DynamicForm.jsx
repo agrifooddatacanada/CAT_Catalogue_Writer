@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { isEqual } from "lodash";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+// import Typography from "@mui/material/Typography";
 import FormInputSingle from "./DynamicFormComponents/FormInputSingle";
 import FormInputMultiple from "./DynamicFormComponents/FormInputMultiple";
 import FormInputGroup from "./DynamicFormComponents/FormInputGroup";
@@ -142,8 +142,6 @@ function DynamicForm({
 
   // 
   useEffect(() => {
-    console.log("formState: ", formState);
-    console.log("Type of formState: ", typeof formState);
     // Validate whole form state, including multiple-entry arrays
     const errors = validateFieldsForState(fields, formState, formatPatterns);
     const multipleFilled = checkMultipleEntriesFilled(fields, formState);
@@ -278,6 +276,7 @@ function DynamicForm({
           name={name}
           path={path}
           depth={depth}
+          value={value}
           renderInput={renderInput}
           readOnly={readOnly}
           isEditMode={isEditMode}
