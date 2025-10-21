@@ -12,7 +12,7 @@ import { validateFieldsForState } from "../../utils/formValidation";
 import useDynamicFormState from "../../hooks/useDynamicFormState";
 import { v4 as uuidv4 } from "uuid";
 import SaveIcon from "@mui/icons-material/Save";
-import SendIcon from '@mui/icons-material/Send';
+import SendIcon from "@mui/icons-material/Send";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 
 //
@@ -36,11 +36,11 @@ const checkMultipleEntriesFilled = (fields, state) => {
   return true;
 };
 
-// 
+//
 const filterMandatoryFields = (fields) => {
   return fields
-    .filter(field => field.required) // keep only required parents and singles
-    .map(field => ({
+    .filter((field) => field.required) // keep only required parents and singles
+    .map((field) => ({
       ...field,
       children: field.children ? filterMandatoryFields(field.children) : [],
     }));
@@ -49,7 +49,7 @@ const filterMandatoryFields = (fields) => {
 //
 function unflatten(formState) {
   const result = {};
-  Object.keys(formState).forEach(flatKey => {
+  Object.keys(formState).forEach((flatKey) => {
     const keys = flatKey.split(".");
     keys.reduce((acc, key, idx) => {
       if (idx === keys.length - 1) {
@@ -70,9 +70,9 @@ function DynamicForm({
   initialData = null,
   readOnly = false,
   isEditMode = false,
-  onSave
+  onSave,
 }) {
-  // 
+  //
   const {
     fields,
     formState,
@@ -89,30 +89,32 @@ function DynamicForm({
     handlePopupSave,
     findFieldByPath,
     matches,
-    flatten
+    flatten,
   } = useDynamicFormState(jsonData, language, initialData); // Pass `initialData` here
 
-  const { t } = useTranslation();  // use translation function
+  const { t } = useTranslation(); // use translation function
 
-  // 
+  //
   const popupField = findFieldByPath(fields, dialogOpen);
 
-  // 
+  //
   const [isFormValid, setIsFormValid] = useState();
 
-  // 
+  //
   const [showMandatoryOnly, setShowMandatoryOnly] = useState(true);
 
-  // 
-  const displayedFields = showMandatoryOnly ? filterMandatoryFields(fields) : fields;
+  //
+  const displayedFields = showMandatoryOnly
+    ? filterMandatoryFields(fields)
+    : fields;
 
   //
   const initialFormStateRef = useRef(null);
-  
-  // 
+
+  //
   const [isModified, setIsModified] = useState(false);
 
-  // 
+  //
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -140,7 +142,7 @@ function DynamicForm({
     }
   };
 
-  // 
+  //
   useEffect(() => {
     // Validate whole form state, including multiple-entry arrays
     const errors = validateFieldsForState(fields, formState, formatPatterns);
@@ -148,7 +150,7 @@ function DynamicForm({
     setIsFormValid(Object.keys(errors).length === 0 && multipleFilled);
   }, [formState, fields, formatPatterns]);
 
-  // 
+  //
   useEffect(() => {
     // When `formState` or `initialData` changes, update the reference
     if (initialData) {
@@ -158,7 +160,7 @@ function DynamicForm({
     }
   }, [initialData, flatten]);
 
-  // 
+  //
   useEffect(() => {
     if (!initialFormStateRef.current) return;
     // Compare current formState with initial
@@ -216,16 +218,16 @@ function DynamicForm({
     mode = "form",
     errorState = {}
   ) => {
-    const { 
-      name, 
-      label, 
-      placeholder, 
-      type, 
-      multiple, 
-      categories, 
-      children, 
-      path, 
-      required 
+    const {
+      name,
+      label,
+      placeholder,
+      type,
+      multiple,
+      categories,
+      children,
+      path,
+      required,
     } = field;
 
     const value =
@@ -309,36 +311,42 @@ function DynamicForm({
   // RETURN JSX
   return (
     <>
-      <Box sx={{ mb: 2, display: 'flex', gap: 2, justifyContent: "center" }}>
+      <Box sx={{ mb: 2, display: "flex", gap: 2, justifyContent: "center" }}>
         <Button
           variant={showMandatoryOnly ? "contained" : "outlined"}
           onClick={() => setShowMandatoryOnly(true)}
-          sx={{ 
-            mb: 2, 
-            backgroundColor: showMandatoryOnly ? "rgba(70, 160, 35, 1)" : "rgba(255, 255, 255, 1)",
-            color: showMandatoryOnly ? "rgba(255, 255, 255, 1)" : "rgba(70, 160, 35, 1)",
-            borderColor: showMandatoryOnly ? "rgba(255, 255, 255, 1)" : "rgba(70, 160, 35, 1)",
+          sx={{
+            mb: 2,
+            backgroundColor: showMandatoryOnly
+              ? "rgba(70, 160, 35, 1)"
+              : "rgba(255, 255, 255, 1)",
+            color: showMandatoryOnly
+              ? "rgba(255, 255, 255, 1)"
+              : "rgba(70, 160, 35, 1)",
+            borderColor: showMandatoryOnly
+              ? "rgba(255, 255, 255, 1)"
+              : "rgba(70, 160, 35, 1)",
           }}
         >
           {t("dynamicform.mandatory")}
         </Button>
         <Button
           variant={
-            //showMandatoryOnly ? "contained" : 
+            //showMandatoryOnly ? "contained" :
             "outlined"
           }
           //onClick={() => setShowMandatoryOnly(true)}
-          sx={{ 
-            mb: 2, 
-            backgroundColor: //showMandatoryOnly ? 
-              "rgba(255, 255, 255, 1)", 
-              //: "rgba(70, 160, 35, 1)",
-            color: //showMandatoryOnly ? 
-              "rgba(70, 160, 35, 1)",
-              //: "rgba(255, 255, 255, 1)",
-            borderColor: //showMandatoryOnly ? 
-              "rgba(70, 160, 35, 1)",
-              //: "rgba(255, 255, 255, 1)",
+          sx={{
+            mb: 2,
+            //showMandatoryOnly ?
+            backgroundColor: "rgba(255, 255, 255, 1)",
+            //: "rgba(70, 160, 35, 1)",
+            //showMandatoryOnly ?
+            color: "rgba(70, 160, 35, 1)",
+            //: "rgba(255, 255, 255, 1)",
+            //showMandatoryOnly ?
+            borderColor: "rgba(70, 160, 35, 1)",
+            //: "rgba(255, 255, 255, 1)",
           }}
         >
           {t("dynamicform.recommended")}
@@ -346,11 +354,17 @@ function DynamicForm({
         <Button
           variant={!showMandatoryOnly ? "contained" : "outlined"}
           onClick={() => setShowMandatoryOnly(false)}
-          sx={{ 
-            mb: 2, 
-            backgroundColor: showMandatoryOnly ? "rgba(255, 255, 255, 1)" : "rgba(70, 160, 35, 1)",
-            color: showMandatoryOnly ? "rgba(70, 160, 35, 1)" : "rgba(255, 255, 255, 1)",
-            borderColor: showMandatoryOnly ? "rgba(70, 160, 35, 1)" : "rgba(255, 255, 255, 1)",
+          sx={{
+            mb: 2,
+            backgroundColor: showMandatoryOnly
+              ? "rgba(255, 255, 255, 1)"
+              : "rgba(70, 160, 35, 1)",
+            color: showMandatoryOnly
+              ? "rgba(70, 160, 35, 1)"
+              : "rgba(255, 255, 255, 1)",
+            borderColor: showMandatoryOnly
+              ? "rgba(70, 160, 35, 1)"
+              : "rgba(255, 255, 255, 1)",
           }}
         >
           {t("dynamicform.complete")}
@@ -358,9 +372,7 @@ function DynamicForm({
       </Box>
 
       {/* GENERATED FORM (RECURSICE INPUT RENDERING + SUBMIT BUTTON) */}
-      <form
-        onSubmit={handleSubmit}
-      >
+      <form onSubmit={handleSubmit}>
         {displayedFields.map((field) =>
           renderInput({ ...field, path: field.name })
         )}
@@ -369,12 +381,14 @@ function DynamicForm({
             <Button
               variant="contained"
               type="submit"
-              disabled={!isFormValid  || !isModified}
+              disabled={!isFormValid || !isModified}
               sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
               startIcon={isEditMode && <SaveIcon />}
               endIcon={!isEditMode && <SendIcon />}
             >
-              {isEditMode ? t("dynamicform.save_changes") : t("dynamicform.review")}
+              {isEditMode
+                ? t("dynamicform.save_changes")
+                : t("dynamicform.review")}
             </Button>
           </>
         )}
