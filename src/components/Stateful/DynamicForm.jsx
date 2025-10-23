@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { isEqual } from "lodash";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-// import Typography from "@mui/material/Typography";
+import Typography from "@mui/material/Typography";
 import FormInputSingle from "./DynamicFormComponents/FormInputSingle";
 import FormInputMultiple from "./DynamicFormComponents/FormInputMultiple";
 import FormInputGroup from "./DynamicFormComponents/FormInputGroup";
@@ -14,7 +14,6 @@ import { v4 as uuidv4 } from "uuid";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
-
 //
 const checkMultipleEntriesFilled = (fields, state) => {
   for (const field of fields) {
@@ -278,10 +277,9 @@ function DynamicForm({
           name={name}
           path={path}
           depth={depth}
-          value={value}
           renderInput={renderInput}
+          required={required}
           readOnly={readOnly}
-          isEditMode={isEditMode}
         />
       );
     }
@@ -370,6 +368,16 @@ function DynamicForm({
           {t("dynamicform.complete")}
         </Button>
       </Box>
+
+      {!readOnly && (
+        <Typography
+          sx={{ mb: "20px", fontSize: "13px" }}
+        >
+          {t("All fields with ( ")}
+          <span style={{ color: "red"}}>*</span>
+          {t(" ) are Mandatory")}
+        </Typography>
+      )}
 
       {/* GENERATED FORM (RECURSICE INPUT RENDERING + SUBMIT BUTTON) */}
       <form onSubmit={handleSubmit}>
