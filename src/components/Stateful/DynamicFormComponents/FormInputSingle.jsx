@@ -43,7 +43,9 @@ const FormInputSingle = ({
       >
         {label || name}
         {required && (
-          <span style={{ color: "red", marginLeft: 4 }}>*</span>
+          !readOnly && (
+            <span style={{ color: "red", marginLeft: 4 }}>*</span>
+          )
         )}
       </Typography>
 
