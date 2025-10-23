@@ -33,7 +33,7 @@ function FormPage() {
     <div className="FormPage">
       <PageHeaders
         page_heading={ uploadedJson ? t("formpage.edit_header") : t("formpage.write_header") }
-        tooltip_description="You can write your catalogue record on this page."
+        tooltip_description={ uploadedJson ? t("formpage.edit_tooltip") : t("formpage.write_tooltip") }
         help_button_redirect={() => navigate("/form-help", { state: { uploadedJson: uploadedJson } })}
       />
 

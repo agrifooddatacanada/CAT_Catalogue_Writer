@@ -48,7 +48,9 @@ const FormInputMultiple = ({
       <Typography variant={depth === 0 ? "h6" : "h8"}>
         {label || name}
         {required && (
-          <span style={{ color: "red", marginLeft: 4 }}>*</span>
+          !readOnly && (
+            <span style={{ color: "red", marginLeft: 4 }}>*</span>
+          )
         )}
       </Typography>
 

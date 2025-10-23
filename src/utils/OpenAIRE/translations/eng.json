@@ -1,77 +1,83 @@
 {
-    "homepage": {
-        "semantic_engine": "Semantic Engine",
-        "catalogue": "Catalogue",
-        "content_heading": "Catalogue your work",
-        "content": "Make it easier for others to track your work and cite what you make",
-        "quick_start_heading": "Quick-Start:",
-        "step_1": "1. ",
-        "watch_tutorial_video": "Watch our tutorial video on creating a catalogue.",
-        "or": " Or ",
-        "read_the_tutorial": "read the tutorial ",
-        "instead": "instead.",
-        "step_2": "2. Write your catalogue and generate a .json.",
-        "step_3": "3. Use your catalogue here to view, and generate a JSON-LD for data input aligned with Open-AIRE metadata standards.",
-        "step_4": "4. Store your catalogue files with your data, put them in a repository, or collaborate by sharing them with others.",
-        "accordion_question_1": "1. What is a Catalogue?",
-        "accordion_summary_1": "1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
-        "accordion_question_2": "2. What is a Catalogue?",
-        "accordion_summary_2": "2. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
-        "accordion_question_3": "3. What is a Catalogue?",
-        "accordion_summary_3": "3. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
-        "quick_links": "Quick Links",
-        "write": "Write a Catalogue Record",
-        "upload_file": "Upload a previous Catalogue Record or drag and drop one (.json file)",
-        "file_uploaded": "File uploaded: ",
-        "view": "View Catalogue Record",
-        "edit": "Edit Catalogue Record"
-    },
-    "formpage": {
-        "edit_header": "Edit Catalogue Record",
-        "write_header": "Write Catalogue Record",
-        "loading": "Loading..."
-    },
-    "dynamicform": {
-        "mandatory": "Mandatory",
-        "recommended": "Recommended",
-        "complete": "Complete",
-        "save_changes": "Save Changes",
-        "review": "Review"
-    },
-    "viewpage": {
-        "loading": "Loading schema...",
-        "no_catalogue": "No catalogue loaded. Please upload a file first and only then can you view it.",
-        "review": "Review Catalogue Record",
-        "view": "View Catalogue Record",
-        "edit": "Edit",
-        "download": "Download (.json)"
-    },
-    "forminputmultiple": {
-        "actions": "Actions",
-        "edit": "Edit",
-        "delete": "Delete",
-        "add": "Add"
-    },
-    "forminputsingle": {
-        "select": "Select",
-        "none": "None",
-        "enter": "Enter"
-    },
-    "popupdialog": {
-        "add": "Add",
-        "cancel": "Cancel",
-        "save": "Save"
-    },
-    "viewhelppage": {
-        "review": "Help with Review Catalogue Page",
-        "view": "Help with View Catalogue Page"
-    },
-    "formhelppage": {
-        "edit": "Help with Edit Catalogue Page",
-        "write": "Help with Write Catalogue Page"
-    },
-    "no_data": "No data exist for",
-    "powered_by": "Powered by",
-    "supported_by": "Supported by",
-    "page_help": "Help with this Page"
+  "homepage": {
+    "semantic_engine": "Semantic Engine",
+    "catalogue": "Catalogue",
+    "content_heading": "Catalogue your work",
+    "content": "Make it easier for others to track your work and cite what you make",
+    "quick_start_heading": "Quick-Start:",
+    "step_1": "1. ",
+    "watch_tutorial_video": "Watch our tutorial video on creating a catalogue.",
+    "or": " Or ",
+    "read_the_tutorial": "read the tutorial ",
+    "instead": "instead.",
+    "step_2": "2. Write your catalogue and generate a .json.",
+    "step_3": "3. Use your catalogue here to view, and generate a JSON-LD for data input aligned with Open-AIRE metadata standards.",
+    "step_4": "4. Store your catalogue files with your data, put them in a repository, or collaborate by sharing them with others.",
+    "accordion_question_1": "1. What is a Catalogue?",
+    "accordion_summary_1": "1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+    "accordion_question_2": "2. What is a Catalogue?",
+    "accordion_summary_2": "2. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+    "accordion_question_3": "3. What is a Catalogue?",
+    "accordion_summary_3": "3. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+    "quick_links": "Quick Links",
+    "write": "Write a Catalogue Record",
+    "upload_file": "Upload a previous Catalogue Record or drag and drop one (.json file)",
+    "file_uploaded": "File uploaded: ",
+    "view": "View Catalogue Record",
+    "edit": "Edit Catalogue Record"
+  },
+  "formpage": {
+    "edit_header": "Edit Catalogue Record",
+    "write_header": "Write Catalogue Record",
+    "loading": "Loading...",
+    "edit_tooltip": "You can edit your catalogue record on this page.",
+    "write_tooltip": "You can write your catalogue record on this page."
+  },
+  "dynamicform": {
+    "mandatory": "Mandatory",
+    "recommended": "Recommended",
+    "complete": "Complete",
+    "save_changes": "Save Changes",
+    "review": "Review"
+  },
+  "viewpage": {
+    "loading": "Loading schema...",
+    "no_catalogue": "No catalogue loaded. Please upload a file first and only then can you view it.",
+    "review": "Review Catalogue Record",
+    "view": "View Catalogue Record",
+    "edit": "Edit",
+    "download": "Download (.json)",
+    "review_tooltip": "You can review your catalogue record in a human-readable form on this page.",
+    "view_tooltip": "You can view your catalogue record in a human-readable form on this page."
+  },
+  "forminputmultiple": {
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add"
+  },
+  "forminputsingle": {
+    "select": "Select",
+    "none": "None",
+    "enter": "Enter"
+  },
+  "popupdialog": {
+    "add": "Add",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "viewhelppage": {
+    "review": "Help with Review Catalogue Page",
+    "view": "Help with View Catalogue Page",
+    "under_development": "This page is under development..."
+  },
+  "formhelppage": {
+    "edit": "Help with Edit Catalogue Page",
+    "write": "Help with Write Catalogue Page",
+    "under_development": "This page is under development..."
+  },
+  "no_data": "No data exist for",
+  "powered_by": "Powered by",
+  "supported_by": "Supported by",
+  "page_help": "Help with this Page"
 }

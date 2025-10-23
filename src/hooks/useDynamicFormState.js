@@ -104,7 +104,8 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         // EXTRACT FORMAT PATTERNS
         const { fields: extractedFields, formatPatterns } = extractAttributes(
             jsonData,
-            "capture_base"
+            "capture_base",
+            language
         );
 
         if (!Array.isArray(extractedFields)) {

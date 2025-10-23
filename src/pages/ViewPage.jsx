@@ -53,7 +53,7 @@ function ViewPage() {
     <div className="ViewPage">
       <PageHeaders
         page_heading={ isModified ? t("viewpage.review"): t("viewpage.view") }
-        tooltip_description="You can view your catalogue record in a human-readable form on this page."
+        tooltip_description={ isModified ? t("viewpage.review_tooltip") : t("viewpage.view_tooltip") }
         help_button_redirect={() => navigate("/view-help", { state: { isModified: isModified } })}
       />
 

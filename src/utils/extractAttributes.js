@@ -1,3 +1,15 @@
+// PULL TOP-LEVEL ATTRIBUTE LABELS FROM MAIN BUNDLE OVERLAYS
+function extractBundleLabelsByLanguage(jsonData, lang) {
+    const labelOverlays = jsonData?.oca_bundle?.bundle?.overlays?.label;
+    if (!labelOverlays || !Array.isArray(labelOverlays)) return {};
+
+    // Find the overlay with matching language
+    const overlayForLang = labelOverlays.find((overlay) => overlay.language === lang);
+    if (!overlayForLang) return labelOverlays[0].attribute_labels || {};
+
+    return overlayForLang.attribute_labels || {};
+}
+
 // PULL ATTRIBUTE LABELS FROM SPECIFIC DEPENDENCY OVERLAY
 function extractLabelsFromDependency(dependency, lang) {
     const labelOverlays = dependency?.overlays?.label;
@@ -5,54 +17,9 @@ function extractLabelsFromDependency(dependency, lang) {
 
     // Find the overlay with matching language
     const overlayForLang = labelOverlays.find((overlay) => overlay.language === lang);
-    if (!overlayForLang) return {};
+    if (!overlayForLang) return labelOverlays[0].attribute_labels || {};
 
     return overlayForLang.attribute_labels || {};
-}
-
-// PULL ATTRIBUTE ENTRIES FROM SPECIFIC DEPENDENCY OVERLAY
-function extractEntriesFromDependency(dependency, lang) {
-    const entryOverlays = dependency?.overlays?.entry;
-    if (!entryOverlays || !Array.isArray(entryOverlays)) return {};
-
-    // Find the overlay with matching language
-    const overlayForLang = entryOverlays.find((overlay) => overlay.language === lang);
-    if (!overlayForLang) return {};
-
-    const attributeEntries = overlayForLang.attribute_entries || {};
-    const entryValuesMap = {};
-
-    for (const attrName in attributeEntries) {
-        const entriesObj = attributeEntries[attrName];
-        entryValuesMap[attrName] = Object.entries(entriesObj).map(
-            ([code, label]) => `${code} (${label})`
-        );
-    }
-    return entryValuesMap;
-}
-
-// PULL TOP-LEVEL ATTRIBUTE LABELS FROM MAIN BUNDLE OVERLAYS
-function extractBundleLabelsByLanguage(jsonData, lang) {
-    const overlays = jsonData?.oca_bundle?.bundle?.overlays;
-    if (!overlays || !Array.isArray(overlays.label)) return {};
-
-    const labelOverlays = overlays.label;
-    const overlayForLang = labelOverlays.find((overlay) => overlay.language === lang);
-    if (!overlayForLang) return {};
-
-    return overlayForLang.attribute_labels || {};
-}
-
-// IDENTIFY PREFERRED ATTRIBUTE ORDERING FROM EXTENSIONS
-function getAttributeOrdering(jsonData) {
-    const adcExtensions = jsonData?.extensions?.adc || [];
-    for (const ext of Object.values(adcExtensions)) {
-        const ordering = ext?.overlays?.ordering;
-        if (ordering && ordering.attribute_ordering) {
-            return ordering.attribute_ordering;
-        }
-    }
-    return [];
 }
 
 //
@@ -68,6 +35,8 @@ function extractPlaceholdersFromFormExtension(extensions, lang) {
 
     const forms = overlays.form;
     for (const form of forms) {
+      // Match only the form corresponding to the specified language
+      if (form.language !== lang) continue;
       if (!form.interaction) continue;
 
       for (const interactionKey of form.interaction) {
@@ -75,15 +44,27 @@ function extractPlaceholdersFromFormExtension(extensions, lang) {
 
         const args = interactionKey.arguments || {};
         for (const [attrName, argDef] of Object.entries(args)) {
-          const placeholderObj = argDef.placeholder;
-          if (placeholderObj && placeholderObj[lang]) {
-            placeholders[attrName] = placeholderObj[lang];
+          const placeholder = argDef.placeholder;
+          if (typeof placeholder === 'string' && placeholder.trim() !== '') {
+            placeholders[attrName] = placeholder;
           }
         }
       }
     }
   }
   return placeholders;
+}
+
+// IDENTIFY PREFERRED ATTRIBUTE ORDERING FROM EXTENSIONS
+function getAttributeOrdering(jsonData) {
+    const adcExtensions = jsonData?.extensions?.adc || [];
+    for (const ext of Object.values(adcExtensions)) {
+        const ordering = ext?.overlays?.ordering;
+        if (ordering && ordering.attribute_ordering) {
+            return ordering.attribute_ordering;
+        }
+    }
+    return [];
 }
 
 // REORDER THE EXTRACTED FIELDS
@@ -97,7 +78,7 @@ function sortFieldsByOrdering(fields, ordering) {
 }
 
 // PULL ENTRY VALUES (HUMAN-READABLE) FROM MAIN BUNDLE OVERLAYS
-function extractLocalizedEntryValues(jsonData, lang = "eng") {
+function extractLocalizedEntryValues(jsonData, lang) {
     // Access overlays in bundle
     const overlays = jsonData?.oca_bundle?.bundle?.overlays;
     if (!overlays) return {};
@@ -106,7 +87,13 @@ function extractLocalizedEntryValues(jsonData, lang = "eng") {
     const entryOverlays = Array.isArray(overlays.entry) ? overlays.entry : [];
 
     // Find the overlay with matching language
-    const overlayForLang = entryOverlays.find((overlay) => overlay.language === lang);
+    let overlayForLang = entryOverlays.find(overlay => overlay.language === lang);
+
+    // If no overlay for requested lang, fallback to first available overlay
+    if (!overlayForLang && entryOverlays.length > 0) {
+        overlayForLang = entryOverlays[0];
+    }
+
     if (!overlayForLang) return {};
 
     const attributeEntries = overlayForLang.attribute_entries || {};
@@ -116,6 +103,33 @@ function extractLocalizedEntryValues(jsonData, lang = "eng") {
     for (const attrName in attributeEntries) {
         const entriesObj = attributeEntries[attrName];
         // Extract the values which are the human-readable labels
+        entryValuesMap[attrName] = Object.entries(entriesObj).map(
+            ([code, label]) => `${code} (${label})`
+        );
+    }
+    return entryValuesMap;
+}
+
+// PULL ATTRIBUTE ENTRIES FROM SPECIFIC DEPENDENCY OVERLAY
+function extractEntriesFromDependency(dependency, lang) {
+    const entryOverlays = dependency?.overlays?.entry;
+    if (!entryOverlays || !Array.isArray(entryOverlays)) return {};
+
+    // Find the overlay with matching language
+    let overlayForLang = entryOverlays.find(overlay => overlay.language === lang);
+
+    // If no overlay for requested lang, fallback to first available overlay
+    if (!overlayForLang && entryOverlays.length > 0) {
+        overlayForLang = entryOverlays[0];
+    }
+
+    if (!overlayForLang) return {};
+
+    const attributeEntries = overlayForLang.attribute_entries || {};
+    const entryValuesMap = {};
+
+    for (const attrName in attributeEntries) {
+        const entriesObj = attributeEntries[attrName];
         entryValuesMap[attrName] = Object.entries(entriesObj).map(
             ([code, label]) => `${code} (${label})`
         );
@@ -218,7 +232,7 @@ function extractFormatPatterns(dependencies) {
 }
 
 // MAIN EXPORT (ORACHESTRATES EVERYTHING)
-export function extractAttributes(jsonData, baseKey = "capture_base", visitedRefs = new Set(), lang = "eng") {
+export function extractAttributes(jsonData, baseKey = "capture_base", lang, visitedRefs = new Set()) {
     const bundle = jsonData?.oca_bundle?.bundle;
     const dependencies = jsonData?.oca_bundle?.dependencies || [];
     if (!bundle) return [];

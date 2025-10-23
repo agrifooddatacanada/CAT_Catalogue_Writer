@@ -1,77 +1,83 @@
 {
-    "homepage": {
-        "semantic_engine": "Semantic Engine",
-        "catalogue": "Catalogue",
-        "content_heading": "Cataloguez votre travail",
-        "content": "Facilitez la tâche aux autres pour suivre votre travail et citer ce que vous créez",
-        "quick_start_heading": "Démarrage rapide:",
-        "step_1": "1. ",
-        "watch_tutorial_video": "Regardez notre vidéo tutorielle sur la création d’un Catalogue.",
-        "or": " Ou ",
-        "read_the_tutorial": "lisez le tutoriel ",
-        "instead": "à la place.",
-        "step_2": "2. Rédigez votre Catalogue et générez un fichier .json.",
-        "step_3": "3. Utilisez votre Catalogue ici pour visualiser et générer un JSON-LD destiné à l’entrée des données conforme aux standards de métadonnées Open-AIRE.",
-        "step_4": "4. Stockez vos fichiers de Catalogue avec vos données, placez-les dans un dépôt ou collaborez en les partageant avec d’autres.",
-        "accordion_question_1": "1. Qu’est-ce qu’un Catalogue ?",
-        "accordion_summary_1": "1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
-        "accordion_question_2": "2. Qu’est-ce qu’un Catalogue ?",
-        "accordion_summary_2": "2. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
-        "accordion_question_3": "3. Qu’est-ce qu’un Catalogue ?",
-        "accordion_summary_3": "3. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
-        "quick_links": "Liens rapides",
-        "write": "Rédigez un enregistrement de Catalogue",
-        "upload_file": "Téléchargez un enregistrement de Catalogue précédent ou glissez-déposez un fichier (.json)",
-        "file_uploaded": "Fichier téléchargé : ",
-        "view": "Voir l’enregistrement du Catalogue",
-        "edit": "Modifier l’enregistrement du Catalogue"
-    },
-    "formpage": {
-        "edit_header": "Modifier l’enregistrement du Catalogue",
-        "write_header": "Rédiger un enregistrement du Catalogue",
-        "loading": "Loading..."
-    },
-    "dynamicform": {
-        "mandatory": "Obligatoire",
-        "recommended": "Recommandé",
-        "complete": "Complété",
-        "save_changes": "Enregistrer les modifications",
-        "review": "Réviser"
-    },
-    "viewpage": {
-        "loading": "Chargement du schéma...",
-        "no_catalogue": "Aucun Catalogue chargé. Veuillez d'abord télécharger un fichier pour pouvoir le visualiser ensuite.",
-        "review": "Réviser l’enregistrement du Catalogue",
-        "view": "Voir l’enregistrement du Catalogue",
-        "edit": "Modifier",
-        "download": "Télécharger (.json)"
-    },
-    "forminputmultiple": {
-        "actions": "Actions",
-        "edit": "Modifier",
-        "delete": "Supprimer",
-        "add": "Ajouter"
-    },
-    "forminputsingle": {
-        "select": "Sélectionner",
-        "none": "Aucun",
-        "enter": "Entrer"
-    },
-    "popupdialog": {
-        "add": "Ajouter",
-        "cancel": "Annuler",
-        "save": "Enregistrer"
-    },
-    "viewhelppage": {
-        "review": "Aide pour la page du Catalogue des avis",
-        "view": "Aide pour la page du Catalogue des consultations"
-    },
-    "formhelppage": {
-        "edit": "Aide pour la page de modification du Catalogue",
-        "write": "Aide pour la page de rédaction du Catalogue"
-    },
-    "no_data": "Aucune donnée n’existe pour",
-    "powered_by": "Propulsé par",
-    "supported_by": "Soutenu par",
-    "page_help": "Aide pour cette page"
+  "homepage": {
+    "semantic_engine": "Semantic Engine",
+    "catalogue": "Catalogue",
+    "content_heading": "Cataloguez votre travail",
+    "content": "Facilitez la tâche aux autres pour suivre votre travail et citer ce que vous créez",
+    "quick_start_heading": "Démarrage rapide:",
+    "step_1": "1. ",
+    "watch_tutorial_video": "Regardez notre vidéo tutorielle sur la création d’un Catalogue.",
+    "or": " Ou ",
+    "read_the_tutorial": "lisez le tutoriel ",
+    "instead": "à la place.",
+    "step_2": "2. Rédigez votre Catalogue et générez un fichier .json.",
+    "step_3": "3. Utilisez votre Catalogue ici pour visualiser et générer un JSON-LD destiné à l’entrée des données conforme aux standards de métadonnées Open-AIRE.",
+    "step_4": "4. Stockez vos fichiers de Catalogue avec vos données, placez-les dans un dépôt ou collaborez en les partageant avec d’autres.",
+    "accordion_question_1": "1. Qu’est-ce qu’un Catalogue ?",
+    "accordion_summary_1": "1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+    "accordion_question_2": "2. Qu’est-ce qu’un Catalogue ?",
+    "accordion_summary_2": "2. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+    "accordion_question_3": "3. Qu’est-ce qu’un Catalogue ?",
+    "accordion_summary_3": "3. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+    "quick_links": "Liens rapides",
+    "write": "Rédigez un enregistrement de Catalogue",
+    "upload_file": "Téléchargez un enregistrement de Catalogue précédent ou glissez-déposez un fichier (.json)",
+    "file_uploaded": "Fichier téléchargé : ",
+    "view": "Voir l’enregistrement du Catalogue",
+    "edit": "Modifier l’enregistrement du Catalogue"
+  },
+  "formpage": {
+    "edit_header": "Modifier l’enregistrement du Catalogue",
+    "write_header": "Rédiger un enregistrement du Catalogue",
+    "loading": "Chargement...",
+    "edit_tooltip": "Vous pouvez modifier votre fiche de catalogue sur cette page.",
+    "write_tooltip": "Vous pouvez rédiger votre fiche de catalogue sur cette page."
+  },
+  "dynamicform": {
+    "mandatory": "Obligatoire",
+    "recommended": "Recommandé",
+    "complete": "Complété",
+    "save_changes": "Enregistrer les modifications",
+    "review": "Réviser"
+  },
+  "viewpage": {
+    "loading": "Chargement du schéma...",
+    "no_catalogue": "Aucun Catalogue chargé. Veuillez d'abord télécharger un fichier pour pouvoir le visualiser ensuite.",
+    "review": "Réviser l’enregistrement du Catalogue",
+    "view": "Voir l’enregistrement du Catalogue",
+    "edit": "Modifier",
+    "download": "Télécharger (.json)",
+    "review_tooltip": "Vous pouvez examiner votre fiche de catalogue sous une forme lisible par l’humain sur cette page.",
+    "view_tooltip": "Vous pouvez consulter votre fiche de catalogue sous une forme lisible par l’humain sur cette page."
+  },
+  "forminputmultiple": {
+    "actions": "Actions",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "add": "Ajouter"
+  },
+  "forminputsingle": {
+    "select": "Sélectionner",
+    "none": "Aucun",
+    "enter": "Entrer"
+  },
+  "popupdialog": {
+    "add": "Ajouter",
+    "cancel": "Annuler",
+    "save": "Enregistrer"
+  },
+  "viewhelppage": {
+    "review": "Aide pour la page du Catalogue des avis",
+    "view": "Aide pour la page du Catalogue des consultations",
+    "under_development": "Cette page est en cours de développement..."
+  },
+  "formhelppage": {
+    "edit": "Aide pour la page de modification du Catalogue",
+    "write": "Aide pour la page de rédaction du Catalogue",
+    "under_development": "Cette page est en cours de développement..."
+  },
+  "no_data": "Aucune donnée n’existe pour",
+  "powered_by": "Propulsé par",
+  "supported_by": "Soutenu par",
+  "page_help": "Aide pour cette page"
 }

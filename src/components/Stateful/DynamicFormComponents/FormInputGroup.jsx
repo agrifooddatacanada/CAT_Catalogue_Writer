@@ -14,7 +14,8 @@ const FormInputGroup = ({
   path, 
   depth = 0, 
   renderInput, 
-  required
+  required,
+  readOnly
 }) => {
   return (
     <Box>
@@ -22,7 +23,9 @@ const FormInputGroup = ({
         {label || name}
         {/* Show asterisk only if group itself is required, otherwise nothing */}
         {required && (
-          <span style={{ color: "red", marginLeft: 4 }}>*</span>
+          !readOnly && (
+            <span style={{ color: "red", marginLeft: 4 }}>*</span>
+          )
         )}
       </Typography>
       {children.map((child) =>
