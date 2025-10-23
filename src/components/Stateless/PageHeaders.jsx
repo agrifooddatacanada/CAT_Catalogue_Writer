@@ -7,6 +7,7 @@ import {
   Button
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { useNavigate } from "react-router-dom";
 
 function PageHeaders({
     page_heading,
@@ -17,6 +18,7 @@ function PageHeaders({
     const { t } = useTranslation();  // use translation function
     console.log("help_button_redirect:", help_button_redirect, "type:", typeof help_button_redirect);
 
+    const navigate = useNavigate();
 
     return (
         <div className="Header">
@@ -32,11 +34,10 @@ function PageHeaders({
             >
             <Stack direction={"row"} alignItems={"center"}>
                 <Box
-                    component="a"
-                    href="https://agrifooddatacanada.ca/"
-                    target="_blank"
-                    rel="noreferrer"
+                    onClick={() => navigate('/')}
+
                     sx={{
+                        cursor: 'pointer',
                         marginLeft: "0px !important",
                         "& img": {
                         maxWidth: "100px",
