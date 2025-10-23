@@ -1415,16 +1415,162 @@
     ]
   },
   "extensions": {
-    "adc" : {
-      "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC" : {
+    "adc": {
+      "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC": {
         "d": "EKQQI3VidGhzMSwYYgxMbXSlLriWFbnvE1WJcDqM8aF2",
         "type": "community/adc/extension/1.0",
         "bundle_digest": "ECCmcOBQWZc_Ck5q4BmDvlrvPabUTuXQkXYt_2TeAyNV",
         "overlays": {
+          "form": [
+            {
+              "d": "###formDigest###",
+              "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
+              "type": "###formType###",
+              "language": "eng",
+              "subheading": {
+                "page-1": "subheading: Catalogue Writer"
+              },
+              "interaction": [
+                {
+                  "arguments": {
+                    "contributorName": {
+                      "type": "Text",
+                      "placeholder": "Family-Name, Given-Name"
+                    },
+                    "creatorName": {
+                      "type": "Text",
+                      "placeholder": "Family-Name, Given-Name"
+                    },
+                    "date": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "format": {
+                      "type": "Text",
+                      "placeholder": "PDF, XML, application/pdf, text/xml, etc..."
+                    },
+                    "geoLocationBox": {
+                      "type": "Text",
+                      "placeholder": "(Lower-corner) (Upper-corner): \"41.090 -71.032 42.893 -68.211\""
+                    },
+                    "geoLocationPoint": {
+                      "type": "Text",
+                      "placeholder": "Latitude Longitude: \"31.233 -67.302\""
+                    },
+                    "identifier": {
+                      "type": "Text",
+                      "placeholder": "10.1234/foo"
+                    },
+                    "language": {
+                      "type": "Text",
+                      "placeholder": "en-CA, en, etc..."
+                    },
+                    "publicationYear": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY"
+                    },
+                    "relatedMetadataScheme": {
+                      "type": "Text",
+                      "placeholder": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)"
+                    },
+                    "rightsURI": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/rightsURI"
+                    },
+                    "schemeType": {
+                      "type": "Text",
+                      "placeholder": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)"
+                    },
+                    "schemeURI": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/schemeURI"
+                    },
+                    "size": {
+                      "type": "Text",
+                      "placeholder": "\"15 pages\", or \"6 MB\""
+                    }
+                  }
+                }
+              ],
+              "title": "Catalogue Writer"
+            },
+            {
+              "d": "###formDigest###",
+              "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
+              "type": "###formType###",
+              "language": "fra",
+              "subheading": {
+                "page-1": "subheading: Catalogue Writer"
+              },
+              "interaction": [
+                {
+                  "arguments": {
+                    "contributorName": {
+                      "type": "Text",
+                      "placeholder": "French_Family-Name, Given-Name"
+                    },
+                    "creatorName": {
+                      "type": "Text",
+                      "placeholder": "French_Family-Name, Given-Name"
+                    },
+                    "date": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "format": {
+                      "type": "Text",
+                      "placeholder": "French_PDF, XML, application/pdf, text/xml, etc..."
+                    },
+                    "geoLocationBox": {
+                      "type": "Text",
+                      "placeholder": "French_(Lower-corner) (Upper-corner): \"41.090 -71.032 42.893 -68.211\""
+                    },
+                    "geoLocationPoint": {
+                      "type": "Text",
+                      "placeholder": "French_Latitude Longitude: \"31.233 -67.302\""
+                    },
+                    "identifier": {
+                      "type": "Text",
+                      "placeholder": "French_10.1234/foo"
+                    },
+                    "language": {
+                      "type": "Text",
+                      "placeholder": "French_en-CA, en, etc..."
+                    },
+                    "publicationYear": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY"
+                    },
+                    "relatedMetadataScheme": {
+                      "type": "Text",
+                      "placeholder": "French_Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)"
+                    },
+                    "rightsURI": {
+                      "type": "Text",
+                      "placeholder": "French_https://an.example.com/rightsURI"
+                    },
+                    "schemeType": {
+                      "type": "Text",
+                      "placeholder": "French_Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)"
+                    },
+                    "schemeURI": {
+                      "type": "Text",
+                      "placeholder": "French_https://an.example.com/schemeURI"
+                    },
+                    "size": {
+                      "type": "Text",
+                      "placeholder": "French_\"15 pages\", or \"6 MB\""
+                    }
+                  }
+                }
+              ],
+              "title": "Catalogue Writer"
+            }
+          ],
           "ordering": {
             "d": "EJzB4B_sFyi9DswKkyVI4mLLU1Jyw3XSBIUYhdQupFGD",
-            "type": "community/overlays/adc/ordering/1.0",
             "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
+            "type": "community/overlays/adc/ordering/1.0",
             "attribute_ordering": [
               "identifier",
               "identifierType",
@@ -1449,157 +1595,7 @@
             "entry_code_ordering": {
               "identifierType": ["ARK", "DOI", "Handle", "PURL", "URL", "URN"]
             }
-          },
-          "form": [
-            {
-              "d": "###presentationDigest###",
-              "type": "###presentationType###",
-              "language": [
-                "eng",
-                "fra"
-              ],
-              "pages": [
-                {
-                  "named_section": "page-1"
-                }
-              ],
-              "page_order": [
-                "page-1"
-              ],
-              "page_labels": {
-                "eng": {
-                  "page-1": "Page 1: Catalogue Writer"
-                },
-                "fra": {
-                  "page-1": "Page 1: Catalogue Writer"
-                }
-              },
-              "sidebar_label": {
-                "eng": {
-                  "page-1": "sidebar: Catalogue Writer"
-                },
-                "fra": {
-                  "page-1": "sidebar: Catalogue Writer"
-                }
-              },
-              "subheading": {
-                "eng": {
-                  "page-1": "subheading: Catalogue Writer"
-                },
-                "fra": {
-                  "page-1": "subheading: Catalogue Writer"
-                }
-              },
-              "interaction": [
-                {
-                  "arguments": {
-                    "contributorName": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "Family-Name, Given-Name",
-                        "fra": "Family-Name, Given-Name"
-                      }
-                    },
-                    "creatorName": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "Family-Name, Given-Name",
-                        "fra": "Family-Name, Given-Name"
-                      }
-                    },
-                    "date": {
-                      "type": "DateTime",
-                      "placeholder": {
-                        "eng": "YYYY-MM-DD",
-                        "fra": "YYYY-MM-DD"
-                      }
-                    },
-                    "format": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "PDF, XML, application/pdf, text/xml, etc...",
-                        "fra": "PDF, XML, application/pdf, text/xml, etc..."
-                      }
-                    },
-                    "geoLocationBox": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "(Lower-corner) (Upper-corner): \"41.090 -71.032 42.893 -68.211\"",
-                        "fra": "(Lower-corner) (Upper-corner): \"41.090 -71.032 42.893 -68.211\""
-                      }
-                    },
-                    "geoLocationPoint": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "Latitude Longitude: \"31.233 -67.302\"",
-                        "fra": "Latitude Longitude: \"31.233 -67.302\""
-                      }
-                    },
-                    "identifier": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "10.1234/foo",
-                        "fra": "10.1234/foo"
-                      }
-                    },
-                    "language": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "en-CA, en, etc...",
-                        "fra": "en-CA, en, etc..."
-                      }
-                    },
-                    "publicationYear": {
-                      "type": "DateTime",
-                      "placeholder": {
-                        "eng": "YYYY",
-                        "fra": "YYYY"
-                      }
-                    },
-                    "relatedMetadataScheme": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)",
-                        "fra": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)"
-                      }
-                    },
-                    "rightsURI": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "https://an.example.com/rightsURI",
-                        "fra": "https://an.example.com/rightsURI"
-                      }
-                    },
-                    "schemeType": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)",
-                        "fra": "Use only with relation pair: (`HasMetadata` / `IsMetadataFor`)"
-                      }
-                    },
-                    "schemeURI": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "https://an.example.com/schemeURI",
-                        "fra": "https://an.example.com/schemeURI"
-                      }
-                    },
-                    "size": {
-                      "type": "textarea",
-                      "placeholder": {
-                        "eng": "\"15 pages\", or \"6 MB\"",
-                        "fra": "\"15 pages\", or \"6 MB\""
-                      }
-                    }
-                  }
-                }
-              ],
-              "title": {
-                "eng": "Catalogue Writer",
-                "fra": "Catalogue Writer"
-              }
-            }
-          ]
+          }
         }
       }
     }
