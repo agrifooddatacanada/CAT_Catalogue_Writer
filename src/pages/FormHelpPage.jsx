@@ -20,7 +20,7 @@ function ViewHelpPage() {
             />
 
             <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
-                This page is under development...
+                {t("formhelppage.under_development")}
             </Box>
             <Footer
                 powered_by={t("powered_by")}
