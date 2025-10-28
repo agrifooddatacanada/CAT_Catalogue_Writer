@@ -189,46 +189,6 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         setPopupErrors(errors);
     }, [popupValue, dialogOpen, fields, formatPatterns, findFieldByPath]);
 
-    // // FUNCTION TO VALIDATE FULL FORM BEFORE SUBMIT
-    // const validate = () => {
-    //     const newErrors = {};
-
-    //     // RECURSIVELY CHECK FIELDS
-    //     const validateFields = (fields, parentKey = "") => {
-    //         fields.forEach(({ name, required, multiple, children, label }) => {
-    //             const key = parentKey ? `${parentKey}.${name}` : name;
-    //             const val = getNestedValue(formState, key);
-
-    //             // ENFORCE REQUIRED FIELDS
-    //             if (children && children.length > 0) {
-    //                 validateFields(children, key);
-    //             } else {
-    //                 // Required field validation
-    //                 if (
-    //                     required &&
-    //                     (val === "" || (Array.isArray(val) && val.length === 0))
-    //                 ) {
-    //                     newErrors[key] = "This field is required";
-    //                 }
-
-    //                 // APPLY REGEX FORMAT CHECKS
-    //                 // Extract base attribute name (last segment)
-    //                 const baseName = key.split(".").slice(-1)[0];
-    //                 const pattern = formatPatterns[baseName];
-
-    //                 // POPULATE ERRORS
-    //                 if (pattern && val && !pattern.test(val)) {
-    //                     newErrors[key] = `Invalid format for ${label || name}`;
-    //                 }
-    //             }
-    //         });
-    //     };
-
-    //     validateFields(fields);
-    //     setErrors(newErrors);
-    //     return Object.keys(newErrors).length === 0;
-    // };
-
     // ON SAVE, APPEND THE CONSTRUCTED MINI-OBJECT TO ARRAY
     const handleDialogSave = (path, value) => {
         setFormState((prev) => {
