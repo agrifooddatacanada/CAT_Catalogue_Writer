@@ -3,21 +3,74 @@
 export const validateFieldsForState = (fieldsToValidate, stateToValidate, formatPatterns) => {
   const newErrors = {};
 
-  const validateRecursively = (fields, parentKey = "") => {
+  const validateRecursively = (fields, parentKey = "", parentRequired = true) => {
     fields.forEach(({ name, required, multiple, children, label }) => {
       const key = parentKey ? `${parentKey}.${name}` : name;
-      const val = key.split('.').reduce((acc, k) => (acc ? acc[k] : undefined), stateToValidate);
+
+      // Try flat key access first
+      let val = stateToValidate[key];
+
+      // If not found and not an object field with children, try nested path
+      if (val === undefined && (!children || children.length === 0)) {
+        val = key.split('.').reduce((acc, k) => (acc ? acc[k] : undefined), stateToValidate);
+      }
+      //const val = key.split('.').reduce((acc, k) => (acc ? acc[k] : undefined), stateToValidate);
 
       if (children && children.length > 0) {
-        validateRecursively(children, key);
-      } else {
-        if (required && (val === "" || (Array.isArray(val) && val.length === 0))) {
-          newErrors[key] = ""; // This field is required message can be shown here
-        }
-        const baseName = key.split(".").slice(-1)[0];
-        const pattern = formatPatterns[baseName];
-        if (pattern && val && !pattern.test(val)) {
-          newErrors[key] = `Invalid format for ${label || name}`;
+        // Recursively validate children first
+        validateRecursively(children, key, required);
+
+        // // If current field is required and ALL its required children are empty, set error on parent
+        // if (required) {
+        //   //console.log(key);
+        //   const missingChild = children.filter(child =>
+        //     child.required && (
+        //       (() => {
+        //         const childKey = `${key}.${child.name}`;
+        //         const childVal = childKey.split('.').reduce((acc, k) => (acc ? acc[k] : undefined), stateToValidate);
+        //         console.log(childKey);
+        //         return childVal === "" || (Array.isArray(childVal) && childVal.length === 0);
+        //       })()
+        //     )
+        //   );
+        //   //console.log(missingChild);
+        //   if (missingChild.length > 0) {
+        //     newErrors[key] = `Missing required fields: ${missingChild.map(c => c.name).join(", ")}`;
+        //   }
+        // }
+      }
+      else {
+        // Only validate if parent is required
+        if (parentRequired) {
+          // Check if this field is part of a multiple parent with nested array data
+          const parentFieldName = key.split('.')[0];
+          const nestedArray = stateToValidate[parentFieldName];
+          const hasValidNestedData = Array.isArray(nestedArray) && nestedArray.length > 0 
+            && nestedArray.some(item => Object.values(item).some(v => v && v !== ""));
+
+          // Skip validation for flat key if nested array has valid data
+          if (!hasValidNestedData) {
+            if (required && (val === "" || val === undefined || (Array.isArray(val) && val.length === 0))) {
+              console.log(key);
+              newErrors[key] = ""; // This field is required message can be shown here
+            }
+            const baseName = key.split(".").slice(-1)[0];
+            const pattern = formatPatterns[baseName];
+            if (pattern && val && !pattern.test(val)) {
+              newErrors[key] = `Invalid format for ${label || name}`;
+            }
+            // If nested array exists with valid data, skip validation (bypass/pass implicitly)
+          }
+
+          // if (required && (val === "" || val === undefined || (Array.isArray(val) && val.length === 0))) {
+          //   console.log(key );
+          //   newErrors[key] = ""; // This field is required message can be shown here
+          // }
+          // const baseName = key.split(".").slice(-1)[0];
+          // const pattern = formatPatterns[baseName];
+          // if (pattern && val && !pattern.test(val)) {
+          //   newErrors[key] = `Invalid format for ${label || name}`;
+          // }
         }
       }
     });

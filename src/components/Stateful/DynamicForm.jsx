@@ -324,6 +324,12 @@ function DynamicForm({
             borderColor: showMandatoryOnly
               ? "rgba(255, 255, 255, 1)"
               : "rgba(70, 160, 35, 1)",
+            '&:hover': {
+              backgroundColor: showMandatoryOnly
+                ? "rgba(70, 160, 35, 1)"
+                : "rgba(70, 160, 35, 0.25)",
+              borderColor: "rgba(70, 160, 35, 1)"
+            },
           }}
         >
           {t("dynamicform.mandatory")}
@@ -334,6 +340,7 @@ function DynamicForm({
             "outlined"
           }
           //onClick={() => setShowMandatoryOnly(true)}
+          disabled
           sx={{
             mb: 2,
             //showMandatoryOnly ?
@@ -363,6 +370,12 @@ function DynamicForm({
             borderColor: showMandatoryOnly
               ? "rgba(70, 160, 35, 1)"
               : "rgba(255, 255, 255, 1)",
+            '&:hover': {
+              backgroundColor: showMandatoryOnly
+                ? "rgba(70, 160, 35, 0.25)"
+                : "rgba(70, 160, 35, 1)",
+              borderColor: "rgba(70, 160, 35, 1)"
+            },
           }}
         >
           {t("dynamicform.complete")}
@@ -390,7 +403,13 @@ function DynamicForm({
               variant="contained"
               type="submit"
               disabled={!isFormValid || !isModified}
-              sx={{ mt: 2, backgroundColor: "rgba(70, 160, 35, 1)" }}
+              sx={{ 
+                mt: 2, 
+                backgroundColor: "rgba(70, 160, 35, 1)",
+                '&:hover': {
+                  backgroundColor: "rgba(70, 160, 35, 1)"
+                },
+              }}
               startIcon={isEditMode && <SaveIcon />}
               endIcon={!isEditMode && <SendIcon />}
             >
@@ -431,7 +450,7 @@ function DynamicForm({
         <Typography variant="h6" gutterBottom>
           Extracted Fields (for verification):
         </Typography>
-        <pre>{JSON.stringify(fields, null, 2)}</pre>
+        <pre>{JSON.stringify(formState, null, 2)}</pre>
       </Box> */}
     </>
   );

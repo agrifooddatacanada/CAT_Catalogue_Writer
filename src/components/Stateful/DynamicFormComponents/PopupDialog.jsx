@@ -2,8 +2,9 @@
 // in the main component
 
 import React from "react";
-import { Dialog, Box, Typography, TextField, Button } from "@mui/material";
+import { Dialog, Box, Typography, TextField, Button, IconButton } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from "@mui/icons-material/Close";
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 
 const PopupDialog = ({
@@ -22,9 +23,34 @@ const PopupDialog = ({
   return (
     <Dialog maxWidth="lg" fullScreen={matches} open={open} onClose={onClose}>
       <Box sx={{ p: 5, minWidth: { sm: 400, md: 500, lg: 600 } }}>
-        <Typography variant="h5" align="center" gutterBottom>
-          {`${t("popupdialog.add")} ${popupField?.label || "Entry"}`}
-        </Typography>
+        
+        <Box
+          sx={{
+            position: "relative",
+            mb: 3,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Typography variant="h5" align="center" gutterBottom>
+            {`${t("popupdialog.add")} ${popupField?.label || "Entry"}`}
+          </Typography>
+
+          <IconButton
+            onClick={onClose}
+            sx={{
+              position: "absolute",
+              right: 0,
+              top: 0,
+              color: "grey.550",
+            }}
+            aria-label="close"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
         {popupField && popupField.children?.length > 0 ? (
           popupField.children.map((child) =>
             renderInput(
@@ -48,14 +74,19 @@ const PopupDialog = ({
           />
         )}
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-          <Button sx={{ color: "rgba(70, 160, 35, 1)" }} onClick={onClose}>
+          <Button color="error" onClick={onClose}>
             {t("popupdialog.cancel")}
           </Button>
           <Button
             variant="contained"
             onClick={handlePopupSave}
             disabled={!isPopupSaveEnabled()} // Disable if invalid
-            sx={{ backgroundColor: "rgba(70, 160, 35, 1)" }}
+            sx={{ 
+              backgroundColor: "rgba(70, 160, 35, 1)",
+              '&:hover': {
+                backgroundColor: "rgba(70, 160, 35, 1)"
+              },
+            }}
             startIcon={<SaveIcon />}
           >
             {t("popupdialog.save")}
