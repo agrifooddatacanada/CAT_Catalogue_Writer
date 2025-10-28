@@ -197,7 +197,7 @@ const FormInputSingle = ({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  fullWidth
+                  //fullWidth
                   {...errorProps}
                 />
               )}
