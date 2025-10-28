@@ -40,7 +40,7 @@ function PageHeaders({
                         cursor: 'pointer',
                         marginLeft: "0px !important",
                         "& img": {
-                        maxWidth: "100px",
+                            maxWidth: "100px",
                         },
                     }}
                 >
@@ -66,11 +66,11 @@ function PageHeaders({
                             marginRight: "20px !important",
                             display: "block",
                             "& img": {
-                            width: {
-                                xs: "100px",
-                                sm: "150px",
-                            },
-                            maxWidth: "150px",
+                                width: {
+                                    xs: "100px",
+                                    sm: "150px",
+                                },
+                                maxWidth: "150px",
                             },
                         }}
                     >
@@ -96,10 +96,10 @@ function PageHeaders({
                         >
                             <HelpOutlineIcon
                                 sx={{
-                                marginLeft: "15px",
-                                marginRight: "15px",
-                                fontSize: "15px",
-                                color: "rgba(120,120,120,1)",
+                                    marginLeft: "15px",
+                                    marginRight: "15px",
+                                    fontSize: "15px",
+                                    color: "rgba(120,120,120,1)",
                                 }}
                             />
                         </Tooltip>
@@ -107,17 +107,21 @@ function PageHeaders({
                 </Stack>
                 {typeof help_button_redirect === "function" && (
                     <Button
+                        variant="contained"
                         sx={{
-                        display: "inline-block",
-                        marginTop: "16px !important",
-                        marginBottom: "16px !important",
-                        marginRight: "16px !important",
-                        marginLeft: "0px !important",
-                        padding: "8px 40px",
-                        backgroundColor: "rgba(70, 160, 35, 1)",
-                        color: "white",
-                        boxShadow: "none",
-                        cursor: "pointer",
+                            display: "inline-block",
+                            marginTop: "16px !important",
+                            marginBottom: "16px !important",
+                            marginRight: "16px !important",
+                            marginLeft: "0px !important",
+                            padding: "8px 40px",
+                            backgroundColor: "rgba(70, 160, 35, 1)",
+                            '&:hover': {
+                                backgroundColor: "rgba(75, 175, 50, 1)"
+                            },
+                            color: "white",
+                            boxShadow: "none",
+                            cursor: "pointer",
                         }}
                         onClick={() => help_button_redirect()}
                     >

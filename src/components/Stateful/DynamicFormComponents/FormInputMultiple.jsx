@@ -148,6 +148,10 @@ const FormInputMultiple = ({
           sx={{
             color: "rgba(70, 160, 35, 1)",
             borderColor: "rgba(70, 160, 35, 1)",
+            '&:hover': {
+              borderColor: "rgba(70, 160, 35, 1)",
+              backgroundColor: "rgba(235, 235, 235, 1)"
+            }
           }}
           variant="outlined"
           onClick={() => {
