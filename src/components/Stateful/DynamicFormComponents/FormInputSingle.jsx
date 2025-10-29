@@ -27,7 +27,8 @@ const FormInputSingle = ({
   required,
   depth = 0,
   readOnly,
-  placeholder
+  placeholder,
+  description
 }) => {
 
   const { t } = useTranslation();  // use translation function
@@ -37,9 +38,9 @@ const FormInputSingle = ({
   return (
     <Box sx={{ mb: 2 }}>
       <Typography
-        variant={depth === 0 ? "h6" : "h8"}
+        variant={depth === 0 ? "h6" : "h7"}
         component="label"
-        sx={{ mb: 0.5, display: "block" }}
+        sx={{ display: "block" }}
       >
         {label || name}
         {required && (
@@ -48,7 +49,12 @@ const FormInputSingle = ({
           )
         )}
       </Typography>
-
+      <Typography
+        component="description"
+        sx={{ mb: 0.5, display: "block", color: "rgba(150, 150, 150, 1)" }}
+      >
+        {description}
+      </Typography>
       {categories && categories.length > 0 ? (
         (readOnly && value.length === 0)? (
           <span 

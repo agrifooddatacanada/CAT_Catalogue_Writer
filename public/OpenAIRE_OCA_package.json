@@ -1427,8 +1427,31 @@
               "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
               "type": "###formType###",
               "language": "eng",
+              "pages": [
+                {
+                  "named_section": "page-1",
+                  "attribute_order": [
+                    {
+                      "named_section": "section-1",
+                      "attribute_order": ["q1", "q2"]
+                    }
+                  ]
+                }
+              ],
+              "page_order": ["page-1"],
+              "page_labels": {
+                "page-1": "Page 1: Data Request Schema"
+              },
+              "sidebar_label": {
+                "page-1": "sidebar: Data Request Schema"
+              },
               "subheading": {
                 "page-1": "subheading: Catalogue Writer"
+              },
+              "description": {
+                "identifier": "The Identifier is a unique string that identifies a resource.",
+                "identifierType": "The type of the Identifier.",
+                "creatorName": "The name of the creator."
               },
               "interaction": [
                 {
@@ -1499,8 +1522,31 @@
               "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
               "type": "###formType###",
               "language": "fra",
+              "pages": [
+                {
+                  "named_section": "page-1",
+                  "attribute_order": [
+                    {
+                      "named_section": "section-1",
+                      "attribute_order": ["q1", "q2"]
+                    }
+                  ]
+                }
+              ],
+              "page_order": ["page-1"],
+              "page_labels": {
+                "page-1": "Page 1: Data Request Schema"
+              },
+              "sidebar_label": {
+                "page-1": "sidebar: Data Request Schema"
+              },
               "subheading": {
                 "page-1": "subheading: Catalogue Writer"
+              },
+              "description": {
+                "identifier": "French_The Identifier is a unique string that identifies a resource.",
+                "identifierType": "French_The type of the Identifier.",
+                "creatorName": "French_The name of the creator."
               },
               "interaction": [
                 {

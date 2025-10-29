@@ -221,6 +221,7 @@ function DynamicForm({
       name,
       label,
       placeholder,
+      description,
       type,
       multiple,
       categories,
@@ -302,6 +303,7 @@ function DynamicForm({
         readOnly={readOnly}
         isEditMode={isEditMode}
         placeholder={placeholder}
+        description={description}
       />
     );
   };
@@ -437,7 +439,7 @@ function DynamicForm({
       />
 
       {/* DEBUG PANEL SHOWING EXTRACTED FIELDS JSON FOR VERIFICATION */}
-      {/* <Box
+      <Box
         sx={{
           mt: 4,
           p: 2,
@@ -450,8 +452,8 @@ function DynamicForm({
         <Typography variant="h6" gutterBottom>
           Extracted Fields (for verification):
         </Typography>
-        <pre>{JSON.stringify(formState, null, 2)}</pre>
-      </Box> */}
+        <pre>{JSON.stringify(fields, null, 2)}</pre>
+      </Box>
     </>
   );
 }
