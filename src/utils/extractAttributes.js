@@ -147,7 +147,8 @@ function extractAttributesFromCaptureBase(
     entryCodes,
     conformances,
     cardinalities,
-    placeholders
+    placeholders,
+    descriptions
 ) {
     const attributes = captureBase.attributes || {};
     const fields = [];
@@ -179,7 +180,8 @@ function extractAttributesFromCaptureBase(
                         depEntries,
                         depConformances,
                         depCardinalities,
-                        placeholders
+                        placeholders,
+                        descriptions
                     );
                 }
             }
@@ -192,11 +194,13 @@ function extractAttributesFromCaptureBase(
         const categories = entryCodes[key] || null;
         const label = labels[key] || key;  // This will now use dependency-specific labels
         const placeholder = placeholders[key] || "";
+        const description = descriptions[key] || "";
 
         fields.push({
             name: key,
             label,
             placeholder,
+            description,
             type: fieldType,
             required,
             multiple,
@@ -207,6 +211,33 @@ function extractAttributesFromCaptureBase(
     return fields;
 }
 
+//
+function extractDescriptionsFromFormExtension(extensions, lang) {
+  const descriptions = {};
+
+  // extensions.adc is an object keyed by IDs
+  const adcExtensions = extensions?.adc || {};
+
+  for (const key in adcExtensions) {
+    const overlays = adcExtensions[key]?.overlays;
+    if (!overlays?.form) continue;
+
+    const forms = overlays.form;
+    for (const form of forms) {
+      // Match only the form corresponding to the specified language
+      if (form.language !== lang) continue;
+      if (!form.description) continue;
+
+      const attributeDescriptions = form.description;
+
+      for (const [attrName, argDef] of Object.entries(attributeDescriptions)) {
+        const description = argDef;
+        descriptions[attrName] = description;
+      }
+    }
+  }
+  return descriptions;
+}
 
 // COLLECT REGEX VALIDATION PATTERN FOR ATTRIBUTES FROM DEPENDENCIES
 function extractFormatPatterns(dependencies) {
@@ -250,6 +281,7 @@ export function extractAttributes(jsonData, baseKey = "capture_base", lang, visi
     const entryCodes = extractLocalizedEntryValues(jsonData, lang);
     const mainLabels = extractBundleLabelsByLanguage(jsonData, lang);
     const placeholders = extractPlaceholdersFromFormExtension(jsonData?.extensions || {}, lang);
+    const descriptions = extractDescriptionsFromFormExtension(jsonData?.extensions || {}, lang);
 
     let fields = [];
 
@@ -284,7 +316,8 @@ export function extractAttributes(jsonData, baseKey = "capture_base", lang, visi
                         depEntries,
                         depConformances,
                         depCardinalities,
-                        placeholders
+                        placeholders,
+                        descriptions
                     );
                 } else {
                     // fallabck: extract normally from bundle if key present
@@ -299,11 +332,13 @@ export function extractAttributes(jsonData, baseKey = "capture_base", lang, visi
         const categories = entryCodes[key] || null;
         const label = mainLabels[key] || key;
         const placeholder = placeholders[key] || "";
+        const description = descriptions[key] || "";
 
         fields.push({
             name: key,
             label,
             placeholder,
+            description,
             type: fieldType,
             required,
             multiple,

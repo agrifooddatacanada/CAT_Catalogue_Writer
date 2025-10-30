@@ -221,6 +221,7 @@ function DynamicForm({
       name,
       label,
       placeholder,
+      description,
       type,
       multiple,
       categories,
@@ -302,6 +303,7 @@ function DynamicForm({
         readOnly={readOnly}
         isEditMode={isEditMode}
         placeholder={placeholder}
+        description={description}
       />
     );
   };
@@ -450,7 +452,7 @@ function DynamicForm({
         <Typography variant="h6" gutterBottom>
           Extracted Fields (for verification):
         </Typography>
-        <pre>{JSON.stringify(formState, null, 2)}</pre>
+        <pre>{JSON.stringify(fields, null, 2)}</pre>
       </Box> */}
     </>
   );

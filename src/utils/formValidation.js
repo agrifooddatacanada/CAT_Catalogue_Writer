@@ -19,25 +19,6 @@ export const validateFieldsForState = (fieldsToValidate, stateToValidate, format
       if (children && children.length > 0) {
         // Recursively validate children first
         validateRecursively(children, key, required);
-
-        // // If current field is required and ALL its required children are empty, set error on parent
-        // if (required) {
-        //   //console.log(key);
-        //   const missingChild = children.filter(child =>
-        //     child.required && (
-        //       (() => {
-        //         const childKey = `${key}.${child.name}`;
-        //         const childVal = childKey.split('.').reduce((acc, k) => (acc ? acc[k] : undefined), stateToValidate);
-        //         console.log(childKey);
-        //         return childVal === "" || (Array.isArray(childVal) && childVal.length === 0);
-        //       })()
-        //     )
-        //   );
-        //   //console.log(missingChild);
-        //   if (missingChild.length > 0) {
-        //     newErrors[key] = `Missing required fields: ${missingChild.map(c => c.name).join(", ")}`;
-        //   }
-        // }
       }
       else {
         // Only validate if parent is required
@@ -51,7 +32,6 @@ export const validateFieldsForState = (fieldsToValidate, stateToValidate, format
           // Skip validation for flat key if nested array has valid data
           if (!hasValidNestedData) {
             if (required && (val === "" || val === undefined || (Array.isArray(val) && val.length === 0))) {
-              console.log(key);
               newErrors[key] = ""; // This field is required message can be shown here
             }
             const baseName = key.split(".").slice(-1)[0];

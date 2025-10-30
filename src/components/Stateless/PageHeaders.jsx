@@ -110,10 +110,7 @@ function PageHeaders({
                         variant="contained"
                         sx={{
                             display: "inline-block",
-                            marginTop: "16px !important",
-                            marginBottom: "16px !important",
-                            marginRight: "16px !important",
-                            marginLeft: "0px !important",
+                            margin: "16px !important",
                             padding: "8px 40px",
                             backgroundColor: "rgba(70, 160, 35, 1)",
                             '&:hover': {
