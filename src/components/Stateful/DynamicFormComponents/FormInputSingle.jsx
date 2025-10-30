@@ -49,12 +49,14 @@ const FormInputSingle = ({
           )
         )}
       </Typography>
-      <Typography
-        component="description"
-        sx={{ mb: 0.5, display: "block", color: "rgba(150, 150, 150, 1)" }}
-      >
-        {description}
-      </Typography>
+      {!readOnly && 
+        (<Typography
+          component="description"
+          sx={{ mb: 0.5, display: "block", color: "rgba(150, 150, 150, 1)" }}
+        >
+          {description}
+        </Typography>)
+      }
       {categories && categories.length > 0 ? (
         (readOnly && value.length === 0)? (
           <span 
