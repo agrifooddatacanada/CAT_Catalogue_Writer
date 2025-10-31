@@ -388,9 +388,9 @@ function DynamicForm({
         <Typography
           sx={{ mb: "20px", fontSize: "13px" }}
         >
-          {t("All fields with ( ")}
+          {t("dynamicform.all_fields")}
           <span style={{ color: "red"}}>*</span>
-          {t(" ) are Mandatory")}
+          {t("dynamicform.are_mandatory")}
         </Typography>
       )}
 

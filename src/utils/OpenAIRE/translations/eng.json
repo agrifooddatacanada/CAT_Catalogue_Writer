@@ -38,7 +38,9 @@
     "recommended": "Recommended",
     "complete": "Complete",
     "save_changes": "Save Changes",
-    "review": "Review"
+    "review": "Review",
+    "all_fields": "All fields with ( ",
+    "are_mandatory": " ) are Mandatory"
   },
   "viewpage": {
     "loading": "Loading schema...",

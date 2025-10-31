@@ -38,7 +38,9 @@
     "recommended": "Recommandé",
     "complete": "Complété",
     "save_changes": "Enregistrer les modifications",
-    "review": "Réviser"
+    "review": "Réviser",
+    "all_fields": "Tous les champs avec ( ",
+    "are_mandatory": " ) sont obligatoires"
   },
   "viewpage": {
     "loading": "Chargement du schéma...",
