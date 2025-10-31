@@ -16,7 +16,6 @@ function PageHeaders({
 }) {
 
     const { t } = useTranslation();  // use translation function
-    console.log("help_button_redirect:", help_button_redirect, "type:", typeof help_button_redirect);
 
     const navigate = useNavigate();
 
