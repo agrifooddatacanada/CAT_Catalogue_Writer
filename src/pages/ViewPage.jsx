@@ -8,6 +8,11 @@ import DynamicForm from "../components/Stateful/DynamicForm"
 import EditIcon from '@mui/icons-material/Edit';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PageHeaders from "../components/Stateless/PageHeaders";
+// import canonicalize from "../utils/canonicalize";
+import { 
+  saidify,
+  //verify
+ } from 'saidify'
 
 function ViewPage() {
   const { t, lang } = useTranslation();  // use translation function
@@ -21,12 +26,19 @@ function ViewPage() {
   const [jsonSchema, setJsonSchema] = useState(null);
 
   const downloadJson = (jsonData) => {
-    const jsonLdString = JSON.stringify(jsonData, null, 2);
-    const blob = new Blob([jsonLdString], { type: 'application/ld+json' });
+    const [ , sad] = saidify(jsonData, 'catalogue_id');
+    //console.log(typeof sad);
+    // const computedSAID = 'ENvDUtgMxBzjgINNzJTfaMLRNumaVchQT83fyTjZIy4y'
+    // const doesVerify = verify(sad, computedSAID, label)
+    // console.log(doesVerify);
+    // sad should be a string or object; if it’s a string, use it directly; if it’s an object, stringify it
+    const content = typeof sad === 'string' ? sad : JSON.stringify(sad, null, 2);
+
+    const blob = new Blob([content], { type: 'application/ld+json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `catalogue-${jsonData.catalogue_id || 'export'}.json`;
+    link.download = `catalogue-${sad.catalogue_id || 'export'}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

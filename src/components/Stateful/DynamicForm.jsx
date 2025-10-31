@@ -10,10 +10,10 @@ import PopupDialog from "./DynamicFormComponents/PopupDialog";
 import { getNestedValue, setNestedValue } from "../../utils/formStateUtils";
 import { validateFieldsForState } from "../../utils/formValidation";
 import useDynamicFormState from "../../hooks/useDynamicFormState";
-import { v4 as uuidv4 } from "uuid";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
+
 //
 const checkMultipleEntriesFilled = (fields, state) => {
   for (const field of fields) {
@@ -129,7 +129,7 @@ function DynamicForm({
     const formDataWithId = {
       "@context": "https://schema.org",
       "@type": "Catalogue",
-      catalogue_id: uuidv4(),
+      "catalogue_id": "",
       ...nestedState,
     };
 
