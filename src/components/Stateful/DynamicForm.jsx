@@ -386,7 +386,7 @@ function DynamicForm({
 
       {!readOnly && (
         <Typography
-          sx={{ mb: "20px", fontSize: "13px" }}
+          sx={{ mb: "15px", fontSize: "13px", fontStyle: "italic" }}
         >
           {t("dynamicform.all_fields")}
           <span style={{ color: "red"}}>*</span>
