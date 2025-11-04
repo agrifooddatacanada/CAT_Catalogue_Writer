@@ -61,7 +61,9 @@
   "forminputsingle": {
     "select": "Select",
     "none": "None",
-    "enter": "Enter"
+    "enter": "Enter",
+    "show_more": "Show more",
+    "show_less": "Show less"
   },
   "popupdialog": {
     "add": "Add",
