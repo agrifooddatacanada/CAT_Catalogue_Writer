@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   TextField,
   Chip,
@@ -42,17 +42,18 @@ const FormInputSingle = ({
   const descriptionRef = useRef(null);
 
   // Function to check if text is clamped
-  const checkIfClamped = () => {
+  const checkIfClamped = useCallback(() => {
     if (descriptionRef.current && description) {
       const element = descriptionRef.current;
       setIsClamped(element.scrollHeight > element.clientHeight);
     }
-  };
+  }, [description]);
 
   // Check on mount and when description changes
   useEffect(() => {
     checkIfClamped();
-  }, [description]);
+    setExpanded(false);
+  }, [description, checkIfClamped]);
 
   // Use ResizeObserver to detect when the element's size changes (including window resize)
   useEffect(() => {
@@ -67,7 +68,7 @@ const FormInputSingle = ({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [description]);
+  }, [checkIfClamped]);
 
   // Check if text is clamped (overflows 2 lines)
   useEffect(() => {
