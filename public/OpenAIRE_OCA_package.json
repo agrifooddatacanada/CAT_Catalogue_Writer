@@ -1523,7 +1523,7 @@
                     },
                     "language": {
                       "type": "Text",
-                      "placeholder": "en-CA, en, etc..."
+                      "placeholder": "en, fr, etc..."
                     },
                     "publicationYear": {
                       "type": "DateTime",
@@ -1655,7 +1655,7 @@
                     },
                     "language": {
                       "type": "Text",
-                      "placeholder": "French_en-CA, en, etc..."
+                      "placeholder": "French_fr, en, etc..."
                     },
                     "publicationYear": {
                       "type": "DateTime",
