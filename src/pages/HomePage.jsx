@@ -7,6 +7,7 @@ import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
 import SelectLanguage from "../components/Stateful/LanguageSelector";
 import UploadButton from "../components/Stateful/UploadButton";
 import Footer from "../components/Stateless/Footer";
+import theme from "../theme";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
@@ -53,7 +54,7 @@ function HomePage() {
           justifyContent={{ xs: "space-around", sm: "space-between" }}
           sx={{
             padding: { sm: "0px 16px", md: "0px 32px" },
-            backgroundColor: "rgba(70, 160, 35, 1)",
+            backgroundColor: theme.primaryColor,
             color: "white",
           }}
         >
@@ -82,11 +83,11 @@ function HomePage() {
             <Box>
               <SelectLanguage
                 helperText_color="white"
-                select_bgColor="rgba(70, 160, 35, 1)"
+                select_bgColor={theme.primaryColor}
                 select_color="white"
-                menu_bgColor="rgba(90, 175, 40, 0.95)"
+                menu_bgColor={theme.primaryColor}
                 menu_color="white"
-                selected_item_bgColor="rgba(255, 255, 255, 0.2)"
+                selected_item_bgColor="rgba(255, 255, 255, 0.25)"
                 selected_item_color="rgba(225, 225, 225, 1)"
               />
             </Box>
@@ -126,7 +127,7 @@ function HomePage() {
         className="Content"
         style={{
           textAlign: "center",
-          backgroundColor: "rgba(70, 160, 35, 1)",
+          backgroundColor: theme.primaryColor,
           padding: "15px 30px",
           color: "white",
         }}
@@ -140,7 +141,7 @@ function HomePage() {
         className="Quick-Start_Content"
         style={{
           textAlign: "left",
-          backgroundColor: "rgba(180, 230, 160, 0.3)",
+          backgroundColor: theme.secondaryColor,
           padding: "80px 80px",
           color: "black",
         }}
@@ -153,13 +154,13 @@ function HomePage() {
             target="_blank"
             rel="noreferrer"
             style={{
-              color: "rgba(70, 160, 35, 1)",
+              color: theme.primaryColor,
               textDecoration: "underline",
               textUnderlineOffset: "2px",
-              textDecorationColor: "rgba(0, 225, 0, 1)",
+              textDecorationColor: theme.underlineColor,
               cursor: "pointer",
               "&:hover": {
-                textDecorationColor: "rgba(70, 160, 35, 1)",
+                textDecorationColor: theme.primaryColor,
               },
             }}
           >
@@ -171,13 +172,13 @@ function HomePage() {
             target="_blank"
             rel="noreferrer"
             style={{
-              color: "rgba(70, 160, 35, 1)",
+              color: theme.primaryColor,
               textDecoration: "underline",
               textUnderlineOffset: "2px",
-              textDecorationColor: "rgba(0, 225, 0, 1)",
+              textDecorationColor: theme.underlineColor,
               cursor: "pointer",
               "&:hover": {
-                textDecorationColor: "rgba(70, 160, 35, 1)",
+                textDecorationColor: theme.primaryColor,
               },
             }}
           >
@@ -233,7 +234,7 @@ function HomePage() {
           alignItems="center"
           style={{
             textAlign: "center",
-            backgroundColor: "rgba(180, 230, 160, 0.3)",
+            backgroundColor: theme.secondaryColor,
           }}
         >
           <p style={{ fontSize: "1.5rem", fontWeight: "500" }}>{t("homepage.quick_links")}</p>
@@ -243,13 +244,13 @@ function HomePage() {
             sx={{
               fontSize: "1.25rem",
               fontWeight: "500",
-              color: "rgba(70, 160, 35, 1)",
+              color: theme.primaryColor,
               textDecoration: "underline",
               textUnderlineOffset: "2px",
-              textDecorationColor: "rgba(0, 225, 0, 1)",
+              textDecorationColor: theme.underlineColor,
               cursor: "pointer",
               "&:hover": {
-                textDecorationColor: "rgba(70, 160, 35, 1)",
+                textDecorationColor: theme.primaryColor,
               },
             }}
           >
@@ -258,7 +259,7 @@ function HomePage() {
           <hr
             style={{
               width: "90%",
-              borderTop: "2px rgba(70, 160, 35, 1) solid",
+              border: `1px ${theme.primaryColor} solid`,
               marginTop: "25px",
             }}
           />
@@ -266,7 +267,13 @@ function HomePage() {
             onFileSelect={handleFileSelect}
             upload_file={t("homepage.upload_file")}
           />
-          {uploadedFiles && <p>{t("homepage.file_uploaded")}{uploadedFiles[0].name}</p>}
+          <Box
+            sx={{
+              width: "90%"
+            }}
+          >
+            {uploadedFiles && <p>{t("homepage.file_uploaded")}{uploadedFiles[0].name}</p>}
+          </Box>
           <Stack
             direction="column"
             spacing={2}
@@ -280,8 +287,11 @@ function HomePage() {
               sx={{
                 width: "75%",
                 backgroundColor: uploadedFiles
-                  ? "rgba(70, 160, 35, 1)"
-                  : "rgba(125, 150, 125, 0.35)",
+                  ? theme.primaryColor
+                  : "rgba(255, 255, 255, 0.25)",
+                '&:hover': {
+                  backgroundColor: theme.primaryColor
+                },
                 color: uploadedFiles ? "white" : "gray",
                 boxShadow: uploadedFiles ? undefined : "none",
                 cursor: uploadedFiles ? "pointer" : "default",
@@ -296,8 +306,11 @@ function HomePage() {
               sx={{
                 width: "75%",
                 backgroundColor: uploadedFiles
-                  ? "rgba(70, 160, 35, 1)"
-                  : "rgba(125, 150, 125, 0.35)",
+                  ? theme.primaryColor
+                  : "rgba(255, 255, 255, 0.25)",
+                '&:hover': {
+                  backgroundColor: theme.primaryColor
+                },
                 color: uploadedFiles ? "white" : "gray",
                 boxShadow: uploadedFiles ? undefined : "none",
                 cursor: uploadedFiles ? "pointer" : "default",

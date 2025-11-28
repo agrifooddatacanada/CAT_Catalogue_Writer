@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useNavigate } from "react-router-dom";
+import theme from "../../theme";
 
 function PageHeaders({
     page_heading,
@@ -28,7 +29,7 @@ function PageHeaders({
                 justifyContent={{ xs: "space-around", sm: "space-between" }}
                 sx={{
                     padding: { sm: "0px 16px", md: "0px 32px" },
-                    color: "rgba(70, 160, 35, 1)",
+                    color: theme.primaryColor,
                 }}
             >
             <Stack direction={"row"} alignItems={"center"}>
@@ -80,7 +81,7 @@ function PageHeaders({
                     </Box>
                     <p
                     style={{
-                        color: "rgba(70, 160, 35, 1)",
+                        color: theme.primaryColor,
                         fontSize: "25px",
                         fontWeight: "700",
                         margin: "0px",
@@ -111,9 +112,9 @@ function PageHeaders({
                             display: "inline-block",
                             margin: "16px !important",
                             padding: "8px 40px",
-                            backgroundColor: "rgba(70, 160, 35, 1)",
+                            backgroundColor: theme.primaryColor,
                             '&:hover': {
-                                backgroundColor: "rgba(75, 175, 50, 1)"
+                                backgroundColor: theme.primaryColor
                             },
                             color: "white",
                             boxShadow: "none",
@@ -126,11 +127,11 @@ function PageHeaders({
                 )}
                 <Box>
                     <SelectLanguage
-                        helperText_color="rgba(70, 160, 35, 1)"
+                        helperText_color={theme.primaryColor}
                         select_bgColor="white"
-                        select_color="rgba(70, 160, 35, 1)"
+                        select_color={theme.primaryColor}
                         menu_bgColor="rgba(235, 235, 235, 0.95)"
-                        menu_color="rgba(70, 160, 35, 1)"
+                        menu_color={theme.primaryColor}
                         selected_item_bgColor="rgba(215, 215, 215, 1)"
                         selected_item_color="rgba(175, 175, 175, 1)"
                     />

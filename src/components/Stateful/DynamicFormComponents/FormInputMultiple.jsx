@@ -4,6 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
+import theme from "../../../theme";
 
 const FormInputMultiple = ({
   required,
@@ -146,11 +147,11 @@ const FormInputMultiple = ({
       {!readOnly? (
         <Button
           sx={{
-            color: "rgba(70, 160, 35, 1)",
-            borderColor: "rgba(70, 160, 35, 1)",
+            color: theme.primaryColor,
+            borderColor: theme.primaryColor,
             '&:hover': {
-              borderColor: "rgba(70, 160, 35, 1)",
-              backgroundColor: "rgba(235, 235, 235, 1)"
+              borderColor: theme.primaryColor,
+              backgroundColor: theme.backgroundColor
             }
           }}
           variant="outlined"
