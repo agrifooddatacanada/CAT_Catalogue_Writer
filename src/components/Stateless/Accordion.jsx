@@ -6,8 +6,9 @@ import {
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import theme from "../../theme";
 
-const borderColor = "rgba(70, 160, 35, 1)";
+const borderColor = theme.primaryColor;
 
 export default function AccordionExpand({ accordion_question, accordion_summary }) {
   return (

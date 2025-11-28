@@ -13,6 +13,7 @@ import {
   saidify,
   //verify
  } from 'saidify'
+ import theme from "../theme";
 
 function ViewPage() {
   const { t, lang } = useTranslation();  // use translation function
@@ -80,7 +81,14 @@ function ViewPage() {
         <Button 
           variant="contained"
           type="submit"
-          sx={{ backgroundColor: "rgba(70, 160, 35, 1)", mt: "2px", mr: "10px" }}
+          sx={{ 
+            backgroundColor: theme.primaryColor,
+            "&:hover": {
+              backgroundColor: theme.primaryColor,
+            },
+            mt: "2px",
+            mr: "10px"
+          }}
           onClick={() => navigate("/form", { state: { jsonContent: uploadedJson } })}
           startIcon={<EditIcon />}
         >
@@ -90,7 +98,14 @@ function ViewPage() {
           variant="contained"
           type="submit"
           disabled={!isModified}
-          sx={{ backgroundColor: "rgba(70, 160, 35, 1)", mt: "2px", ml: "10px" }}
+          sx={{ 
+            backgroundColor: theme.primaryColor,
+            "&:hover": {
+              backgroundColor: theme.primaryColor,
+            },
+            mt: "2px",
+            mr: "10px"
+          }}
           onClick={() => downloadJson(uploadedJson)}
           startIcon={<FileDownloadIcon />}
         >

@@ -14,6 +14,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
+import theme from "../../../theme";
 
 const FormInputSingle = ({
   name,
@@ -110,7 +111,7 @@ const FormInputSingle = ({
             sx={{ 
               //mb: 0.5, 
               //display: "block", 
-              color: "rgba(150, 150, 150, 1)",
+              color: theme.descriptionColor,
               pr: isClamped && !expanded ? 12 : 0,
               ...clampSx
             }}
@@ -127,7 +128,7 @@ const FormInputSingle = ({
                   pl: 2,
                   // optional fade so the button blends over truncated text
                   background:
-                    "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 24%)",
+                    theme.linearGradient,
                 }}
               >
                 <Link
@@ -164,7 +165,7 @@ const FormInputSingle = ({
               paddingTop: "16.5px",
               paddingBottom: "16.5px",
               fontStyle: "italic", 
-              color:"rgba(100, 100, 100, 1)" 
+              color: theme.descriptionColor 
             }}
           >
             {t("no_data")} {label || name}
@@ -229,7 +230,7 @@ const FormInputSingle = ({
               paddingTop: "16.5px",
               paddingBottom: "16.5px",
               fontStyle: "italic", 
-              color:"rgba(100, 100, 100, 1)" 
+              color: theme.descriptionColor 
             }}
           >
             {t("no_data")} {label || name}
@@ -319,7 +320,7 @@ const FormInputSingle = ({
               paddingTop: "16.5px",
               paddingBottom: "16.5px",
               fontStyle: "italic", 
-              color:"rgba(100, 100, 100, 1)" 
+              color: theme.descriptionColor
             }}
           >
             {t("no_data")} {label || name}
