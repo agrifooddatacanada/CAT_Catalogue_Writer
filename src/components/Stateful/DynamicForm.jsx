@@ -14,6 +14,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 import theme from "../../theme";
+import canonicalize from "../../utils/canonicalize";
 
 //
 const checkMultipleEntriesFilled = (fields, state) => {
@@ -126,12 +127,17 @@ function DynamicForm({
     if ("catalogue_id" in nestedState) {
       delete nestedState.catalogue_id;
     }
+
+    // ADD CANONICALISATION HERE
+    const canonicalizedState = canonicalize(nestedState);
+    const formData = JSON.parse(canonicalizedState);
+
     // Add a unique file identifier
     const formDataWithId = {
       "@context": "https://schema.org",
       "@type": "Catalogue",
       "catalogue_id": "",
-      ...nestedState,
+      ...formData,
     };
 
     //alert("Saving file with catalogue_id: " + formDataWithId.catalogue_id);
@@ -140,6 +146,7 @@ function DynamicForm({
     if (typeof onSave === "function") {
       onSave(formDataWithId, isModified);
     }
+
   };
 
   //
