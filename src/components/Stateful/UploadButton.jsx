@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone';
 import Button from '@mui/material/Button';
+import theme from "../../theme";
 
 export default function UploadButton({ onFileSelect, upload_file }) {
   const [dragOver, setDragOver] = useState(false);
@@ -58,10 +59,10 @@ export default function UploadButton({ onFileSelect, upload_file }) {
         borderRadius: "4px",
         margin: "20px auto",
         backgroundColor: dragOver
-          ? "rgba(160, 220, 140, 0.7)"
+          ? theme.hoverUnselectedBgColor
           : "rgba(185, 190, 185, 1)",
         '&:hover': {
-          backgroundColor: "rgba(160, 220, 140, 0.7)"
+          backgroundColor: theme.hoverUnselectedBgColor
         },
         display: "flex",
         alignItems: "center",

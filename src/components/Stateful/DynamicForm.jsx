@@ -13,6 +13,8 @@ import useDynamicFormState from "../../hooks/useDynamicFormState";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
+import theme from "../../theme";
+import canonicalize from "../../utils/canonicalize";
 
 //
 const checkMultipleEntriesFilled = (fields, state) => {
@@ -125,12 +127,17 @@ function DynamicForm({
     if ("catalogue_id" in nestedState) {
       delete nestedState.catalogue_id;
     }
+
+    // ADD CANONICALISATION HERE
+    const canonicalizedState = canonicalize(nestedState);
+    const formData = JSON.parse(canonicalizedState);
+
     // Add a unique file identifier
     const formDataWithId = {
       "@context": "https://schema.org",
       "@type": "Catalogue",
       "catalogue_id": "",
-      ...nestedState,
+      ...formData,
     };
 
     //alert("Saving file with catalogue_id: " + formDataWithId.catalogue_id);
@@ -139,6 +146,7 @@ function DynamicForm({
     if (typeof onSave === "function") {
       onSave(formDataWithId, isModified);
     }
+
   };
 
   //
@@ -318,19 +326,19 @@ function DynamicForm({
           sx={{
             mb: 2,
             backgroundColor: showMandatoryOnly
-              ? "rgba(70, 160, 35, 1)"
-              : "rgba(255, 255, 255, 1)",
+              ? theme.primaryColor
+              : theme.backgroundColor,
             color: showMandatoryOnly
-              ? "rgba(255, 255, 255, 1)"
-              : "rgba(70, 160, 35, 1)",
+              ? theme.backgroundColor
+              : theme.primaryColor,
             borderColor: showMandatoryOnly
-              ? "rgba(255, 255, 255, 1)"
-              : "rgba(70, 160, 35, 1)",
+              ? theme.backgroundColor
+              : theme.primaryColor,
             '&:hover': {
               backgroundColor: showMandatoryOnly
-                ? "rgba(70, 160, 35, 1)"
-                : "rgba(70, 160, 35, 0.25)",
-              borderColor: "rgba(70, 160, 35, 1)"
+                ? theme.primaryColor
+                : theme.hoverUnselectedBgColor,
+              borderColor: theme.primaryColor
             },
           }}
         >
@@ -346,14 +354,14 @@ function DynamicForm({
           sx={{
             mb: 2,
             //showMandatoryOnly ?
-            backgroundColor: "rgba(255, 255, 255, 1)",
-            //: "rgba(70, 160, 35, 1)",
+            backgroundColor: theme.backgroundColor,
+            //: theme.primaryColor,
             //showMandatoryOnly ?
-            color: "rgba(70, 160, 35, 1)",
-            //: "rgba(255, 255, 255, 1)",
+            color: theme.primaryColor,
+            //: theme.backgroundColor,
             //showMandatoryOnly ?
-            borderColor: "rgba(70, 160, 35, 1)",
-            //: "rgba(255, 255, 255, 1)",
+            borderColor: theme.primaryColor,
+            //: theme.backgroundColor,
           }}
         >
           {t("dynamicform.recommended")}
@@ -364,19 +372,19 @@ function DynamicForm({
           sx={{
             mb: 2,
             backgroundColor: showMandatoryOnly
-              ? "rgba(255, 255, 255, 1)"
-              : "rgba(70, 160, 35, 1)",
+              ? theme.backgroundColor
+              : theme.primaryColor,
             color: showMandatoryOnly
-              ? "rgba(70, 160, 35, 1)"
-              : "rgba(255, 255, 255, 1)",
+              ? theme.primaryColor
+              : theme.backgroundColor,
             borderColor: showMandatoryOnly
-              ? "rgba(70, 160, 35, 1)"
-              : "rgba(255, 255, 255, 1)",
+              ? theme.primaryColor
+              : theme.backgroundColor,
             '&:hover': {
               backgroundColor: showMandatoryOnly
-                ? "rgba(70, 160, 35, 0.25)"
-                : "rgba(70, 160, 35, 1)",
-              borderColor: "rgba(70, 160, 35, 1)"
+                ? theme.hoverUnselectedBgColor
+                : theme.primaryColor,
+              borderColor: theme.primaryColor
             },
           }}
         >
@@ -386,7 +394,7 @@ function DynamicForm({
 
       {!readOnly && (
         <Typography
-          sx={{ mb: "20px", fontSize: "13px" }}
+          sx={{ mb: "15px", fontSize: "13px", fontStyle: "italic" }}
         >
           {t("dynamicform.all_fields")}
           <span style={{ color: "red"}}>*</span>
@@ -407,9 +415,9 @@ function DynamicForm({
               disabled={!isFormValid || !isModified}
               sx={{ 
                 mt: 2, 
-                backgroundColor: "rgba(70, 160, 35, 1)",
+                backgroundColor: theme.primaryColor,
                 '&:hover': {
-                  backgroundColor: "rgba(70, 160, 35, 1)"
+                  backgroundColor: theme.primaryColor
                 },
               }}
               startIcon={isEditMode && <SaveIcon />}

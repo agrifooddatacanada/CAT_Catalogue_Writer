@@ -13,6 +13,7 @@ import {
   saidify,
   //verify
  } from 'saidify'
+ import theme from "../theme";
 
 function ViewPage() {
   const { t, lang } = useTranslation();  // use translation function
@@ -26,19 +27,24 @@ function ViewPage() {
   const [jsonSchema, setJsonSchema] = useState(null);
 
   const downloadJson = (jsonData) => {
-    const [ , sad] = saidify(jsonData, 'catalogue_id');
-    //console.log(typeof sad);
+    console.log(jsonData);
+    const [ , objWithSaid] = saidify(jsonData, 'catalogue_id');
+
+    // console.log(typeof objWithSaid);
     // const computedSAID = 'ENvDUtgMxBzjgINNzJTfaMLRNumaVchQT83fyTjZIy4y'
-    // const doesVerify = verify(sad, computedSAID, label)
+    // const doesVerify = verify(objWithSaid, computedSAID, label)
     // console.log(doesVerify);
-    // sad should be a string or object; if it’s a string, use it directly; if it’s an object, stringify it
-    const content = typeof sad === 'string' ? sad : JSON.stringify(sad, null, 2);
+
+    // objWithSaid should be a string or object; if it’s a string, use it directly; if it’s an object, stringify it
+    // const content = typeof objWithSaid === 'string' ? objWithSaid : JSON.stringify(objWithSaid, null, 2);
+
+    const content = JSON.stringify(objWithSaid, null, 2);
 
     const blob = new Blob([content], { type: 'application/ld+json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `catalogue-${sad.catalogue_id || 'export'}.json`;
+    link.download = `catalogue-${objWithSaid.catalogue_id || 'export'}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -80,7 +86,14 @@ function ViewPage() {
         <Button 
           variant="contained"
           type="submit"
-          sx={{ backgroundColor: "rgba(70, 160, 35, 1)", mt: "2px", mr: "10px" }}
+          sx={{ 
+            backgroundColor: theme.primaryColor,
+            "&:hover": {
+              backgroundColor: theme.primaryColor,
+            },
+            mt: "2px",
+            mr: "10px"
+          }}
           onClick={() => navigate("/form", { state: { jsonContent: uploadedJson } })}
           startIcon={<EditIcon />}
         >
@@ -90,7 +103,14 @@ function ViewPage() {
           variant="contained"
           type="submit"
           disabled={!isModified}
-          sx={{ backgroundColor: "rgba(70, 160, 35, 1)", mt: "2px", ml: "10px" }}
+          sx={{ 
+            backgroundColor: theme.primaryColor,
+            "&:hover": {
+              backgroundColor: theme.primaryColor,
+            },
+            mt: "2px",
+            mr: "10px"
+          }}
           onClick={() => downloadJson(uploadedJson)}
           startIcon={<FileDownloadIcon />}
         >

@@ -6,6 +6,7 @@ import { Dialog, Box, Typography, TextField, Button, IconButton } from "@mui/mat
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from "@mui/icons-material/Close";
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
+import theme from "../../../theme";
 
 const PopupDialog = ({
   open, // Boolean for dialog visibility from `dialogOpen`
@@ -82,9 +83,9 @@ const PopupDialog = ({
             onClick={handlePopupSave}
             disabled={!isPopupSaveEnabled()} // Disable if invalid
             sx={{ 
-              backgroundColor: "rgba(70, 160, 35, 1)",
+              backgroundColor: theme.primaryColor,
               '&:hover': {
-                backgroundColor: "rgba(70, 160, 35, 1)"
+                backgroundColor: theme.primaryColor
               },
             }}
             startIcon={<SaveIcon />}
