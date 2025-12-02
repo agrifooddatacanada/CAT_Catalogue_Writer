@@ -6,10 +6,10 @@
     "content": "Make it easier for others to track your work and cite what you make",
     "quick_start_heading": "Quick-Start:",
     "step_1": "1. ",
-    "watch_tutorial_video": "Watch our tutorial video on creating a catalogue.",
-    "or": " Or ",
-    "read_the_tutorial": "read the tutorial ",
-    "instead": "instead.",
+    "watch_tutorial_video": "Watch our tutorial video on creating a catalogue",
+    "or": ". Or ",
+    "read_the_tutorial": "read the tutorial",
+    "instead": " instead.",
     "step_2": "2. Write your catalogue and generate a .json.",
     "step_3": "3. Use your catalogue here to view, and generate a JSON-LD for data input aligned with Open-AIRE metadata standards.",
     "step_4": "4. Store your catalogue files with your data, put them in a repository, or collaborate by sharing them with others.",
@@ -40,7 +40,10 @@
     "save_changes": "Save Changes",
     "review": "Review",
     "all_fields": "All fields with ( ",
-    "are_mandatory": " ) are Mandatory"
+    "are_mandatory": " ) are Mandatory",
+    "page": "Page",
+    "of": "of",
+    "fields": "fields"
   },
   "viewpage": {
     "loading": "Loading schema...",
