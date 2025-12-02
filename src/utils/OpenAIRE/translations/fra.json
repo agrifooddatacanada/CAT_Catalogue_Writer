@@ -6,10 +6,10 @@
     "content": "Facilitez la tâche aux autres pour suivre votre travail et citer ce que vous créez",
     "quick_start_heading": "Démarrage rapide:",
     "step_1": "1. ",
-    "watch_tutorial_video": "Regardez notre vidéo tutorielle sur la création d’un Catalogue.",
-    "or": " Ou ",
-    "read_the_tutorial": "lisez le tutoriel ",
-    "instead": "à la place.",
+    "watch_tutorial_video": "Regardez notre vidéo tutorielle sur la création d’un Catalogue",
+    "or": ". Ou ",
+    "read_the_tutorial": "lisez le tutoriel",
+    "instead": " à la place.",
     "step_2": "2. Rédigez votre Catalogue et générez un fichier .json.",
     "step_3": "3. Utilisez votre Catalogue ici pour visualiser et générer un JSON-LD destiné à l’entrée des données conforme aux standards de métadonnées Open-AIRE.",
     "step_4": "4. Stockez vos fichiers de Catalogue avec vos données, placez-les dans un dépôt ou collaborez en les partageant avec d’autres.",
@@ -40,7 +40,10 @@
     "save_changes": "Enregistrer les modifications",
     "review": "Réviser",
     "all_fields": "Tous les champs avec ( ",
-    "are_mandatory": " ) sont obligatoires"
+    "are_mandatory": " ) sont obligatoires",
+    "page": "Page",
+    "of": "of",
+    "fields": "fields"
   },
   "viewpage": {
     "loading": "Chargement du schéma...",

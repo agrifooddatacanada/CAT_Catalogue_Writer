@@ -15,6 +15,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 import theme from "../../theme";
 import canonicalize from "../../utils/canonicalize";
+import Pagination from "@mui/material/Pagination";
 
 //
 const checkMultipleEntriesFilled = (fields, state) => {
@@ -94,26 +95,35 @@ function DynamicForm({
   } = useDynamicFormState(jsonData, language, initialData); // Pass `initialData` here
 
   const { t } = useTranslation(); // use translation function
-
-  //
   const popupField = findFieldByPath(fields, dialogOpen);
 
   //
   const [isFormValid, setIsFormValid] = useState();
-
-  //
   const [showMandatoryOnly, setShowMandatoryOnly] = useState(true);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const fieldsPerPage = 6;
 
   //
   const displayedFields = showMandatoryOnly
     ? filterMandatoryFields(fields)
     : fields;
 
-  //
-  const initialFormStateRef = useRef(null);
+  // Calculate Pagination
+  const totalPages = Math.ceil(displayedFields.length / fieldsPerPage);
+  const startIndex = (currentPage - 1) * fieldsPerPage;
+  const endIndex = startIndex + fieldsPerPage;
+  const currentPageFields = displayedFields.slice(startIndex, endIndex);
 
   //
+  const initialFormStateRef = useRef(null);
   const [isModified, setIsModified] = useState(false);
+
+  // Reset to first page when switching between Mandatory/Complete view
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [showMandatoryOnly]);
 
   //
   const handleSubmit = (event) => {
@@ -320,6 +330,7 @@ function DynamicForm({
   return (
     <>
       <Box sx={{ mb: 2, display: "flex", gap: 2, justifyContent: "center" }}>
+        {/* MANDATORY BUTTON */}
         <Button
           variant={showMandatoryOnly ? "contained" : "outlined"}
           onClick={() => setShowMandatoryOnly(true)}
@@ -402,11 +413,51 @@ function DynamicForm({
         </Typography>
       )}
 
+      {/* PAGE INDICATOR */}
+      <Box sx={{ mb: 3, textAlign: "center" }}>
+        <Typography variant="body2" color="textSecondary">
+          {t("dynamicform.page")} {currentPage} {t("dynamicform.of")} {totalPages} ({startIndex + 1}-{Math.min(endIndex, displayedFields.length)} {t("dynamicform.of")} {displayedFields.length} {t("dynamicform.fields")})
+        </Typography>
+      </Box>
+
       {/* GENERATED FORM (RECURSICE INPUT RENDERING + SUBMIT BUTTON) */}
       <form onSubmit={handleSubmit}>
-        {displayedFields.map((field) =>
-          renderInput({ ...field, path: field.name })
+        {currentPageFields.map((field, index) =>
+          renderInput({ ...field, path: field.name }, 0, `${field.name}-${startIndex + index}`)
         )}
+
+        {/* {displayedFields.map((field) =>
+          renderInput({ ...field, path: field.name })
+        )} */}
+
+        {/*PAGINATION CONTROLS */}
+        {totalPages > 1 && (
+          <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={(e, page) => setCurrentPage(page)}
+              //color={theme.backgroundColor}
+              size="large"
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  color: theme.primaryColor
+                },
+                '& .MuiPaginationItem-root.Mui-selected': {
+                  backgroundColor: theme.primaryColor,
+                  color: theme.backgroundColor,
+                  '&:hover': {
+                    backgroundColor: theme.primaryColor,
+                  },
+                },
+                '& .MuiPaginationItem-root:hover': {
+                  backgroundColor: theme.secondaryColor // Light hover effect
+                },
+              }}
+            />
+          </Box>
+        )}
+
         {!readOnly && (
           <>
             <Button
