@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Stack, Box } from "@mui/system";
-import { Button } from "@mui/material";
+import { Button, FormControl, FormHelperText, MenuItem, Select } from "@mui/material";
 import AccordionExpand from "../components/Stateless/Accordion";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
 //import SelectLanguage from "../components/Stateful/LanguageSelector";
@@ -9,11 +9,26 @@ import UploadButton from "../components/Stateful/UploadButton";
 import Footer from "../components/Stateless/Footer";
 import theme from "../theme";
 import HomeHeader from "../components/Stateless/HomeHeader";
+import HomeSubHeader from "../components/Stateless/HomeSubHeader";
+import HomeQuickStart from "../components/Stateless/HomeQuickStart";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
   const [jsonContent, setJsonContent] = useState(null);
+  const [schema, setSchema] = useState(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();  // use translation function
+  
+  const isSchemaSelected = schema !== null && schema !== "";
+
+  const handleSchemaSelect = (e) => {
+    setSchema(e.target.value);
+    // Reset files when schema changes to ensure schema-file match
+    if (uploadedFiles) {
+      setUploadedFiles(null);
+      setJsonContent(null);
+    }
+  };
 
   const handleFileSelect = (files) => {
     const file = files[0];
@@ -30,6 +45,19 @@ function HomePage() {
     reader.readAsText(file);
   };
 
+  const getFormRoute = () => {
+    switch (schema) {
+      case "OpenAIRE":
+        return "/form";
+      case "Dublin Core":
+        return "/form-dublincore";
+      case "DataCite":
+        return "/form-datacite";
+      default:
+        return "/form";
+    }
+  };
+
   const handleViewClick = () => {
     if (jsonContent) {
       navigate("/view", { state: { jsonContent } });
@@ -39,85 +67,32 @@ function HomePage() {
   // 
   const handleEditClick = () => {
     if (jsonContent) {
-      navigate("/form", { state: { jsonContent } });
+      navigate(getFormRoute(), { state: { jsonContent } });
     }
   };
 
-  const { t } = useTranslation();  // use translation function
-
   return (
     <div className="HomePage">
-      <HomeHeader />
-      <div
-        className="Content"
-        style={{
-          textAlign: "center",
-          backgroundColor: theme.primaryColor,
-          padding: "15px 30px",
-          color: "white",
-        }}
-      >
-        <h1>{t("homepage.content_heading")}</h1>
-        <p style={{ fontSize: "1.25rem" }}>
-          {t("homepage.content")}
-        </p>
-      </div>
-      <div
-        className="Quick-Start_Content"
-        style={{
-          textAlign: "left",
-          backgroundColor: theme.secondaryColor,
-          padding: "80px 80px",
-          color: "black",
-        }}
-      >
-        <h3 style={{ marginBottom: "0px" }}>{t("homepage.quick_start_heading")}</h3>
-        <p style={{ fontSize: "1rem", fontWeight: "500", marginTop: "0px" }}>
-          {t("homepage.step_1")}
-          <a
-            href="https://agrifooddatacanada.ca/"
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              color: theme.primaryColor,
-              textDecoration: "underline",
-              textUnderlineOffset: "2px",
-              textDecorationColor: theme.underlineColor,
-              cursor: "pointer",
-              "&:hover": {
-                textDecorationColor: theme.primaryColor,
-              },
-            }}
-          >
-            {t("homepage.watch_tutorial_video")}
-          </a>
-          {t("homepage.or")}
-          <a
-            href="https://agrifooddatacanada.ca/"
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              color: theme.primaryColor,
-              textDecoration: "underline",
-              textUnderlineOffset: "2px",
-              textDecorationColor: theme.underlineColor,
-              cursor: "pointer",
-              "&:hover": {
-                textDecorationColor: theme.primaryColor,
-              },
-            }}
-          >
-            {t("homepage.read_the_tutorial")}
-          </a>
-          {t("homepage.instead")}
-          <br />
-          {t("homepage.step_2")}
-          <br />
-          {t("homepage.step_3")}
-          <br />
-          {t("homepage.step_4")}
-        </p>
-      </div>
+      <HomeHeader
+        semantic_engine={t("homepage.semantic_engine")}
+        catalogue={t("homepage.catalogue")}
+      />
+      <HomeSubHeader
+        content_heading={t("homepage.content_heading")}
+        content={t("homepage.content")}
+      />
+      <HomeQuickStart
+        quick_start_heading={t("homepage.quick_start_heading")}
+        step_1={t("homepage.step_1")}
+        watch_tutorial_video={t("homepage.watch_tutorial_video")}
+        or={t("homepage.or")}
+        read_the_tutorial={t("homepage.read_the_tutorial")}
+        instead={t("homepage.instead")}
+        step_2={t("homepage.step_2")}
+        step_3={t("homepage.step_3")}
+        step_4={t("homepage.step_4")}
+      />
+      
       <br />
       <Stack
         direction={{ sm: "column", md: "row" }}
@@ -155,7 +130,7 @@ function HomePage() {
         </Box>
         <Box
           width={{ xs: "90%", sm: "90%", md: "50%" }}
-          height={"425px"}
+          pb={"40px"}
           alignItems="center"
           style={{
             textAlign: "center",
@@ -163,13 +138,34 @@ function HomePage() {
           }}
         >
           <p style={{ fontSize: "1.5rem", fontWeight: "500" }}>{t("homepage.quick_links")}</p>
-          <Box
+          <Box sx={{ mb: "20px" }}>
+            <FormHelperText sx={{ textAlign: "center", fontSize: "15px" }}>
+              Select a Schema to Proceed
+            </FormHelperText>
+            <FormControl sx={{ width: "75%" }} >
+              <Select
+                value={schema}
+                onChange={handleSchemaSelect}
+                displayEmpty
+              >
+                <MenuItem value="" sx={{ color: "rgba(100, 100, 100, 1)" }}>
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value="OpenAIRE">OpenAIRE</MenuItem>
+                <MenuItem value="Dublin Core">Dublin Core</MenuItem>
+                <MenuItem value="DataCite">DataCite</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Write link - enabled when any schema is selected */}
+          {isSchemaSelected && (<Box
             component={Link}
-            to="/form"
+            to={getFormRoute()}
             sx={{
               fontSize: "1.25rem",
               fontWeight: "500",
-              color: theme.primaryColor,
+              color: isSchemaSelected ? theme.primaryColor : "rgba(100, 100, 100, 1)",
               textDecoration: "underline",
               textUnderlineOffset: "2px",
               textDecorationColor: theme.underlineColor,
@@ -180,25 +176,29 @@ function HomePage() {
             }}
           >
             {t("homepage.write")}
-          </Box>
+          </Box>)}
+
           <hr
             style={{
               width: "90%",
               border: `1px ${theme.primaryColor} solid`,
-              marginTop: "25px",
+              marginTop: "20px",
             }}
           />
+
+          {/* Upload button - enabled when any schema is selected */}
           <UploadButton 
             onFileSelect={handleFileSelect}
             upload_file={t("homepage.upload_file")}
+            disabled={!isSchemaSelected}
           />
-          <Box
-            sx={{
-              width: "90%"
-            }}
-          >
-            {uploadedFiles && <p>{t("homepage.file_uploaded")}{uploadedFiles[0].name}</p>}
+          <Box sx={{ width: "90%" }}>
+            {uploadedFiles && (
+              <p>{t("homepage.file_uploaded")}{uploadedFiles[0].name}</p>
+            )}
           </Box>
+
+          {/* View and Edit buttons - only enabled when files uploaded */}
           <Stack
             direction="column"
             spacing={2}

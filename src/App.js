@@ -14,6 +14,8 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/form" element={<FormPage />} />
+          <Route path="/form-dublincore" element={<FormPage />} />
+          <Route path="/form-datacite" element={<FormPage />} />
           <Route path="/view" element={<ViewPage />} />
           <Route path="/view-help" element={<ViewHelpPage />} />
           <Route path="/form-help" element={<FormHelpPage />} />

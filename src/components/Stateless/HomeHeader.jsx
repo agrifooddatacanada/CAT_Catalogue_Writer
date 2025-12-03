@@ -1,11 +1,8 @@
 import { Stack, Box } from "@mui/system";
-import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 import SelectLanguage from "../Stateful/LanguageSelector";
 import theme from "../../theme";
 
-function HomeHeader() {
-
-  const { t } = useTranslation();  // use translation function
+function HomeHeader({ semantic_engine, catalogue }) {
 
   return (
       <div className="Header">
@@ -29,7 +26,7 @@ function HomeHeader() {
                 fontWeight: "700",
               }}
             >
-              {t("homepage.semantic_engine")}
+              {semantic_engine}
             </Box>
             <Box
               component="div"
@@ -38,7 +35,7 @@ function HomeHeader() {
                 fontSize: { xs: "14px", sm: "18px", md: "22px" },
               }}
             >
-              {t("homepage.catalogue")}
+              {catalogue}
             </Box>
           </Box>
           <Stack direction={"row"} spacing={2} alignItems="center">
