@@ -49,6 +49,16 @@ const filterMandatoryFields = (fields) => {
 };
 
 //
+const filterRecommendedFields = (fields) => {
+  return fields
+    .filter((field) => field.required || field.recommended) // keep only recommended parents and singles
+    .map((field) => ({
+      ...field,
+      children: field.children ? filterRecommendedFields(field.children) : [],
+    }));
+};
+
+//
 function unflatten(formState) {
   const result = {};
   Object.keys(formState).forEach((flatKey) => {
@@ -99,16 +109,34 @@ function DynamicForm({
 
   //
   const [isFormValid, setIsFormValid] = useState();
-  const [showMandatoryOnly, setShowMandatoryOnly] = useState(true);
+
+  // VIEW MODE STATE (add this with your other useState calls)
+  const [viewMode, setViewMode] = useState('mandatory'); // 'mandatory', 'recommended', 'complete'
+
+  // Update your displayedFields logic:
+  const getDisplayedFields = () => {
+    switch (viewMode) {
+      case 'mandatory':
+        return filterMandatoryFields(fields);
+      case 'recommended':
+        return filterRecommendedFields(fields);
+      case 'complete':
+        return fields;
+      default:
+        return fields;
+    }
+  };
+
+  const displayedFields = getDisplayedFields();
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const fieldsPerPage = 6;
 
-  //
-  const displayedFields = showMandatoryOnly
-    ? filterMandatoryFields(fields)
-    : fields;
+  // //
+  // const displayedFields = showMandatoryOnly
+  //   ? filterMandatoryFields(fields)
+  //   : fields;
 
   // Calculate Pagination
   const totalPages = Math.ceil(displayedFields.length / fieldsPerPage);
@@ -123,7 +151,7 @@ function DynamicForm({
   // Reset to first page when switching between Mandatory/Complete view
   useEffect(() => {
     setCurrentPage(1);
-  }, [showMandatoryOnly]);
+  }, [viewMode]);
 
   //
   const handleSubmit = (event) => {
@@ -156,7 +184,6 @@ function DynamicForm({
     if (typeof onSave === "function") {
       onSave(formDataWithId, isModified);
     }
-
   };
 
   //
@@ -227,6 +254,19 @@ function DynamicForm({
     }
   };
 
+  // 
+  const hasRecommendedFields = (fields) => {
+    for (const field of fields) {
+      if (field.recommended || 
+          (field.children && field.children.some(child => child.recommended))) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const showRecommendedButton = hasRecommendedFields(fields);
+
   // RECURSIVE RENDERER (INDIVIDUAL INPUTS)
   const renderInput = (
     field,
@@ -246,6 +286,8 @@ function DynamicForm({
       children,
       path,
       required,
+      recommended,
+      optional
     } = field;
 
     const value =
@@ -270,6 +312,8 @@ function DynamicForm({
         <FormInputMultiple
           key={key}
           required={required}
+          recommended={recommended}
+          optional={optional}
           label={label}
           name={name}
           path={path}
@@ -298,6 +342,8 @@ function DynamicForm({
           depth={depth}
           renderInput={renderInput}
           required={required}
+          recommended={recommended}
+          optional={optional}
           readOnly={readOnly}
         />
       );
@@ -317,6 +363,8 @@ function DynamicForm({
         error={error}
         onChange={onChange}
         required={required}
+        recommended={recommended}
+        optional={optional}
         depth={depth}
         readOnly={readOnly}
         isEditMode={isEditMode}
@@ -332,21 +380,21 @@ function DynamicForm({
       <Box sx={{ mb: 2, display: "flex", gap: 2, justifyContent: "center" }}>
         {/* MANDATORY BUTTON */}
         <Button
-          variant={showMandatoryOnly ? "contained" : "outlined"}
-          onClick={() => setShowMandatoryOnly(true)}
+          variant="contained"
+          onClick={() => setViewMode("mandatory")}
           sx={{
-            mb: 2,
-            backgroundColor: showMandatoryOnly
+            backgroundColor: viewMode === "mandatory"
               ? theme.primaryColor
               : theme.backgroundColor,
-            color: showMandatoryOnly
+            color: viewMode === "mandatory"
               ? theme.backgroundColor
               : theme.primaryColor,
-            borderColor: showMandatoryOnly
+            borderColor: viewMode === "mandatory"
               ? theme.backgroundColor
               : theme.primaryColor,
+            border: viewMode === "mandatory" ? "1px solid transparent" : "1px solid currentColor",
             '&:hover': {
-              backgroundColor: showMandatoryOnly
+              backgroundColor: viewMode === "mandatory"
                 ? theme.primaryColor
                 : theme.hoverUnselectedBgColor,
               borderColor: theme.primaryColor
@@ -355,46 +403,54 @@ function DynamicForm({
         >
           {t("dynamicform.mandatory")}
         </Button>
+
+        {/* RECOMMENDED BUTTON - ONLY IF RECOMMENDED FIELDS EXIST */}
+        {showRecommendedButton && (
+          <Button
+            variant="contained"
+            onClick={() => setViewMode("recommended")}
+            sx={{
+              backgroundColor: viewMode === "recommended"
+                ? theme.primaryColor
+                : theme.backgroundColor,
+              color: viewMode === "recommended"
+                ? theme.backgroundColor
+                : theme.primaryColor,
+              borderColor: viewMode === "recommended"
+                ? theme.backgroundColor
+                : theme.primaryColor,
+              border: viewMode === "recommended" ? '1px solid transparent' : '1px solid currentColor',
+              '&:hover': {
+                backgroundColor: viewMode === "recommended"
+                  ? theme.primaryColor
+                  : theme.hoverUnselectedBgColor,
+                borderColor: theme.primaryColor
+              },
+            }}
+          >
+            {t("dynamicform.recommended")}
+          </Button>
+        )}
+
+        {/* COMPLETE BUTTON */}
         <Button
-          variant={
-            //showMandatoryOnly ? "contained" :
-            "outlined"
-          }
-          //onClick={() => setShowMandatoryOnly(true)}
-          disabled
+          variant="contained"
+          onClick={() => setViewMode("complete")}
           sx={{
-            mb: 2,
-            //showMandatoryOnly ?
-            backgroundColor: theme.backgroundColor,
-            //: theme.primaryColor,
-            //showMandatoryOnly ?
-            color: theme.primaryColor,
-            //: theme.backgroundColor,
-            //showMandatoryOnly ?
-            borderColor: theme.primaryColor,
-            //: theme.backgroundColor,
-          }}
-        >
-          {t("dynamicform.recommended")}
-        </Button>
-        <Button
-          variant={!showMandatoryOnly ? "contained" : "outlined"}
-          onClick={() => setShowMandatoryOnly(false)}
-          sx={{
-            mb: 2,
-            backgroundColor: showMandatoryOnly
+            backgroundColor: viewMode === "complete"
+              ? theme.primaryColor
+              : theme.backgroundColor,
+            color: viewMode === "complete"
               ? theme.backgroundColor
               : theme.primaryColor,
-            color: showMandatoryOnly
-              ? theme.primaryColor
-              : theme.backgroundColor,
-            borderColor: showMandatoryOnly
-              ? theme.primaryColor
-              : theme.backgroundColor,
+            borderColor: viewMode === "complete"
+              ? theme.backgroundColor
+              : theme.primaryColor,
+            border: viewMode === "complete" ? '1px solid transparent' : '1px solid currentColor',
             '&:hover': {
-              backgroundColor: showMandatoryOnly
-                ? theme.hoverUnselectedBgColor
-                : theme.primaryColor,
+              backgroundColor: viewMode === "complete"
+                ? theme.primaryColor
+                : theme.hoverUnselectedBgColor,
               borderColor: theme.primaryColor
             },
           }}
@@ -416,7 +472,8 @@ function DynamicForm({
       {/* PAGE INDICATOR */}
       <Box sx={{ mb: 3, textAlign: "center" }}>
         <Typography variant="body2" color="textSecondary">
-          {t("dynamicform.page")} {currentPage} {t("dynamicform.of")} {totalPages} ({startIndex + 1}-{Math.min(endIndex, displayedFields.length)} {t("dynamicform.of")} {displayedFields.length} {t("dynamicform.fields")})
+          {t("dynamicform.page")} {currentPage} {t("dynamicform.of")} {totalPages}&nbsp;
+          ({startIndex + 1}-{Math.min(endIndex, displayedFields.length)} {t("dynamicform.of")} {displayedFields.length} {t("dynamicform.fields")})
         </Typography>
       </Box>
 
@@ -464,8 +521,8 @@ function DynamicForm({
               variant="contained"
               type="submit"
               disabled={!isFormValid || !isModified}
-              sx={{ 
-                mt: 2, 
+              sx={{
+                mt: 2,
                 backgroundColor: theme.primaryColor,
                 '&:hover': {
                   backgroundColor: theme.primaryColor
@@ -482,7 +539,8 @@ function DynamicForm({
         )}
       </form>
 
-      {/* DIALOG POP-UP JSX 
+
+      {/* DIALOG POP-UP JSX
           RENDERED INSIDE MAIN COMPONENT TO ACCESS HOOKS AND UPDATE STATE */}
       <PopupDialog
         open={!!dialogOpen}
@@ -496,6 +554,7 @@ function DynamicForm({
         isPopupSaveEnabled={isPopupSaveEnabled}
         renderInput={renderInput}
       />
+
 
       {/* DEBUG PANEL SHOWING EXTRACTED FIELDS JSON FOR VERIFICATION */}
       {/* <Box
@@ -516,5 +575,6 @@ function DynamicForm({
     </>
   );
 }
+
 
 export default DynamicForm;

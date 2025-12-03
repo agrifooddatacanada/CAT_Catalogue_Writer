@@ -27,7 +27,6 @@ function ViewPage() {
   const [jsonSchema, setJsonSchema] = useState(null);
 
   const downloadJson = (jsonData) => {
-    console.log(jsonData);
     const [ , objWithSaid] = saidify(jsonData, 'catalogue_id');
 
     // console.log(typeof objWithSaid);
@@ -38,7 +37,7 @@ function ViewPage() {
     // objWithSaid should be a string or object; if it’s a string, use it directly; if it’s an object, stringify it
     // const content = typeof objWithSaid === 'string' ? objWithSaid : JSON.stringify(objWithSaid, null, 2);
 
-    const content = JSON.stringify(objWithSaid, null, 2);
+    const content = JSON.stringify(objWithSaid);
 
     const blob = new Blob([content], { type: 'application/ld+json' });
     const url = URL.createObjectURL(blob);

@@ -5,7 +5,7 @@ import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone';
 import Button from '@mui/material/Button';
 import theme from "../../theme";
 
-export default function UploadButton({ onFileSelect, upload_file }) {
+export default function UploadButton({ onFileSelect, upload_file, disabled }) {
   const [dragOver, setDragOver] = useState(false);
 
   const [isUploaded, setIsUploaded] = useState(false);
@@ -44,6 +44,7 @@ export default function UploadButton({ onFileSelect, upload_file }) {
       component="label"
       role={undefined}
       variant="contained"
+      disabled={disabled}
       tabIndex={-1}
       sx={{
         width: "85%",
@@ -55,7 +56,7 @@ export default function UploadButton({ onFileSelect, upload_file }) {
           xl: "20px",
         },
         textAlign: "center",
-        border: "1px solid black",
+        //border: "1px solid black",
         borderRadius: "4px",
         margin: "20px auto",
         backgroundColor: dragOver

@@ -190,6 +190,8 @@ function extractAttributesFromCaptureBase(
 
         // ATTACH LABELS, CATEGORIES, REQUIRED/MULTIPLE FLAGS
         const required = conformances[key] === "M";
+        const recommended = conformances[key] === "R";
+        const optional = conformances[key] === "O";
         const multiple = cardinalities[key]?.includes("n");
         const categories = entryCodes[key] || null;
         const label = labels[key] || key;  // This will now use dependency-specific labels
@@ -203,6 +205,8 @@ function extractAttributesFromCaptureBase(
             description,
             type: fieldType,
             required,
+            recommended,
+            optional,
             multiple,
             categories,
             children,
@@ -328,6 +332,8 @@ export function extractAttributes(jsonData, baseKey = "capture_base", lang, visi
         }
 
         const required = conformances[key] === "M";
+        const recommended = conformances[key] === "R";
+        const optional = conformances[key] === "O";
         const multiple = cardinalities[key]?.includes("n");
         const categories = entryCodes[key] || null;
         const label = mainLabels[key] || key;
@@ -341,6 +347,8 @@ export function extractAttributes(jsonData, baseKey = "capture_base", lang, visi
             description,
             type: fieldType,
             required,
+            recommended,
+            optional,
             multiple,
             categories,
             children,
