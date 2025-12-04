@@ -13,19 +13,33 @@ function FormPage() {
   const navigate = useNavigate();
 
   const uploadedJson = location.state?.jsonContent || false;
+  const schema = location.state?.schema || "OpenAIRE";
 
   const handleSave = (formData, isModified) => {
-    navigate("/view", { state: { jsonContent: formData, isModified: isModified } });
+    navigate("/view", { state: { jsonContent: formData, isModified, schema } });
   };
 
   const [jsonSchema, setJsonSchema] = useState(null);
 
   useEffect(() => {
-    fetch("./OpenAIRE_OCA_package.json")
+    if (!schema) return;
+
+    // Map schema name -> file name
+    const fileMap = {
+      "OpenAIRE": "./OpenAIRE_OCA_package.json",
+      "Dublin Core": "./Trial_Dublin_Core_OCA_package.json",
+      "DataCite": "./Trial_DataCite_OCA_package.json"
+    };
+
+    const filePath = fileMap[schema] || fileMap.OpenAIRE;
+
+    fetch(filePath)
       .then((res) => res.json())
       .then(setJsonSchema)
-      .catch((err) => console.error(err));
-  }, []);
+      .catch((err) => {
+        console.error(`Failed to load schema for ${schema}:`, err);
+      });
+  }, [schema]);
 
   if (!jsonSchema) return <div>{t("formpage.loading")}</div>;
 

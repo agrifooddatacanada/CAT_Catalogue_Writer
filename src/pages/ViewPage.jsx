@@ -8,37 +8,23 @@ import DynamicForm from "../components/Stateful/DynamicForm"
 import EditIcon from '@mui/icons-material/Edit';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PageHeaders from "../components/Stateless/PageHeaders";
-// import canonicalize from "../utils/canonicalize";
-import { 
-  saidify,
-  //verify
- } from 'saidify'
- import theme from "../theme";
+import { saidify } from 'saidify';
+import theme from "../theme";
 
 function ViewPage() {
   const { t, lang } = useTranslation();  // use translation function
-
   const location = useLocation();
   const navigate = useNavigate();
   
   const uploadedJson = location.state?.jsonContent || null;
   const isModified = location.state?.isModified || false;
+  const schema = location.state?.schema || "OpenAIRE"; // Get schema from navigation state
 
   const [jsonSchema, setJsonSchema] = useState(null);
 
   const downloadJson = (jsonData) => {
     const [ , objWithSaid] = saidify(jsonData, 'catalogue_id');
-
-    // console.log(typeof objWithSaid);
-    // const computedSAID = 'ENvDUtgMxBzjgINNzJTfaMLRNumaVchQT83fyTjZIy4y'
-    // const doesVerify = verify(objWithSaid, computedSAID, label)
-    // console.log(doesVerify);
-
-    // objWithSaid should be a string or object; if it’s a string, use it directly; if it’s an object, stringify it
-    // const content = typeof objWithSaid === 'string' ? objWithSaid : JSON.stringify(objWithSaid, null, 2);
-
     const content = JSON.stringify(objWithSaid);
-
     const blob = new Blob([content], { type: 'application/ld+json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -50,13 +36,24 @@ function ViewPage() {
     URL.revokeObjectURL(url);
   };
 
-  // LOAD FORM SCHEMA JSON ONCE
+  // LOAD FORM SCHEMA JSON BASED ON SCHEMA
   useEffect(() => {
-    fetch("./OpenAIRE_OCA_package.json")
+    // Map schema name -> file name
+    const fileMap = {
+      "OpenAIRE": "./OpenAIRE_OCA_package.json",
+      "Dublin Core": "./Trial_Dublin_Core_OCA_package.json",
+      "DataCite": "./Trial_DataCite_OCA_package.json"
+    };
+    
+    const filePath = fileMap[schema] || fileMap.OpenAIRE;
+
+    fetch(filePath)
       .then((res) => res.json())
       .then(setJsonSchema)
-      .catch((err) => console.error(err));
-  }, []);
+      .catch((err) => {
+        console.error(`Failed to load schema for ${schema}:`, err);
+      });
+  }, [schema]);
 
   if (!jsonSchema) {
     return <div>{t("viewpage.loading")}</div>;
@@ -65,6 +62,16 @@ function ViewPage() {
   if (!uploadedJson) {
     return <p>{t("viewpage.no_catalogue")}</p>;
   }
+
+  const handleEditClick = () => {
+    // Pass schema back to form so it loads correct OCA package
+    navigate("/form", { 
+      state: { 
+        jsonContent: uploadedJson, 
+        schema: schema 
+      } 
+    });
+  };
 
   return (
     <div className="ViewPage">
@@ -93,7 +100,7 @@ function ViewPage() {
             mt: "2px",
             mr: "10px"
           }}
-          onClick={() => navigate("/form", { state: { jsonContent: uploadedJson } })}
+          onClick={handleEditClick}
           startIcon={<EditIcon />}
         >
           {t("viewpage.edit")}

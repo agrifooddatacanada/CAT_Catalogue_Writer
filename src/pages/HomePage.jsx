@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Stack, Box } from "@mui/system";
-import { Button, FormControl, FormHelperText, MenuItem, Select } from "@mui/material";
+import {
+  Button,
+  FormControl,
+  FormHelperText,
+  MenuItem,
+  Select,
+} from "@mui/material";
 import AccordionExpand from "../components/Stateless/Accordion";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
 //import SelectLanguage from "../components/Stateful/LanguageSelector";
@@ -17,8 +23,8 @@ function HomePage() {
   const [jsonContent, setJsonContent] = useState(null);
   const [schema, setSchema] = useState(null);
   const navigate = useNavigate();
-  const { t } = useTranslation();  // use translation function
-  
+  const { t } = useTranslation(); // use translation function
+
   const isSchemaSelected = schema !== null && schema !== "";
 
   const handleSchemaSelect = (e) => {
@@ -60,14 +66,14 @@ function HomePage() {
 
   const handleViewClick = () => {
     if (jsonContent) {
-      navigate("/view", { state: { jsonContent } });
+      navigate("/view", { state: { jsonContent, schema } });
     }
   };
 
-  // 
+  //
   const handleEditClick = () => {
     if (jsonContent) {
-      navigate(getFormRoute(), { state: { jsonContent } });
+      navigate(getFormRoute(), { state: { jsonContent, schema } });
     }
   };
 
@@ -92,7 +98,7 @@ function HomePage() {
         step_3={t("homepage.step_3")}
         step_4={t("homepage.step_4")}
       />
-      
+
       <br />
       <Stack
         direction={{ sm: "column", md: "row" }}
@@ -112,17 +118,17 @@ function HomePage() {
       >
         <Box width={{ xs: "90%", sm: "75%", md: "50%" }}>
           <div className="MainContent" style={{ padding: "0px 10px" }}>
-            <AccordionExpand 
+            <AccordionExpand
               accordion_question={t("homepage.accordion_question_1")}
               accordion_summary={t("homepage.accordion_summary_1")}
             />
             <br />
-            <AccordionExpand 
+            <AccordionExpand
               accordion_question={t("homepage.accordion_question_2")}
               accordion_summary={t("homepage.accordion_summary_2")}
             />
             <br />
-            <AccordionExpand 
+            <AccordionExpand
               accordion_question={t("homepage.accordion_question_3")}
               accordion_summary={t("homepage.accordion_summary_3")}
             />
@@ -137,17 +143,15 @@ function HomePage() {
             backgroundColor: theme.secondaryColor,
           }}
         >
-          <p style={{ fontSize: "1.5rem", fontWeight: "500" }}>{t("homepage.quick_links")}</p>
+          <p style={{ fontSize: "1.5rem", fontWeight: "500" }}>
+            {t("homepage.quick_links")}
+          </p>
           <Box sx={{ mb: "20px" }}>
             <FormHelperText sx={{ textAlign: "center", fontSize: "15px" }}>
               Select a Schema to Proceed
             </FormHelperText>
-            <FormControl sx={{ width: "75%" }} >
-              <Select
-                value={schema}
-                onChange={handleSchemaSelect}
-                displayEmpty
-              >
+            <FormControl sx={{ width: "75%" }}>
+              <Select value={schema} onChange={handleSchemaSelect} displayEmpty>
                 <MenuItem value="" sx={{ color: "rgba(100, 100, 100, 1)" }}>
                   <em>None</em>
                 </MenuItem>
@@ -159,24 +163,29 @@ function HomePage() {
           </Box>
 
           {/* Write link - enabled when any schema is selected */}
-          {isSchemaSelected && (<Box
-            component={Link}
-            to={getFormRoute()}
-            sx={{
-              fontSize: "1.25rem",
-              fontWeight: "500",
-              color: isSchemaSelected ? theme.primaryColor : "rgba(100, 100, 100, 1)",
-              textDecoration: "underline",
-              textUnderlineOffset: "2px",
-              textDecorationColor: theme.underlineColor,
-              cursor: "pointer",
-              "&:hover": {
-                textDecorationColor: theme.primaryColor,
-              },
-            }}
-          >
-            {t("homepage.write")}
-          </Box>)}
+          {isSchemaSelected && (
+            <Box
+              component={Link}
+              to={getFormRoute()}
+              state={{ schema }}
+              sx={{
+                fontSize: "1.25rem",
+                fontWeight: "500",
+                color: isSchemaSelected
+                  ? theme.primaryColor
+                  : "rgba(100, 100, 100, 1)",
+                textDecoration: "underline",
+                textUnderlineOffset: "2px",
+                textDecorationColor: theme.underlineColor,
+                cursor: "pointer",
+                "&:hover": {
+                  textDecorationColor: theme.primaryColor,
+                },
+              }}
+            >
+              {t("homepage.write")}
+            </Box>
+          )}
 
           <hr
             style={{
@@ -187,14 +196,17 @@ function HomePage() {
           />
 
           {/* Upload button - enabled when any schema is selected */}
-          <UploadButton 
+          <UploadButton
             onFileSelect={handleFileSelect}
             upload_file={t("homepage.upload_file")}
             disabled={!isSchemaSelected}
           />
           <Box sx={{ width: "90%" }}>
             {uploadedFiles && (
-              <p>{t("homepage.file_uploaded")}{uploadedFiles[0].name}</p>
+              <p>
+                {t("homepage.file_uploaded")}
+                {uploadedFiles[0].name}
+              </p>
             )}
           </Box>
 
@@ -214,8 +226,8 @@ function HomePage() {
                 backgroundColor: uploadedFiles
                   ? theme.primaryColor
                   : "rgba(255, 255, 255, 0.25)",
-                '&:hover': {
-                  backgroundColor: theme.primaryColor
+                "&:hover": {
+                  backgroundColor: theme.primaryColor,
                 },
                 color: uploadedFiles ? "white" : "gray",
                 boxShadow: uploadedFiles ? undefined : "none",
@@ -233,8 +245,8 @@ function HomePage() {
                 backgroundColor: uploadedFiles
                   ? theme.primaryColor
                   : "rgba(255, 255, 255, 0.25)",
-                '&:hover': {
-                  backgroundColor: theme.primaryColor
+                "&:hover": {
+                  backgroundColor: theme.primaryColor,
                 },
                 color: uploadedFiles ? "white" : "gray",
                 boxShadow: uploadedFiles ? undefined : "none",
@@ -246,10 +258,7 @@ function HomePage() {
           </Stack>
         </Box>
       </Stack>
-      <Footer
-        powered_by={t("powered_by")}
-        supported_by={t("supported_by")}
-      />
+      <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />
     </div>
   );
 }
