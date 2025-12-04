@@ -483,11 +483,9 @@ function DynamicForm({
           renderInput({ ...field, path: field.name }, 0, `${field.name}-${startIndex + index}`)
         )}
 
-
         {/* {displayedFields.map((field) =>
           renderInput({ ...field, path: field.name })
         )} */}
-
 
         {/*PAGINATION CONTROLS */}
         {totalPages > 1 && (
@@ -516,7 +514,6 @@ function DynamicForm({
             />
           </Box>
         )}
-
 
         {!readOnly && (
           <>
