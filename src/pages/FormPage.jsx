@@ -7,7 +7,7 @@ import Footer from "../components/Stateless/Footer";
 import PageHeaders from "../components/Stateless/PageHeaders";
 
 function FormPage() {
-  const { t, lang } = useTranslation();  // use translation function
+  const { t, lang } = useTranslation(); // use translation function
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,9 +26,9 @@ function FormPage() {
 
     // Map schema name -> file name
     const fileMap = {
-      "OpenAIRE": "./OpenAIRE_OCA_package.json",
-      "Dublin Core": "./Trial_Dublin_Core_OCA_package.json",
-      "DataCite": "./Trial_DataCite_OCA_package.json"
+      OpenAIRE: "./OpenAIRE_OCA_package.json",
+      "Dublin Core (Test)": "./Resource_OCA_bundle.json",
+      "DataCite (Test)": "./Trial_DataCite_OCA_package.json",
     };
 
     const filePath = fileMap[schema] || fileMap.OpenAIRE;
@@ -46,14 +46,22 @@ function FormPage() {
   return (
     <div className="FormPage">
       <PageHeaders
-        page_heading={ uploadedJson ? t("formpage.edit_header") : t("formpage.write_header") }
-        tooltip_description={ uploadedJson ? t("formpage.edit_tooltip") : t("formpage.write_tooltip") }
-        help_button_redirect={() => navigate("/form-help", { state: { uploadedJson: uploadedJson } })}
+        page_heading={
+          uploadedJson ? t("formpage.edit_header") : t("formpage.write_header")
+        }
+        tooltip_description={
+          uploadedJson
+            ? t("formpage.edit_tooltip")
+            : t("formpage.write_tooltip")
+        }
+        help_button_redirect={() =>
+          navigate("/form-help", { state: { uploadedJson: uploadedJson } })
+        }
       />
 
       {/* <pre>{JSON.stringify(fields, null, 2)}</pre> */}
       <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
-        <DynamicForm 
+        <DynamicForm
           jsonData={jsonSchema}
           language={lang}
           initialData={uploadedJson}
@@ -61,10 +69,7 @@ function FormPage() {
           onSave={handleSave}
         />
       </Box>
-      <Footer
-        powered_by={t("powered_by")}
-        supported_by={t("supported_by")}
-      />
+      <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />
     </div>
   );
 }
