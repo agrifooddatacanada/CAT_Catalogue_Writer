@@ -1,0 +1,121 @@
+{
+  "d": "ELFQbADu3w__7hDbaF6iY_1nOa68LgJWmqf3B_dTV0e5",
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "v": "OCAA11JSON00098b_",
+    "bundle": {
+      "v": "OCAS11JSON00096e_",
+      "d": "EO5oWfNJ2QKK5KJBGoGHAdbZxUreIrjTSNaGFtCPWnGV",
+      "capture_base": {
+        "d": "EOtXrJ1MOnlk9q0AsQaiPcweFrTVI58CWvQ-sakTJ9VB",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "contributor": "Text",
+          "coverage": "Text",
+          "creator": "Text",
+          "date": "DateTime",
+          "description": "Text",
+          "format": "Text",
+          "identifier": "Text",
+          "language": "Text",
+          "publisher": "Text",
+          "relation": "Text",
+          "rights": "Text",
+          "source": "Text",
+          "subject": "Text",
+          "title": "Text",
+          "type": "Text"
+        },
+        "classification": "",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "format": {
+          "d": "EFNyL43T6EUil8FYn4K5DB9AjJL2HgmjtsY9bsDizLso",
+          "capture_base": "EOtXrJ1MOnlk9q0AsQaiPcweFrTVI58CWvQ-sakTJ9VB",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "contributor": "^.{0,250}$",
+            "coverage": "^.{0,250}$",
+            "creator": "^.{0,800}$",
+            "date": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "description": "^.{0,4000}$",
+            "format": "^.{0,250}$",
+            "identifier": "^.{0,250}$",
+            "language": "^.{0,50}$",
+            "publisher": "^.{0,250}$",
+            "relation": "^.{0,250}$",
+            "rights": "^.{0,800}$",
+            "source": "^.{0,800}$",
+            "subject": "^.{0,250}$",
+            "title": "^.{0,800}$",
+            "type": "^.{0,250}$"
+          }
+        },
+        "information": [
+          {
+            "d": "EPW-KOcv6JDedMMH97G7Q-VV2Uw30aN4mt7C0-Xwdu20",
+            "capture_base": "EOtXrJ1MOnlk9q0AsQaiPcweFrTVI58CWvQ-sakTJ9VB",
+            "type": "spec/overlays/information/1.1",
+            "language": "eng",
+            "attribute_information": {
+              "contributor": "contributor",
+              "coverage": "coverage",
+              "creator": "creator",
+              "date": "date",
+              "description": "description",
+              "format": "format",
+              "identifier": "identifier",
+              "language": "language",
+              "publisher": "publisher",
+              "relation": "relation",
+              "rights": "rights",
+              "source": "source",
+              "subject": "subject",
+              "title": "title",
+              "type": "type"
+            }
+          }
+        ],
+        "label": [
+          {
+            "d": "EFMQ8B_iCB_EWmIJI3xY9-aCoVYLidNMtqUnovyysC6j",
+            "capture_base": "EOtXrJ1MOnlk9q0AsQaiPcweFrTVI58CWvQ-sakTJ9VB",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "contributor": "Contributor",
+              "coverage": "Coverage",
+              "creator": "Creator",
+              "date": "Date",
+              "description": "Description",
+              "format": "Format",
+              "identifier": "Identifier",
+              "language": "Language",
+              "publisher": "Publisher",
+              "relation": "Relation",
+              "rights": "Rights",
+              "source": "Source",
+              "subject": "Subject",
+              "title": "Title",
+              "type": "Type"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "ECBaX-t-QSuRr3XjzppOY6dzVdx6uKdXq5EnnzJBghQJ",
+            "capture_base": "EOtXrJ1MOnlk9q0AsQaiPcweFrTVI58CWvQ-sakTJ9VB",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Dublin Core-like resource metadata schema",
+            "name": "Resource Metadata"
+          }
+        ]
+      }
+    },
+    "dependencies": []
+  }
+}
