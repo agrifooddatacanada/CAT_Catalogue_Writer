@@ -137,6 +137,11 @@ function extractEntriesFromDependency(dependency, lang) {
     return entryValuesMap;
 }
 
+// GET CONFORMANCE WITH DEFAULT
+function getConformanceValue(conformances, key) {
+    return conformances[key] || "O";
+}
+
 // RECURSIVELY PROCESS `capture_base`
 function extractAttributesFromCaptureBase(
     captureBase,
@@ -189,9 +194,10 @@ function extractAttributesFromCaptureBase(
         }
 
         // ATTACH LABELS, CATEGORIES, REQUIRED/MULTIPLE FLAGS
-        const required = conformances[key] === "M";
-        const recommended = conformances[key] === "R";
-        const optional = conformances[key] === "O";
+        const conformanceValue = getConformanceValue(conformances, key);
+        const required = conformanceValue === "M";
+        const recommended = conformanceValue === "R";
+        const optional = conformanceValue === "O";
         const multiple = cardinalities[key]?.includes("n");
         const categories = entryCodes[key] || null;
         const label = labels[key] || key;  // This will now use dependency-specific labels
@@ -331,9 +337,10 @@ export function extractAttributes(jsonData, baseKey = "capture_base", lang, visi
             fieldType = "object";
         }
 
-        const required = conformances[key] === "M";
-        const recommended = conformances[key] === "R";
-        const optional = conformances[key] === "O";
+        const conformanceValue = getConformanceValue(conformances, key);
+        const required = conformanceValue === "M";
+        const recommended = conformanceValue === "R";
+        const optional = conformanceValue === "O";
         const multiple = cardinalities[key]?.includes("n");
         const categories = entryCodes[key] || null;
         const label = mainLabels[key] || key;

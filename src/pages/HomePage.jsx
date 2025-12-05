@@ -55,9 +55,9 @@ function HomePage() {
     switch (schema) {
       case "OpenAIRE":
         return "/form";
-      case "Dublin Core":
+      case "Dublin Core (Test)":
         return "/form-dublincore";
-      case "DataCite":
+      case "DataCite (Test)":
         return "/form-datacite";
       default:
         return "/form";
@@ -156,8 +156,10 @@ function HomePage() {
                   <em>None</em>
                 </MenuItem>
                 <MenuItem value="OpenAIRE">OpenAIRE</MenuItem>
-                <MenuItem value="Dublin Core">Dublin Core</MenuItem>
-                <MenuItem value="DataCite">DataCite</MenuItem>
+                <MenuItem value="Dublin Core (Test)">
+                  Dublin Core (Test)
+                </MenuItem>
+                <MenuItem value="DataCite (Test)">DataCite (Test)</MenuItem>
               </Select>
             </FormControl>
           </Box>
