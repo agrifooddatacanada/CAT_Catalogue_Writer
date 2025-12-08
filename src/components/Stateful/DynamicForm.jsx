@@ -90,6 +90,7 @@ function DynamicForm({
     formState,
     setFormState,
     errors,
+    setErrors,
     popupErrors,
     dialogOpen,
     setDialogOpen,
@@ -97,6 +98,7 @@ function DynamicForm({
     setPopupValue,
     setEditingIndex,
     formatPatterns,
+    depFormatPatterns,
     handleItemDelete,
     handlePopupSave,
     findFieldByPath,
@@ -214,10 +216,11 @@ function DynamicForm({
   //
   useEffect(() => {
     // Validate whole form state, including multiple-entry arrays
-    const errors = validateFieldsForState(fields, formState, formatPatterns);
+    const newErrors = validateFieldsForState(fields, formState, formatPatterns);
+    setErrors(newErrors);
     const multipleFilled = checkMultipleEntriesFilled(fields, formState);
-    setIsFormValid(Object.keys(errors).length === 0 && multipleFilled);
-  }, [formState, fields, formatPatterns]);
+    setIsFormValid(Object.keys(newErrors).length === 0 && multipleFilled);
+  }, [formState, fields, formatPatterns, setErrors]);
 
   //
   useEffect(() => {
@@ -254,7 +257,7 @@ function DynamicForm({
     const errors = validateFieldsForState(
       popupField.children || [popupField],
       popupValue,
-      formatPatterns
+      depFormatPatterns
     );
     if (Object.keys(errors).length > 0) {
       return false; // has validation errors, disable save
@@ -544,7 +547,7 @@ function DynamicForm({
 
         {/*PAGINATION CONTROLS */}
         {totalPages > 1 && (
-          <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+          <Box sx={{ mt: 2, mb: 2, display: "flex", justifyContent: "center" }}>
             <Pagination
               count={totalPages}
               page={currentPage}
