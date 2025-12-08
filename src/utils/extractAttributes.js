@@ -249,9 +249,28 @@ function extractDescriptionsFromFormExtension(extensions, lang) {
   return descriptions;
 }
 
-// COLLECT REGEX VALIDATION PATTERN FOR ATTRIBUTES FROM DEPENDENCIES
-function extractFormatPatterns(dependencies) {
+// COLLECT REGEX VALIDATION PATTERN FOR ATTRIBUTES
+function extractFormatPatterns(jsonData) {
     const formatPatterns = {};
+    const formatOverlay = jsonData?.oca_bundle?.bundle?.overlays?.format || [];
+
+    if (formatOverlay && formatOverlay.attribute_formats) {
+        // Iterate over each attribute format regex string
+        for (const [attr, regexStr] of Object.entries(formatOverlay.attribute_formats)) {
+            try {
+                // Covert regex string to RegExp object
+                formatPatterns[attr] = new RegExp(regexStr);
+            } catch (e) {
+                console.warn(`Invalid ${attr}: ${regexStr}`, e)
+            }
+        }
+    }
+    return formatPatterns;
+}
+
+// COLLECT REGEX VALIDATION PATTERN FOR ATTRIBUTES FROM DEPENDENCIES
+function extractFormatPatternsFromDep(dependencies) {
+    const depFormatPatterns = {};
 
     dependencies.forEach((dep) => {
         const formatOverlay = dep.overlays?.format;
@@ -260,7 +279,7 @@ function extractFormatPatterns(dependencies) {
             for (const [attr, regexStr] of Object.entries(formatOverlay.attribute_formats)) {
                 try {
                     // Covert regex string to RegExp object
-                    formatPatterns[attr] = new RegExp(regexStr);
+                    depFormatPatterns[attr] = new RegExp(regexStr);
                 } catch (e) {
                     console.warn(`Invalid ${attr}: ${regexStr}`, e)
                 }
@@ -268,8 +287,7 @@ function extractFormatPatterns(dependencies) {
             }
         }
     });
-
-    return formatPatterns;
+    return depFormatPatterns;
 }
 
 // MAIN EXPORT (ORACHESTRATES EVERYTHING)
@@ -279,7 +297,10 @@ export function extractAttributes(jsonData, baseKey = "capture_base", lang, visi
     if (!bundle) return [];
 
     // GET FORMAT PATTERNS FROM DEPENDENCIES
-    const formatPatterns = extractFormatPatterns(dependencies);
+    const formatPatterns = extractFormatPatterns(jsonData);
+
+    // GET FORMAT PATTERNS FROM DEPENDENCIES
+    const depFormatPatterns = extractFormatPatternsFromDep(dependencies);
 
     // READ `capture_base` FROM THE BUNDLE
     const captureBase = bundle[baseKey];
@@ -367,5 +388,5 @@ export function extractAttributes(jsonData, baseKey = "capture_base", lang, visi
     // APPLY ORDERING
     fields = sortFieldsByOrdering(fields, ordering);
 
-    return { fields, formatPatterns };
+    return { fields, formatPatterns, depFormatPatterns };
 }
