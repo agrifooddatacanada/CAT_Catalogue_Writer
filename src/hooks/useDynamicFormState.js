@@ -39,12 +39,15 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
     
     // REGEX VALIDATIONS
     const [formatPatterns, setFormatPatterns] = useState({});
+
+    // REGEX VALIDATIONS FOR CHILD
+    const [depFormatPatterns, setDepFormatPatterns] = useState({});
     
     // CURRENT INPUT VALUES
     const [formState, setFormState] = useState({});
     
     // VALIDATION ERROR MESSAGES
-    const [errors] = useState({});
+    const [errors, setErrors] = useState({});
     
     // VALIDATION ERRORS FOR POPUPS
     const [popupErrors, setPopupErrors] = useState({});
@@ -102,7 +105,7 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         );
     
         // EXTRACT FORMAT PATTERNS
-        const { fields: extractedFields, formatPatterns } = extractAttributes(
+        const { fields: extractedFields, formatPatterns, depFormatPatterns } = extractAttributes(
             jsonData,
             "capture_base",
             language
@@ -128,6 +131,7 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         // SET FIELDS AND VALIDATION PATTERNS
         setFields(enrichedFieldsWithPaths);
         setFormatPatterns(formatPatterns);
+        setDepFormatPatterns(depFormatPatterns);
 
         // PREPARE FLATTENED INITIAL `formState` (IF EDITING)
         let initState = {};
@@ -184,10 +188,10 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         const errors = validateFieldsForState(
             popupField.children || [popupField],
             popupValue,
-            formatPatterns
+            depFormatPatterns
         );
         setPopupErrors(errors);
-    }, [popupValue, dialogOpen, fields, formatPatterns, findFieldByPath]);
+    }, [popupValue, dialogOpen, fields, depFormatPatterns, findFieldByPath]);
 
     // ON SAVE, APPEND THE CONSTRUCTED MINI-OBJECT TO ARRAY
     const handleDialogSave = (path, value) => {
@@ -219,7 +223,7 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         const errors = validateFieldsForState(
             popupField.children || [popupField],
             popupValue,
-            formatPatterns
+            depFormatPatterns
         );
         if (Object.keys(errors).length > 0) {
             setPopupErrors(errors);
@@ -254,6 +258,7 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         formState,
         setFormState,
         errors,
+        setErrors,
         popupErrors,
         dialogOpen,
         setDialogOpen,
@@ -261,6 +266,7 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         setPopupValue,
         setEditingIndex,
         formatPatterns,
+        depFormatPatterns,
         handleItemDelete,
         handlePopupSave,
         findFieldByPath,
