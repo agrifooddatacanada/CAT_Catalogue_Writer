@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 import theme from "../../../theme";
 
@@ -20,10 +20,9 @@ const FormInputMultiple = ({
   handleItemDelete, // Function to delete an entry in parent state
   depth = 0, // For styling
   readOnly,
-  isEditMode
+  isEditMode,
 }) => {
-
-  const { t } = useTranslation();  // use translation function
+  const { t } = useTranslation(); // use translation function
 
   const columns =
     children && children.length > 0
@@ -33,10 +32,15 @@ const FormInputMultiple = ({
       : [];
 
   // Build map from attribute name to label for table header
-  const labelMap = children?.reduce((acc, child) => {
-    acc[child.name] = child.label || child.name;
-    return acc;
-  }, {}) || {};
+  const labelMap =
+    children?.reduce((acc, child) => {
+      acc[child.name] = child.label || child.name;
+      return acc;
+    }, {}) || {};
+
+  if (!children || children.length === 0) {
+    labelMap[name] = label || name;
+  }
 
   const formatValue = (val) => {
     if (val === null || val === undefined) return "";
@@ -48,53 +52,68 @@ const FormInputMultiple = ({
     <Box sx={{ mb: 2 }}>
       <Typography variant={depth === 0 ? "h6" : "h8"}>
         {label || name}
-        {required && (
-          !readOnly && (
-            <span style={{ color: "red", marginLeft: 4 }}>*</span>
-          )
+        {required && !readOnly && (
+          <span style={{ color: "red", marginLeft: 4 }}>*</span>
         )}
       </Typography>
 
       {/* Table showing existing entries */}
       {value.length > 0 && (
-        <Box 
-          sx={{ 
-            overflowX: "auto", 
+        <Box
+          sx={{
+            overflowX: "auto",
             mt: "16.5px",
             mb: "16.5px",
           }}
         >
-          <table style={{ borderCollapse: "collapse", width: "100%" }}>
+          <table
+            style={{
+              border: "1px solid #ccc",
+              borderCollapse: "collapse",
+              width: "100%",
+            }}
+          >
             <thead>
               <tr>
-                {columns.map((col) => (
-                  <th
-                    key={col}
-                    style={{
-                      border: "1px solid #ccc",
-                      padding: "8px",
-                      textAlign: "left",
-                      backgroundColor: "#eee",
-                    }}
-                  >
-                    {labelMap[col] || col}
-                  </th>
-                ))}
-                {!readOnly? <th
-                  style={{
-                    border: "1px solid #ccc",
-                    padding: "8px",
-                    textAlign: "center",
-                    backgroundColor: "#eee",
-                  }}
-                >
-                  {t("forminputmultiple.actions")}
-                </th> : null}
+                {!children || children.length === 0
+                  ? null
+                  : columns.map((col) => (
+                      <th
+                        key={col}
+                        style={{
+                          border: "1px solid #ccc",
+                          padding: "8px",
+                          textAlign: "left",
+                          backgroundColor: "#eee",
+                        }}
+                      >
+                        {labelMap[col] || col}
+                      </th>
+                    ))}
+                {!readOnly ? (
+                  !children || children.length === 0 ? null : (
+                    <th
+                      style={{
+                        border: "1px solid #ccc",
+                        padding: "8px",
+                        textAlign: "center",
+                        backgroundColor: "#eee",
+                      }}
+                    >
+                      {t("forminputmultiple.actions")}
+                    </th>
+                  )
+                ) : null}
               </tr>
             </thead>
             <tbody>
               {value.map((entry, idx) => (
-                <tr key={idx} style={{ borderBottom: "1px solid #ddd" }}>
+                <tr
+                  key={idx}
+                  style={{
+                    border: "1px solid #ddd",
+                  }}
+                >
                   {columns.map((col) => (
                     <td
                       key={col}
@@ -107,36 +126,40 @@ const FormInputMultiple = ({
                       {formatValue(entry[col])}
                     </td>
                   ))}
-                  {!readOnly? <td
-                    style={{
-                      border: "1px solid #ccc",
-                      padding: "8px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <Button
-                      size="small"
-                      onClick={() => {
-                        // Use deep copy to avoid mutation side-effects
-                        const entryCopy = JSON.parse(JSON.stringify(value[idx]));
-                        setPopupValue(entryCopy);
-                        setEditingIndex(idx);
-                        setDialogOpen(path);
+                  {!readOnly ? (
+                    <td
+                      style={{
+                        border: "1px solid #ccc",
+                        padding: "8px",
+                        textAlign: "center",
                       }}
-                      sx={{ mr: 1 }}
-                      startIcon={<EditIcon />}
                     >
-                      {t("forminputmultiple.edit")}
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      onClick={() => handleItemDelete(path, idx)}
-                      endIcon={<DeleteIcon />}
-                    >
-                      {t("forminputmultiple.delete")}
-                    </Button>
-                  </td> : null}
+                      <Button
+                        size="small"
+                        onClick={() => {
+                          // Use deep copy to avoid mutation side-effects
+                          const entryCopy = JSON.parse(
+                            JSON.stringify(value[idx])
+                          );
+                          setPopupValue(entryCopy);
+                          setEditingIndex(idx);
+                          setDialogOpen(path);
+                        }}
+                        sx={{ mr: 1 }}
+                        startIcon={<EditIcon />}
+                      >
+                        {t("forminputmultiple.edit")}
+                      </Button>
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() => handleItemDelete(path, idx)}
+                        endIcon={<DeleteIcon />}
+                      >
+                        {t("forminputmultiple.delete")}
+                      </Button>
+                    </td>
+                  ) : null}
                 </tr>
               ))}
             </tbody>
@@ -144,15 +167,15 @@ const FormInputMultiple = ({
         </Box>
       )}
 
-      {!readOnly? (
+      {!readOnly ? (
         <Button
           sx={{
             color: theme.primaryColor,
             borderColor: theme.primaryColor,
-            '&:hover': {
+            "&:hover": {
               borderColor: theme.primaryColor,
-              backgroundColor: theme.backgroundColor
-            }
+              backgroundColor: theme.backgroundColor,
+            },
           }}
           variant="outlined"
           onClick={() => {
@@ -164,22 +187,20 @@ const FormInputMultiple = ({
         >
           {t("forminputmultiple.add")} {label || name}
         </Button>
-      ) : (
-        (!isEditMode && value.length === 0)? (
-            <span 
-              style={{ 
-                display: "inline-block",
-                paddingLeft: "14px",
-                paddingTop: "16.5px",
-                paddingBottom: "16.5px",
-                fontStyle: "italic", 
-                color:"rgba(100, 100, 100, 1)" 
-              }}
-            >
-              {t("no_data")} {label || name}
-            </span>
-        ) : (null)
-      )}
+      ) : !isEditMode && value.length === 0 ? (
+        <span
+          style={{
+            display: "inline-block",
+            paddingLeft: "14px",
+            paddingTop: "16.5px",
+            paddingBottom: "16.5px",
+            fontStyle: "italic",
+            color: "rgba(100, 100, 100, 1)",
+          }}
+        >
+          {t("no_data")} {label || name}
+        </span>
+      ) : null}
     </Box>
   );
 };
