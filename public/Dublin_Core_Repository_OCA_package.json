@@ -1,0 +1,296 @@
+{
+  "d": "EI4-H3K0CaWXBFdJZFygkwTpGVtGhzK5YvXEilk0VKoY",
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "v": "OCAA11JSON0016af_",
+    "bundle": {
+      "v": "OCAS11JSON001692_",
+      "d": "EEYY2kapyE0K_d3ePlvscEqGe_ScWD1lsAQiuWdb9GB9",
+      "capture_base": {
+        "d": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "conformsTo": ["Text"],
+          "contributor": ["Text"],
+          "creator": ["Text"],
+          "date": ["DateTime"],
+          "description": ["Text"],
+          "format": ["Text"],
+          "identifier": ["Text"],
+          "issued": ["DateTime"],
+          "language": ["Text"],
+          "provenance": ["Text"],
+          "publisher": "Text",
+          "relation": ["Text"],
+          "rights": ["Text"],
+          "source": ["Text"],
+          "spatial": ["Text"],
+          "subject": ["Text"],
+          "temporal": ["DateTime"],
+          "title": ["Text"],
+          "type": ["Text"]
+        },
+        "classification": "",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "cardinality": {
+          "d": "EBzz05_8Zc4ugL9C4PFSHHLVoo9FMWckM6aTGDdYuga6",
+          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "type": "spec/overlays/cardinality/1.1",
+          "attribute_cardinality": {
+            "conformsTo": "0-",
+            "contributor": "0-",
+            "creator": "0-",
+            "date": "0-",
+            "description": "0-",
+            "format": "0-",
+            "identifier": "1-",
+            "issued": "0-",
+            "language": "0-",
+            "provenance": "0-",
+            "relation": "0-",
+            "rights": "0-",
+            "source": "0-",
+            "spatial": "0-",
+            "subject": "0-",
+            "temporal": "0-",
+            "title": "1-",
+            "type": "0-"
+          }
+        },
+        "character_encoding": {
+          "d": "EIggAnlV2lAIf_g8yXgpeFagnldKICw1DJa6_KfqU5Af",
+          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "conformsTo": "utf-8",
+            "contributor": "utf-8",
+            "creator": "utf-8",
+            "date": "utf-8",
+            "description": "utf-8",
+            "format": "utf-8",
+            "identifier": "utf-8",
+            "issued": "utf-8",
+            "language": "utf-8",
+            "provenance": "utf-8",
+            "publisher": "utf-8",
+            "relation": "utf-8",
+            "rights": "utf-8",
+            "source": "utf-8",
+            "spatial": "utf-8",
+            "subject": "utf-8",
+            "temporal": "utf-8",
+            "title": "utf-8",
+            "type": "utf-8"
+          }
+        },
+        "conformance": {
+          "d": "EAnOc4795y8G23pV7_WF0Zop-l6vkUI_S1V9CLfPI-xx",
+          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "type": "spec/overlays/conformance/1.1",
+          "attribute_conformance": {
+            "conformsTo": "O",
+            "contributor": "O",
+            "creator": "M",
+            "date": "M",
+            "description": "M",
+            "format": "M",
+            "identifier": "M",
+            "issued": "O",
+            "language": "O",
+            "provenance": "O",
+            "publisher": "O",
+            "relation": "O",
+            "rights": "M",
+            "source": "O",
+            "spatial": "O",
+            "subject": "M",
+            "temporal": "O",
+            "title": "M",
+            "type": "M"
+          }
+        },
+        "entry": [
+          {
+            "d": "EIZmoYUhua7J5f8bLG0JpemVl4LWHxb2jY-bbwqC-8uY",
+            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "type": {
+                "Collection": "Collection",
+                "Dataset": "Dataset",
+                "Event": "Event",
+                "Image": "Image",
+                "InteractiveResource": "Interactive Resource",
+                "MovingImage": "Moving Image",
+                "PhysicalObject": "Physical Object",
+                "Service": "Service",
+                "Software": "Software",
+                "Sound": "Sound",
+                "StillImage": "Still Image",
+                "Text": "Text"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "EDc6RG2I35a6OJblQt44URkrwNgQZjatuWMNpEMDALQu",
+          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "type": [
+              "Collection",
+              "Dataset",
+              "Event",
+              "Image",
+              "InteractiveResource",
+              "MovingImage",
+              "PhysicalObject",
+              "Service",
+              "Software",
+              "Sound",
+              "StillImage",
+              "Text"
+            ]
+          }
+        },
+        "format": {
+          "d": "EC36r52pez_xOH7b-kAwqTNBPkrFp70ZQr-1qmPZTjRL",
+          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "conformsTo": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
+            "date": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "issued": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "temporal": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+          }
+        },
+        "information": [
+          {
+            "d": "EFaPqyukFmCK0xwd_fLRAjNfZPmNhHVaWm8OBg3DT4n-",
+            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "type": "spec/overlays/information/1.1",
+            "language": "eng",
+            "attribute_information": {
+              "conformsTo": "An established standard to which the described resource conforms.",
+              "contributor": "An entity responsible for making contributions to the resource.",
+              "creator": "An entity primarily responsible for making the resource.",
+              "date": "A point or period of time associated with an event in the lifecycle of the resource.",
+              "description": "An account of the resource.",
+              "format": "The file format, physical medium, or dimensions of the resource.",
+              "identifier": "An unambiguous reference to the resource within a given context.",
+              "issued": "Date of formal issuance of the resource.",
+              "language": "A language of the resource.",
+              "provenance": "A statement of any changes in ownership and custody of the resource since its creation that are significant for its authenticity, integrity, and interpretation.",
+              "publisher": "An entity responsible for making the resource available.",
+              "relation": "A related resource.",
+              "rights": "Information about rights held in and over the resource.",
+              "source": "A related resource from which the described resource is derived.",
+              "spatial": "Spatial characteristics of the resource.",
+              "subject": "A topic of the resource.",
+              "temporal": "Temporal characteristics of the resource.",
+              "title": "A name given to the resource.",
+              "type": "The nature or genre of the resource."
+            }
+          }
+        ],
+        "label": [
+          {
+            "d": "EOo0XnNYaz5yxt8Z8fowAoWnsjVZy-cqBfBHjOD7rSl2",
+            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "conformsTo": "Conforms To",
+              "contributor": "Contributor",
+              "creator": "Creator",
+              "date": "Date",
+              "description": "Description",
+              "format": "Format",
+              "identifier": "Identifier",
+              "issued": "Date Issued",
+              "language": "Language",
+              "provenance": "Provenance",
+              "publisher": "Publisher",
+              "relation": "Relation",
+              "rights": "Rights",
+              "source": "Source",
+              "spatial": "Spatial Coverage",
+              "subject": "Subject",
+              "temporal": "Temporal Coverage",
+              "title": "Title",
+              "type": "Type"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EIkKHZtd2sI60NdrIJwz2DrdqUnLxmxFKYKP3oF3mayU",
+            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Unknown",
+            "name": "Dublin_Core_Repository"
+          }
+        ]
+      }
+    },
+    "dependencies": []
+  },
+  "extensions": {
+    "adc": {
+      "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk": {
+        "d": "ECj58abDi5LRI0DIe38XGeqH5GBUGpyN-HSSIw08H_PA",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "ordering": {
+            "d": "ENBOvdtZl6FqraslIqvwDlRBNQsyNsTMwUzhdbx9SEV0",
+            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "title",
+              "creator",
+              "subject",
+              "description",
+              "date",
+              "type",
+              "format",
+              "identifier",
+              "language",
+              "rights",
+              "publisher",
+              "contributor",
+              "source",
+              "relation",
+              "issued",
+              "spatial",
+              "temporal",
+              "provenance",
+              "conformsTo"
+            ],
+            "entry_code_ordering": {
+              "type": [
+                "Collection",
+                "Dataset",
+                "Event",
+                "Image",
+                "InteractiveResource",
+                "MovingImage",
+                "PhysicalObject",
+                "Service",
+                "Software",
+                "Sound",
+                "StillImage",
+                "Text"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
