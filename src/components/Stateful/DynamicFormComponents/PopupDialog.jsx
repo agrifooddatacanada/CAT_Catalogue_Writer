@@ -1,9 +1,16 @@
-// This component isolates the popup dialog UI and buttons while keeping state and logic 
+// This component isolates the popup dialog UI and buttons while keeping state and logic
 // in the main component
 
 import React from "react";
-import { Dialog, Box, Typography, TextField, Button, IconButton } from "@mui/material";
-import SaveIcon from '@mui/icons-material/Save';
+import {
+  Dialog,
+  Box,
+  Typography,
+  //TextField,
+  Button,
+  IconButton,
+} from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 import theme from "../../../theme";
@@ -20,11 +27,11 @@ const PopupDialog = ({
   isPopupSaveEnabled, // Function that returns boolean to enable/disable Save
   renderInput, // Main input rendering fucntion to render popup fields recursively
 }) => {
-  const { t } = useTranslation();  // use translation function
+  console.log("popupErrors:", popupErrors);
+  const { t } = useTranslation(); // use translation function
   return (
     <Dialog maxWidth="lg" fullScreen={matches} open={open} onClose={onClose}>
       <Box sx={{ p: 5, minWidth: { sm: 400, md: 500, lg: 600 } }}>
-        
         <Box
           sx={{
             position: "relative",
@@ -52,28 +59,32 @@ const PopupDialog = ({
           </IconButton>
         </Box>
 
-        {popupField && popupField.children?.length > 0 ? (
-          popupField.children.map((child) =>
-            renderInput(
+        {popupField && popupField.children?.length > 0
+          ? popupField.children.map((child) =>
+              renderInput(
+                {
+                  ...child,
+                  path: child.name, // relative path inside popupValue object
+                },
+                0,
+                child.name,
+                "popup",
+                popupErrors
+              )
+            )
+          : popupField // Render with proper type handling
+          ? renderInput(
               {
-                ...child,
-                path: child.name, // relative path inside popupValue object
+                ...popupField,
+                path: popupField.name,
+                multiple: false, // Single entry in popup
               },
               0,
-              child.name,
+              popupField.name,
               "popup",
               popupErrors
             )
-          )
-        ) : (
-          <TextField
-            autoFocus
-            fullWidth
-            value={popupValue}
-            onChange={(e) => setPopupValue(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-        )}
+          : null}
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
           <Button color="error" onClick={onClose}>
             {t("popupdialog.cancel")}
@@ -82,10 +93,10 @@ const PopupDialog = ({
             variant="contained"
             onClick={handlePopupSave}
             disabled={!isPopupSaveEnabled()} // Disable if invalid
-            sx={{ 
+            sx={{
               backgroundColor: theme.primaryColor,
-              '&:hover': {
-                backgroundColor: theme.primaryColor
+              "&:hover": {
+                backgroundColor: theme.primaryColor,
               },
             }}
             startIcon={<SaveIcon />}
