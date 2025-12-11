@@ -184,14 +184,38 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
         // FIND CURRENT FIELD BY MATCHING OPEN PATH AGAINST FIELDS ARRAY
         const popupField = findFieldByPath(fields, dialogOpen);
         if (!popupField) return;
-    
-        const errors = validateFieldsForState(
-            popupField.children || [popupField],
-            popupValue,
-            depFormatPatterns
-        );
+
+        // Determine field type
+            const hasChildren = popupField.children && popupField.children.length > 0;
+            const fieldsToCheck = hasChildren ? popupField.children : [popupField];
+            
+            let valueToValidate;
+            if (hasChildren) {
+              valueToValidate = popupValue;
+            } else {
+              // Check if already wrapped - only wrap if needed
+              if (
+                typeof popupValue === "object" &&
+                popupValue !== null &&
+                popupField.name in popupValue &&
+                Object.keys(popupValue).length === 1
+              ) {
+                valueToValidate = popupValue; // Already wrapped - use as-is
+              } else {
+                valueToValidate = { [popupField.name]: popupValue }; // Wrap it
+              }
+            }
+        
+            const patternsToUse = hasChildren ? depFormatPatterns : formatPatterns;
+        
+            // Validate all fields first
+            const errors = validateFieldsForState(
+              fieldsToCheck,
+              valueToValidate, // Consistent structure
+              patternsToUse
+            );
         setPopupErrors(errors);
-    }, [popupValue, dialogOpen, fields, depFormatPatterns, findFieldByPath]);
+    }, [popupValue, dialogOpen, fields, formatPatterns, depFormatPatterns, findFieldByPath]);
 
     // ON SAVE, APPEND THE CONSTRUCTED MINI-OBJECT TO ARRAY
     const handleDialogSave = (path, value) => {
