@@ -1,6 +1,6 @@
 // Recursive validation function accepting fields and form state,
 // returning a dictionary with error messages per field path.
-export const validateFieldsForState = (fieldsToValidate, stateToValidate, formatPatterns) => {
+export const validateFieldsForState = (fieldsToValidate, stateToValidate, patternsToUse) => {
   const newErrors = {};
 
   const validateRecursively = (fields, parentKey = "", parentRequired = true) => {
@@ -35,7 +35,8 @@ export const validateFieldsForState = (fieldsToValidate, stateToValidate, format
               newErrors[key] = ""; // This field is required message can be shown here
             }
             const baseName = key.split(".").slice(-1)[0];
-            const pattern = formatPatterns[baseName];
+            const pattern = patternsToUse[baseName];
+            console.log("val:", val);
             if (pattern && val && !pattern.test(val)) {
               newErrors[key] = `Invalid format for ${label || name}`;
             }
@@ -47,7 +48,7 @@ export const validateFieldsForState = (fieldsToValidate, stateToValidate, format
           //   newErrors[key] = ""; // This field is required message can be shown here
           // }
           // const baseName = key.split(".").slice(-1)[0];
-          // const pattern = formatPatterns[baseName];
+          // const pattern = patternsToUse[baseName];
           // if (pattern && val && !pattern.test(val)) {
           //   newErrors[key] = `Invalid format for ${label || name}`;
           // }

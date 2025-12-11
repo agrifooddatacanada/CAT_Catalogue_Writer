@@ -160,11 +160,6 @@ function DynamicForm({
   const [currentPage, setCurrentPage] = useState(1);
   const fieldsPerPage = 6;
 
-  // //
-  // const displayedFields = showMandatoryOnly
-  //   ? filterMandatoryFields(fields)
-  //   : fields;
-
   // Calculate Pagination
   const totalPages = Math.ceil(displayedFields.length / fieldsPerPage);
   const startIndex = (currentPage - 1) * fieldsPerPage;
@@ -186,8 +181,6 @@ function DynamicForm({
 
     const nestedState = unflatten(formState);
 
-    //alert("Old catalogue_id: " + nestedState.catalogue_id);
-
     // Remove existing catalogue_id if any
     if ("catalogue_id" in nestedState) {
       delete nestedState.catalogue_id;
@@ -205,22 +198,39 @@ function DynamicForm({
       ...formData,
     };
 
-    //alert("Saving file with catalogue_id: " + formDataWithId.catalogue_id);
-
     // Instead of download, call onSave with data
     if (typeof onSave === "function") {
       onSave(formDataWithId, isModified);
     }
   };
 
-  //
+  // Form validation - only disable REVIEW for required field errors
   useEffect(() => {
     // Validate whole form state, including multiple-entry arrays
     const newErrors = validateFieldsForState(fields, formState, formatPatterns);
-    setErrors(newErrors);
+    setErrors(newErrors); // Still show all errors
+
+    // Check if all required multiple-entry fields are filled
     const multipleFilled = checkMultipleEntriesFilled(fields, formState);
-    setIsFormValid(Object.keys(newErrors).length === 0 && multipleFilled);
-  }, [formState, fields, formatPatterns, setErrors]);
+
+    // Filter errors to only include REQUIRED fields
+    const requiredFieldErrors = {};
+
+    Object.keys(newErrors).forEach((errorPath) => {
+      const field = findFieldByPath(fields, errorPath);
+
+      // Only count errors from REQUIRED fields
+      if (field && field.required) {
+        requiredFieldErrors[errorPath] = newErrors[errorPath];
+      }
+    });
+
+    // Form valid = no required errors + all required multiples filled
+    const hasRequiredErrors = Object.keys(requiredFieldErrors).length > 0;
+    const isValid = !hasRequiredErrors && multipleFilled;
+
+    setIsFormValid(isValid);
+  }, [formState, fields, formatPatterns, setErrors, findFieldByPath]);
 
   //
   useEffect(() => {
@@ -249,27 +259,61 @@ function DynamicForm({
     return true; // For numbers or booleans
   };
 
-  //
+  // Popup validation - wrap simple field values for proper validation
   const isPopupSaveEnabled = () => {
     if (!popupField) return false;
 
+    // Determine field type
+    const hasChildren = popupField.children && popupField.children.length > 0;
+    const fieldsToCheck = hasChildren ? popupField.children : [popupField];
+
+    // // Wrap simple values so validator receives consistent structure
+    // const valueToValidate = hasChildren
+    //   ? popupValue
+    //   : { [popupField.name]: popupValue }; // Wrap simple value
+
+    let valueToValidate;
+    if (hasChildren) {
+      valueToValidate = popupValue;
+    } else {
+      // Check if already wrapped - only wrap if needed
+      if (
+        typeof popupValue === "object" &&
+        popupValue !== null &&
+        popupField.name in popupValue &&
+        Object.keys(popupValue).length === 1
+      ) {
+        valueToValidate = popupValue; // Already wrapped - use as-is
+      } else {
+        valueToValidate = { [popupField.name]: popupValue }; // Wrap it
+      }
+    }
+
+    const patternsToUse = hasChildren ? depFormatPatterns : formatPatterns;
+
     // Validate all fields first
     const errors = validateFieldsForState(
-      popupField.children || [popupField],
-      popupValue,
-      depFormatPatterns
+      fieldsToCheck,
+      valueToValidate, // Consistent structure
+      patternsToUse
     );
+
+    console.log("errors:", errors);
+
     if (Object.keys(errors).length > 0) {
       return false; // has validation errors, disable save
     }
 
-    const fieldsToCheck =
-      popupField.children && popupField.children.length > 0
-        ? popupField.children
-        : [popupField];
+    // Clear logic for simple vs grouped fields
+    if (!hasChildren) {
+      // Simple field (TextField, DatePicker, Select)
+      if (popupField.required) {
+        return isValueFilled(popupValue); // popupValue is simple value
+      }
+    }
 
+    // Grouped field (has child properties)
     const requiredFields = fieldsToCheck.filter((f) => f.required);
-
     if (requiredFields.length > 0) {
       // All required fields must be filled
       const allRequiredFilled = requiredFields.every((f) =>
@@ -541,10 +585,6 @@ function DynamicForm({
           )
         )}
 
-        {/* {displayedFields.map((field) =>
-          renderInput({ ...field, path: field.name })
-        )} */}
-
         {/*PAGINATION CONTROLS */}
         {totalPages > 1 && (
           <Box sx={{ mt: 2, mb: 2, display: "flex", justifyContent: "center" }}>
@@ -552,7 +592,6 @@ function DynamicForm({
               count={totalPages}
               page={currentPage}
               onChange={(e, page) => setCurrentPage(page)}
-              //color={theme.backgroundColor}
               size="large"
               sx={{
                 "& .MuiPaginationItem-root": {
@@ -597,8 +636,7 @@ function DynamicForm({
         )}
       </form>
 
-      {/* DIALOG POP-UP JSX
-          RENDERED INSIDE MAIN COMPONENT TO ACCESS HOOKS AND UPDATE STATE */}
+      {/* DIALOG POP-UP JSX RENDERED INSIDE MAIN COMPONENT TO ACCESS HOOKS AND UPDATE STATE */}
       <PopupDialog
         open={!!dialogOpen}
         onClose={() => setDialogOpen(null)}

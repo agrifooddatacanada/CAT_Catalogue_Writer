@@ -1,0 +1,348 @@
+{
+  "d": "EI7D6kXwHBs8NFfD8Bnt1riAJp3zP3xDqOHNdYfxaYQC",
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "v": "OCAA11JSON001ab9_",
+    "bundle": {
+      "v": "OCAS11JSON001a9c_",
+      "d": "EJIq-YkdlrCoglveJArCw1Qid288GRgvbFtxeQJ2Ibes",
+      "capture_base": {
+        "d": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "accrualMethod": ["Text"],
+          "conformsTo": ["Text"],
+          "contributor": ["Text"],
+          "creator": ["Text"],
+          "date": ["DateTime"],
+          "description": ["Text"],
+          "extent": ["Text"],
+          "format": ["Text"],
+          "hasVersion": "Text",
+          "identifier": ["Text"],
+          "issued": ["DateTime"],
+          "language": ["Text"],
+          "provenance": ["Text"],
+          "publisher": "Text",
+          "relation": ["Text"],
+          "rights": ["Text"],
+          "source": ["Text"],
+          "spatial": ["Text"],
+          "subject": ["Text"],
+          "temporal": ["DateTime"],
+          "title": ["Text"],
+          "type": ["Text"],
+          "valid": ["DateTime"]
+        },
+        "classification": "",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "cardinality": {
+          "d": "EILNMqL4Poz3vMZ1vM247mLHx1MDfvqWa8zgKqQH3G88",
+          "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+          "type": "spec/overlays/cardinality/1.1",
+          "attribute_cardinality": {
+            "accrualMethod": "0-",
+            "conformsTo": "0-",
+            "contributor": "0-",
+            "creator": "0-",
+            "date": "0-",
+            "description": "0-",
+            "extent": "0-",
+            "format": "0-",
+            "identifier": "1-",
+            "issued": "0-",
+            "language": "0-",
+            "provenance": "0-",
+            "relation": "0-",
+            "rights": "0-",
+            "source": "0-",
+            "spatial": "0-",
+            "subject": "0-",
+            "temporal": "0-",
+            "title": "1-",
+            "type": "0-",
+            "valid": "0-"
+          }
+        },
+        "character_encoding": {
+          "d": "EFfyZatsrHom9A3CbvUsf4RC0DjttlDgK6LSddnGyDoh",
+          "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "accrualMethod": "utf-8",
+            "conformsTo": "utf-8",
+            "contributor": "utf-8",
+            "creator": "utf-8",
+            "date": "utf-8",
+            "description": "utf-8",
+            "extent": "utf-8",
+            "format": "utf-8",
+            "hasVersion": "utf-8",
+            "identifier": "utf-8",
+            "issued": "utf-8",
+            "language": "utf-8",
+            "provenance": "utf-8",
+            "publisher": "utf-8",
+            "relation": "utf-8",
+            "rights": "utf-8",
+            "source": "utf-8",
+            "spatial": "utf-8",
+            "subject": "utf-8",
+            "temporal": "utf-8",
+            "title": "utf-8",
+            "type": "utf-8",
+            "valid": "utf-8"
+          }
+        },
+        "conformance": {
+          "d": "EEHAHqRMKj-sef42Pb7dSrbzovS3sOL-x6rsxFNUYy_G",
+          "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+          "type": "spec/overlays/conformance/1.1",
+          "attribute_conformance": {
+            "accrualMethod": "O",
+            "conformsTo": "O",
+            "contributor": "O",
+            "creator": "M",
+            "date": "M",
+            "description": "M",
+            "extent": "O",
+            "format": "M",
+            "hasVersion": "O",
+            "identifier": "M",
+            "issued": "M",
+            "language": "O",
+            "provenance": "O",
+            "publisher": "O",
+            "relation": "O",
+            "rights": "M",
+            "source": "O",
+            "spatial": "O",
+            "subject": "M",
+            "temporal": "O",
+            "title": "M",
+            "type": "M",
+            "valid": "M"
+          }
+        },
+        "entry": [
+          {
+            "d": "EFiZhVZMEpoWiKJOZvwnMa4Ab2HBwESy3F7cDyfqC6_p",
+            "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "accrualMethod": {
+                "accmeth-deposit": "Deposit",
+                "accmeth-donation": "Donation",
+                "accmeth-itemcreation": "Item Creation",
+                "accmeth-license": "License",
+                "accmeth-loan": "Loan",
+                "accmeth-purchase": "Purchase"
+              },
+              "type": {
+                "Collection": "Collection",
+                "Dataset": "Dataset",
+                "Event": "Event",
+                "Image": "Image",
+                "InteractiveResource": "Interactive Resource",
+                "MovingImage": "Moving Image",
+                "PhysicalObject": "Physical Object",
+                "Service": "Service",
+                "Software": "Software",
+                "Sound": "Sound",
+                "StillImage": "Still Image",
+                "Text": "Text"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "EPvYG9DhVt1lnda0rp-lqOKNHWj3WEGzF4lZAUfUlThl",
+          "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "accrualMethod": [
+              "accmeth-deposit",
+              "accmeth-donation",
+              "accmeth-itemcreation",
+              "accmeth-license",
+              "accmeth-loan",
+              "accmeth-purchase"
+            ],
+            "type": [
+              "Collection",
+              "Dataset",
+              "Event",
+              "Image",
+              "InteractiveResource",
+              "MovingImage",
+              "PhysicalObject",
+              "Service",
+              "Software",
+              "Sound",
+              "StillImage",
+              "Text"
+            ]
+          }
+        },
+        "format": {
+          "d": "EADmJvVTpZbCs0yXtD8qssUvfbrheeq40srODjZXYfCY",
+          "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "conformsTo": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
+            "date": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "issued": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "temporal": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "valid": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+          }
+        },
+        "information": [
+          {
+            "d": "EOMOD0NqwaleWpAuARz2d_7OAfcloj-7vshJmTj_hJgW",
+            "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+            "type": "spec/overlays/information/1.1",
+            "language": "eng",
+            "attribute_information": {
+              "accrualMethod": "The method by which items are added to a collection.",
+              "conformsTo": "An established standard to which the described resource conforms.",
+              "contributor": "An entity responsible for making contributions to the resource.",
+              "creator": "An entity primarily responsible for making the resource.",
+              "date": "A point or period of time associated with an event in the lifecycle of the resource.",
+              "description": "An account of the resource.",
+              "extent": "The size or duration of the resource.",
+              "format": "The file format, physical medium, or dimensions of the resource.",
+              "hasVersion": "A related resource that is a version, edition, or adaptation of the described resource.",
+              "identifier": "An unambiguous reference to the resource within a given context.",
+              "issued": "Date of formal issuance of the resource.",
+              "language": "A language of the resource.",
+              "provenance": "A statement of any changes in ownership and custody of the resource since its creation that are significant for its authenticity, integrity, and interpretation.",
+              "publisher": "An entity responsible for making the resource available.",
+              "relation": "A related resource.",
+              "rights": "Information about rights held in and over the resource.",
+              "source": "A related resource from which the described resource is derived.",
+              "spatial": "Spatial characteristics of the resource.",
+              "subject": "A topic of the resource.",
+              "temporal": "Temporal characteristics of the resource.",
+              "title": "A name given to the resource.",
+              "type": "The nature or genre of the resource.",
+              "valid": "Date (often a range) of validity of a resource."
+            }
+          }
+        ],
+        "label": [
+          {
+            "d": "EMe35mfAhgr1ymqwE-OGxAAOReD-Vj8wl4fCr0MMYXnm",
+            "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "accrualMethod": "Accrual Method",
+              "conformsTo": "Conforms To",
+              "contributor": "Contributor",
+              "creator": "Creator",
+              "date": "Date",
+              "description": "Description",
+              "extent": "Extent",
+              "format": "Format",
+              "hasVersion": "Has Version",
+              "identifier": "Identifier",
+              "issued": "Date Issued",
+              "language": "Language",
+              "provenance": "Provenance",
+              "publisher": "Publisher",
+              "relation": "Relation",
+              "rights": "Rights",
+              "source": "Source",
+              "spatial": "Spatial Coverage",
+              "subject": "Subject",
+              "temporal": "Temporal Coverage",
+              "title": "Title",
+              "type": "Type",
+              "valid": "Date Valid"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EOApfmh2Z_zJIpMwbllJJOUW8J_NyrXqgXQVclWjJKSP",
+            "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Unknown",
+            "name": "Dublin_Core_Project"
+          }
+        ]
+      }
+    },
+    "dependencies": []
+  },
+  "extensions": {
+    "adc": {
+      "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v": {
+        "d": "EKNMVAq0rrQ7BGv-DvPFo4STBE5xctwPrUCUKbnWJAKr",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "ordering": {
+            "d": "EFlr7Z2Vi6wtQ4iXFL0UsgCPzlLh01T6mixPhr_aCldn",
+            "capture_base": "EFoXXpr3Q5AUMUH85lOGLUPwQiGwf7wrj3JaikLQAz3v",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "title",
+              "creator",
+              "subject",
+              "description",
+              "date",
+              "type",
+              "format",
+              "identifier",
+              "language",
+              "rights",
+              "publisher",
+              "contributor",
+              "source",
+              "relation",
+              "issued",
+              "spatial",
+              "temporal",
+              "provenance",
+              "conformsTo",
+              "valid",
+              "accrualMethod",
+              "hasVersion",
+              "extent"
+            ],
+            "entry_code_ordering": {
+              "type": [
+                "Collection",
+                "Dataset",
+                "Event",
+                "Image",
+                "InteractiveResource",
+                "MovingImage",
+                "PhysicalObject",
+                "Service",
+                "Software",
+                "Sound",
+                "StillImage",
+                "Text"
+              ],
+              "accrualMethod": [
+                "accmeth-deposit",
+                "accmeth-donation",
+                "accmeth-purchase",
+                "accmeth-loan",
+                "accmeth-license",
+                "accmeth-itemcreation"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

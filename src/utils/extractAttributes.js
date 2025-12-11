@@ -198,7 +198,7 @@ function extractAttributesFromCaptureBase(
         const required = conformanceValue === "M";
         const recommended = conformanceValue === "R";
         const optional = conformanceValue === "O";
-        const multiple = cardinalities[key]?.includes("n");
+        const multiple = cardinalities[key]?.includes("n") || cardinalities[key] === "1-" || cardinalities[key] === "0-";
         const categories = entryCodes[key] || null;
         const label = labels[key] || key;  // This will now use dependency-specific labels
         const placeholder = placeholders[key] || "";
@@ -362,7 +362,7 @@ export function extractAttributes(jsonData, baseKey = "capture_base", lang, visi
         const required = conformanceValue === "M";
         const recommended = conformanceValue === "R";
         const optional = conformanceValue === "O";
-        const multiple = cardinalities[key]?.includes("n");
+        const multiple = cardinalities[key]?.includes("n") || cardinalities[key] === "1-" || cardinalities[key] === "0-";
         const categories = entryCodes[key] || null;
         const label = mainLabels[key] || key;
         const placeholder = placeholders[key] || "";
