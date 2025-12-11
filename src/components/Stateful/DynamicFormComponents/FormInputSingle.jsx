@@ -8,11 +8,11 @@ import {
   FormControl,
   FormHelperText,
   Typography,
-  Link
+  Link,
 } from "@mui/material";
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 import theme from "../../../theme";
 
@@ -30,10 +30,9 @@ const FormInputSingle = ({
   depth = 0,
   readOnly,
   placeholder,
-  description
+  description,
 }) => {
-
-  const { t } = useTranslation();  // use translation function
+  const { t } = useTranslation(); // use translation function
 
   const errorProps = error ? { error: true, helperText: error } : {};
   const lines = 2;
@@ -82,13 +81,13 @@ const FormInputSingle = ({
   const clampSx = expanded
     ? {}
     : {
-      display: "-webkit-box",
-      WebkitBoxOrient: "vertical",
-      WebkitLineClamp: lines,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-    };
-  
+        display: "-webkit-box",
+        WebkitBoxOrient: "vertical",
+        WebkitLineClamp: lines,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      };
+
   return (
     <Box sx={{ mb: 2 }}>
       <Typography
@@ -97,10 +96,8 @@ const FormInputSingle = ({
         sx={{ display: "block" }}
       >
         {label || name}
-        {required && (
-          !readOnly && (
-            <span style={{ color: "red", marginLeft: 4 }}>*</span>
-          )
+        {required && !readOnly && (
+          <span style={{ color: "red", marginLeft: 4 }}>*</span>
         )}
       </Typography>
       {!readOnly && (
@@ -108,12 +105,12 @@ const FormInputSingle = ({
           <Typography
             ref={descriptionRef}
             component="p"
-            sx={{ 
-              //mb: 0.5, 
-              //display: "block", 
+            sx={{
+              //mb: 0.5,
+              //display: "block",
               color: theme.descriptionColor,
               pr: isClamped && !expanded ? 12 : 0,
-              ...clampSx
+              ...clampSx,
             }}
           >
             {description}
@@ -127,8 +124,7 @@ const FormInputSingle = ({
                   alignItems: "center",
                   pl: 2,
                   // optional fade so the button blends over truncated text
-                  background:
-                    theme.linearGradient,
+                  background: theme.linearGradient,
                 }}
               >
                 <Link
@@ -153,19 +149,19 @@ const FormInputSingle = ({
                 </Link>
               </Box>
             )}
-          </Typography>          
+          </Typography>
         </Box>
       )}
       {categories && categories.length > 0 ? (
-        (readOnly && value.length === 0)? (
-          <span 
-            style={{ 
+        readOnly && value.length === 0 ? (
+          <span
+            style={{
               display: "inline-block",
               paddingLeft: "14px",
               paddingTop: "16.5px",
               paddingBottom: "16.5px",
-              fontStyle: "italic", 
-              color: theme.descriptionColor 
+              fontStyle: "italic",
+              color: theme.descriptionColor,
             }}
           >
             {t("no_data")} {label || name}
@@ -174,20 +170,24 @@ const FormInputSingle = ({
           <FormControl fullWidth {...errorProps}>
             <Select
               disabled={readOnly}
-              sx={readOnly ? {
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "white",       // border color always white
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "white",       // prevent hover changing border color
-                },
-                "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "white",       // disabled state border color white
-                },
-                "& .MuiSelect-select.Mui-disabled": {
-                  WebkitTextFillColor: "black", // disabled text color
-                }
-              } :{}}
+              sx={
+                readOnly
+                  ? {
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "white", // border color always white
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "white", // prevent hover changing border color
+                      },
+                      "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "white", // disabled state border color white
+                      },
+                      "& .MuiSelect-select.Mui-disabled": {
+                        WebkitTextFillColor: "black", // disabled text color
+                      },
+                    }
+                  : {}
+              }
               value={value}
               displayEmpty
               onChange={(e) => onChange(path, e.target.value)}
@@ -200,7 +200,11 @@ const FormInputSingle = ({
                     ))}
                   </Box>
                 ) : (
-                  selected || <em>{t("forminputsingle.select")} {label}</em>
+                  selected || (
+                    <em>
+                      {t("forminputsingle.select")} {label}
+                    </em>
+                  )
                 )
               }
             >
@@ -221,16 +225,16 @@ const FormInputSingle = ({
             {error && <FormHelperText>{error}</FormHelperText>}
           </FormControl>
         )
-      ) : type === "DateTime" ? (
-        (readOnly && value.length === 0)? (
+      ) : type.includes("DateTime") ? (
+        readOnly && value.length === 0 ? (
           <span
-            style={{ 
+            style={{
               display: "inline-block",
               paddingLeft: "14px",
               paddingTop: "16.5px",
               paddingBottom: "16.5px",
-              fontStyle: "italic", 
-              color: theme.descriptionColor 
+              fontStyle: "italic",
+              color: theme.descriptionColor,
             }}
           >
             {t("no_data")} {label || name}
@@ -271,17 +275,17 @@ const FormInputSingle = ({
                   ? placeholder === "YYYY"
                     ? new Date(Number(value), 0, 1)
                     : (() => {
-                      // Parse yyyy-MM-dd as local date to avoid timezone shift
-                      const parts = value.split("-");
-                      if (parts.length === 3) {
-                        return new Date(
-                          Number(parts[0]),
-                          Number(parts[1]) - 1,
-                          Number(parts[2])
-                        );
-                      }
-                      return new Date(value); // fallback
-                    })()
+                        // Parse yyyy-MM-dd as local date to avoid timezone shift
+                        const parts = value.split("-");
+                        if (parts.length === 3) {
+                          return new Date(
+                            Number(parts[0]),
+                            Number(parts[1]) - 1,
+                            Number(parts[2])
+                          );
+                        }
+                        return new Date(value); // fallback
+                      })()
                   : null
               }
               // onChange={(e) => onChange(path, e.target.value)}
@@ -311,46 +315,48 @@ const FormInputSingle = ({
             />
           </LocalizationProvider>
         )
+      ) : readOnly && value.length === 0 ? (
+        <span
+          style={{
+            display: "inline-block",
+            paddingLeft: "14px",
+            paddingTop: "16.5px",
+            paddingBottom: "16.5px",
+            fontStyle: "italic",
+            color: theme.descriptionColor,
+          }}
+        >
+          {t("no_data")} {label || name}
+        </span>
       ) : (
-        (readOnly && value.length === 0)? (
-          <span
-            style={{ 
-              display: "inline-block",
-              paddingLeft: "14px",
-              paddingTop: "16.5px",
-              paddingBottom: "16.5px",
-              fontStyle: "italic", 
-              color: theme.descriptionColor
-            }}
-          >
-            {t("no_data")} {label || name}
-          </span>
-        ) : (
-          <TextField
-            disabled={readOnly}
-            sx={readOnly ? {
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "white",       // border color always white
-                },
-                "&:hover fieldset": {
-                  borderColor: "white",       // prevent hover changing border color
-                },
-                "&.Mui-disabled fieldset": {
-                  borderColor: "white",       // disabled state border color white
-                },
-              },
-              "& .MuiInputBase-input.Mui-disabled": {
-                WebkitTextFillColor: "black", // disabled text color (adjust as needed)
-              },
-            } : {}}
-            fullWidth
-            value={value}
-            placeholder={placeholder || `${t("forminputsingle.enter")} ${label}`}
-            onChange={(e) => onChange(path, e.target.value)}
-            {...errorProps}
-          />
-        )
+        <TextField
+          disabled={readOnly}
+          sx={
+            readOnly
+              ? {
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "white", // border color always white
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "white", // prevent hover changing border color
+                    },
+                    "&.Mui-disabled fieldset": {
+                      borderColor: "white", // disabled state border color white
+                    },
+                  },
+                  "& .MuiInputBase-input.Mui-disabled": {
+                    WebkitTextFillColor: "black", // disabled text color (adjust as needed)
+                  },
+                }
+              : {}
+          }
+          fullWidth
+          value={value}
+          placeholder={placeholder || `${t("forminputsingle.enter")} ${label}`}
+          onChange={(e) => onChange(path, e.target.value)}
+          {...errorProps}
+        />
       )}
     </Box>
   );
