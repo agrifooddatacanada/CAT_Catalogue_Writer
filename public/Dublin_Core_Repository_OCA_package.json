@@ -1,55 +1,66 @@
 {
-  "d": "EI4-H3K0CaWXBFdJZFygkwTpGVtGhzK5YvXEilk0VKoY",
+  "d": "EDqM_wwgWgRrEd609T9X8wTasxpp1e_QJYmdBxFVRoii",
   "type": "oca_package/1.0",
   "oca_bundle": {
-    "v": "OCAA11JSON0016af_",
+    "v": "OCAA11JSON001f0a_",
     "bundle": {
-      "v": "OCAS11JSON001692_",
-      "d": "EEYY2kapyE0K_d3ePlvscEqGe_ScWD1lsAQiuWdb9GB9",
+      "v": "OCAS11JSON001eed_",
+      "d": "EGzAp1Q1s0aiTvL2fgx2HwzurWxgS_ORg87JkPVkhw0b",
       "capture_base": {
-        "d": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+        "d": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
         "type": "spec/capture_base/1.1",
         "attributes": {
           "conformsTo": ["Text"],
           "contributor": ["Text"],
+          "created": "DateTime",
           "creator": ["Text"],
-          "date": ["DateTime"],
+          "dateAccepted": "DateTime",
           "description": ["Text"],
           "format": ["Text"],
+          "hasPart": ["Text"],
+          "hasVersion": ["Text"],
           "identifier": ["Text"],
-          "issued": ["DateTime"],
+          "isPartOf": ["Text"],
+          "isReferencedBy": ["Text"],
+          "isVersionOf": ["Text"],
+          "issued": "DateTime",
           "language": ["Text"],
+          "modified": "DateTime",
           "provenance": ["Text"],
           "publisher": "Text",
-          "relation": ["Text"],
+          "references": ["Text"],
           "rights": ["Text"],
           "source": ["Text"],
           "spatial": ["Text"],
           "subject": ["Text"],
-          "temporal": ["DateTime"],
+          "temporal": "Text",
           "title": ["Text"],
-          "type": ["Text"]
+          "type": ["Text"],
+          "valid": "DateTime"
         },
         "classification": "",
         "flagged_attributes": []
       },
       "overlays": {
         "cardinality": {
-          "d": "EBzz05_8Zc4ugL9C4PFSHHLVoo9FMWckM6aTGDdYuga6",
-          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "d": "EE1Q38nHY1SorynL_1_ZUnBz8LXsdaQFZNYZdeiZYQBb",
+          "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
           "type": "spec/overlays/cardinality/1.1",
           "attribute_cardinality": {
             "conformsTo": "0-",
             "contributor": "0-",
             "creator": "0-",
-            "date": "0-",
             "description": "0-",
             "format": "0-",
+            "hasPart": "0-",
+            "hasVersion": "0-",
             "identifier": "1-",
-            "issued": "0-",
+            "isPartOf": "0-",
+            "isReferencedBy": "0-",
+            "isVersionOf": "0-",
             "language": "0-",
             "provenance": "0-",
-            "relation": "0-",
+            "references": "0-",
             "rights": "0-",
             "source": "0-",
             "spatial": "0-",
@@ -60,61 +71,77 @@
           }
         },
         "character_encoding": {
-          "d": "EIggAnlV2lAIf_g8yXgpeFagnldKICw1DJa6_KfqU5Af",
-          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "d": "EDZsX4WHf4KI9VsQw2NbzhE8CvoPzFbH86qzVhkttEOA",
+          "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
           "type": "spec/overlays/character_encoding/1.1",
           "attribute_character_encoding": {
             "conformsTo": "utf-8",
             "contributor": "utf-8",
+            "created": "utf-8",
             "creator": "utf-8",
-            "date": "utf-8",
+            "dateAccepted": "utf-8",
             "description": "utf-8",
             "format": "utf-8",
+            "hasPart": "utf-8",
+            "hasVersion": "utf-8",
             "identifier": "utf-8",
+            "isPartOf": "utf-8",
+            "isReferencedBy": "utf-8",
+            "isVersionOf": "utf-8",
             "issued": "utf-8",
             "language": "utf-8",
+            "modified": "utf-8",
             "provenance": "utf-8",
             "publisher": "utf-8",
-            "relation": "utf-8",
+            "references": "utf-8",
             "rights": "utf-8",
             "source": "utf-8",
             "spatial": "utf-8",
             "subject": "utf-8",
             "temporal": "utf-8",
             "title": "utf-8",
-            "type": "utf-8"
+            "type": "utf-8",
+            "valid": "utf-8"
           }
         },
         "conformance": {
-          "d": "EAnOc4795y8G23pV7_WF0Zop-l6vkUI_S1V9CLfPI-xx",
-          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "d": "EBnvmUzHM-kAwvaBqkOLPYeQPvAJzC_wsMEc3p0v0clZ",
+          "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
           "type": "spec/overlays/conformance/1.1",
           "attribute_conformance": {
             "conformsTo": "O",
             "contributor": "O",
+            "created": "M",
             "creator": "M",
-            "date": "M",
-            "description": "M",
+            "dateAccepted": "O",
+            "description": "O",
             "format": "M",
+            "hasPart": "O",
+            "hasVersion": "O",
             "identifier": "M",
+            "isPartOf": "O",
+            "isReferencedBy": "O",
+            "isVersionOf": "O",
             "issued": "O",
             "language": "O",
+            "modified": "O",
             "provenance": "O",
             "publisher": "O",
-            "relation": "O",
+            "references": "O",
             "rights": "M",
             "source": "O",
             "spatial": "O",
             "subject": "M",
             "temporal": "O",
             "title": "M",
-            "type": "M"
+            "type": "M",
+            "valid": "O"
           }
         },
         "entry": [
           {
-            "d": "EIZmoYUhua7J5f8bLG0JpemVl4LWHxb2jY-bbwqC-8uY",
-            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "d": "EIJ6RVnc6d2KVDQa94dXrah6tZL1T1FSIgRuM1XULV2O",
+            "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
             "type": "spec/overlays/entry/1.1",
             "language": "eng",
             "attribute_entries": {
@@ -136,8 +163,8 @@
           }
         ],
         "entry_code": {
-          "d": "EDc6RG2I35a6OJblQt44URkrwNgQZjatuWMNpEMDALQu",
-          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "d": "EB14JbslCWGa3ijSv5sZb247weYCBsIKwe64JRX2aj5C",
+          "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
           "type": "spec/overlays/entry_code/1.1",
           "attribute_entry_codes": {
             "type": [
@@ -157,80 +184,106 @@
           }
         },
         "format": {
-          "d": "EC36r52pez_xOH7b-kAwqTNBPkrFp70ZQr-1qmPZTjRL",
-          "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+          "d": "EESYfZkvhMExzteWnibDmvmakgyFFHys9h7EeVwghC7i",
+          "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
           "type": "spec/overlays/format/1.1",
           "attribute_formats": {
             "conformsTo": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
-            "date": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "created": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "dateAccepted": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "hasPart": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
+            "hasVersion": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
+            "isPartOf": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
+            "isReferencedBy": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
+            "isVersionOf": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
             "issued": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
-            "temporal": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+            "modified": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "references": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
+            "source": "https?\\:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}",
+            "temporal": "^(\\d{4})(-\\d{2})?(-\\d{2})?(/(\\d{4})(-\\d{2})?(-\\d{2})?)?$",
+            "valid": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
           }
         },
         "information": [
           {
-            "d": "EFaPqyukFmCK0xwd_fLRAjNfZPmNhHVaWm8OBg3DT4n-",
-            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "d": "EKP2yw2wsn6vbolhXWGzoabh-48-qExgD5DsDLvROKV9",
+            "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
             "type": "spec/overlays/information/1.1",
             "language": "eng",
             "attribute_information": {
               "conformsTo": "An established standard to which the described resource conforms.",
               "contributor": "An entity responsible for making contributions to the resource.",
+              "created": "Date of creation of the resource.",
               "creator": "An entity primarily responsible for making the resource.",
-              "date": "A point or period of time associated with an event in the lifecycle of the resource.",
+              "dateAccepted": "Date of acceptance of the resource.",
               "description": "An account of the resource.",
               "format": "The file format, physical medium, or dimensions of the resource.",
+              "hasPart": "A related resource that is included either physically or logically in the described resource.",
+              "hasVersion": "A related resource that is a version, edition, or adaptation of the described resource.",
               "identifier": "An unambiguous reference to the resource within a given context.",
+              "isPartOf": "A related resource in which the described resource is physically or logically included.",
+              "isReferencedBy": "A related resource that supplants, displaces, or supersedes the described resource.",
+              "isVersionOf": "A related resource that references, cites, or otherwise points to the described resource.",
               "issued": "Date of formal issuance of the resource.",
               "language": "A language of the resource.",
+              "modified": "Date on which the resource was changed.",
               "provenance": "A statement of any changes in ownership and custody of the resource since its creation that are significant for its authenticity, integrity, and interpretation.",
               "publisher": "An entity responsible for making the resource available.",
-              "relation": "A related resource.",
+              "references": "A related resource that is referenced, cited, or otherwise pointed to by the described resource.",
               "rights": "Information about rights held in and over the resource.",
               "source": "A related resource from which the described resource is derived.",
               "spatial": "Spatial characteristics of the resource.",
               "subject": "A topic of the resource.",
               "temporal": "Temporal characteristics of the resource.",
               "title": "A name given to the resource.",
-              "type": "The nature or genre of the resource."
+              "type": "The nature or genre of the resource.",
+              "valid": "Date (often a range) of validity of a resource."
             }
           }
         ],
         "label": [
           {
-            "d": "EOo0XnNYaz5yxt8Z8fowAoWnsjVZy-cqBfBHjOD7rSl2",
-            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "d": "EBS7xpMq13p232vx4J0McPdZ81cZNgfaATRKda1yRHX2",
+            "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
             "type": "spec/overlays/label/1.1",
             "language": "eng",
             "attribute_categories": [],
             "attribute_labels": {
               "conformsTo": "Conforms To",
               "contributor": "Contributor",
+              "created": "Date Created",
               "creator": "Creator",
-              "date": "Date",
+              "dateAccepted": "Date Accepted",
               "description": "Description",
               "format": "Format",
+              "hasPart": "Has Part",
+              "hasVersion": "Has Version",
               "identifier": "Identifier",
+              "isPartOf": "Is Part Of",
+              "isReferencedBy": "Is Replaced By",
+              "isVersionOf": "Is Referenced By",
               "issued": "Date Issued",
               "language": "Language",
+              "modified": "Date Modified",
               "provenance": "Provenance",
               "publisher": "Publisher",
-              "relation": "Relation",
+              "references": "References",
               "rights": "Rights",
               "source": "Source",
               "spatial": "Spatial Coverage",
               "subject": "Subject",
               "temporal": "Temporal Coverage",
               "title": "Title",
-              "type": "Type"
+              "type": "Type",
+              "valid": "Date Valid"
             },
             "category_labels": {}
           }
         ],
         "meta": [
           {
-            "d": "EIkKHZtd2sI60NdrIJwz2DrdqUnLxmxFKYKP3oF3mayU",
-            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "d": "ED5rx52VFb-ERp03O9jvqmCbpp7UHLllAfgiCBLJr-BD",
+            "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
             "type": "spec/overlays/meta/1.1",
             "language": "eng",
             "description": "Unknown",
@@ -243,33 +296,253 @@
   },
   "extensions": {
     "adc": {
-      "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk": {
-        "d": "ECj58abDi5LRI0DIe38XGeqH5GBUGpyN-HSSIw08H_PA",
+      "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe": {
+        "d": "ELQyrjBMpJOaLpsSKsuHYrvEllMGkZsZEv32uc_C0Qaw",
         "type": "community/adc/extension/1.0",
         "overlays": {
+          "form": [
+            {
+              "d": "###formDigest###",
+              "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
+              "type": "###formType###",
+              "language": "eng",
+              "description": {
+                "conformsTo": "URI of an established standard, specification, or schema to which this resource adheres or conforms. This indicates what formal rules, guidelines, or technical requirements the resource follows (e.g., 'http://purl.org/dc/terms/' for Dublin Core Terms, 'http://www.w3.org/2001/XMLSchema' for XML Schema, 'http://www.oasis-open.org/committees/office/' for OpenDocument Format). Use only stable, authoritative URIs pointing to the actual specification document.",
+                "contributor": "People, organizations, or services responsible for making secondary contributions to the resource. This includes editors, illustrators, translators, data managers, supervisors, funders, or anyone who supported the resource's development but is not the primary creator. List contributors in order of their contribution significance, with their specific roles clearly understood by the community.",
+                "created": "The date when the resource was first created or originated by its primary creator(s). This marks the beginning of the resource's lifecycle and is distinct from publication or issuance dates. Use ISO 8601 format (YYYY-MM-DD). For datasets, this is when data collection or generation began; for software, when coding started; for documents, when drafting began.",
+                "creator": "The primary individuals, research teams, organizations, or services principally responsible for making or generating the intellectual content of the resource. List creators in order of their primary contribution or authorship order. For collaborative works, include key lead researchers first. Use standardized name formats for disambiguation across systems.",
+                "dateAccepted": "The date when the resource was formally accepted by an authority, institution, or publisher after review or evaluation. This applies to theses accepted by universities, articles accepted by journals, grant proposals accepted by funding agencies, or datasets accepted into repositories. Use YYYY-MM-DD format. This date signifies official validation before publication.",
+                "description": "An account of the resource that enables users to decide whether the resource will meet their needs. Include abstracts, summaries, methods descriptions, technical specifications, table of contents, or any information that clarifies the resource's purpose, scope, creation process, or unique features. Be specific about what the resource contains and how it was made.",
+                "format": "The technical file format, physical medium, dimensions, or digital representation of the resource. Use standardized identifiers like MIME types (e.g., 'application/pdf', 'image/jpeg', 'text/csv'), PRONOM codes (e.g., 'fmt/100' for PDF), or file extensions with media types. This helps systems determine how to process, display, or preserve the resource correctly.",
+                "hasPart": "URI of another resource that is a constituent or component of this resource. Use this when your resource contains or includes subordinate resources (e.g., chapters in a book, articles in a journal issue, files in a dataset package, tracks in an audio album). The referenced resource is smaller or more specific than this one.",
+                "hasVersion": "URI of a subsequent version, edition, translation, adaptation, or derivative work of this resource. Use this when a later iteration exists with substantive content changes, revisions, or updates. Points forward in version history (e.g., v1.0 → v2.0). Changes should represent meaningful evolution, not just minor corrections.",
+                "identifier": "A unique and unambiguous string that permanently identifies this specific resource across systems and time. Use globally resolvable identifiers like DOI (10.1234/example), ARK, Handle, ISBN, ISSN, or stable institutional URIs. This identifier should remain valid even if the resource moves locations or metadata changes.",
+                "isPartOf": "URI of a larger resource or aggregation of which this resource is a constituent or component. Use this when your resource is contained within or subordinate to a bigger work (e.g., article within a journal issue, chapter within a book, file within a dataset package). The referenced resource is larger or more general than this one.",
+                "isReferencedBy": "URI of another resource that references, cites, mentions, or otherwise points to this resource. Use this when external works acknowledge or build upon your resource (e.g., articles citing your dataset, reviews mentioning your publication). This helps track impact and relationships across scholarly works.",
+                "isVersionOf": "URI of the prior version, edition, or source from which this current resource was derived, revised, translated, or adapted. Use this when your resource represents a later iteration of an earlier work. Points backward in version history (e.g., v2.0 → v1.0). Helps trace lineage and evolution of content.",
+                "issued": "The date of formal issuance, release, or first public dissemination of the resource. This marks when the resource became officially available to the public, regardless of when it was created. Use YYYY-MM-DD format. For publications, this is the publication date; for datasets, deposit date; for software, release date.",
+                "language": "The language(s) in which the resource is written, spoken, or presented. Use standard ISO 639-1 or 639-2 language codes (e.g., 'eng' for English, 'spa' for Spanish, 'fra' for French, 'zho' for Chinese). List primary language first if multiple languages are present. Helps systems with language-specific processing and display.",
+                "modified": "The date of the most recent substantive modification or update to the resource's content. Use YYYY-MM-DD format. This excludes trivial changes like metadata corrections or file format conversions. For software, this is the latest release date; for datasets, when data was last substantively updated; for documents, last content revision.",
+                "provenance": "A statement about the history, origin, ownership, custody, or significant changes that affect the resource's authenticity, integrity, or interpretation. Include information about previous owners, digitization processes, data transformations, or chain of custody that impacts trustworthiness. Essential for cultural heritage and scientific reproducibility.",
+                "publisher": "The entity responsible for making the resource available to the public. This includes universities, data centers, archives, journal publishers, software distributors, or repository managers who handle dissemination, hosting, or distribution. Different from creator (who made it) — publisher makes it accessible. Used in formal citations.",
+                "references": "URI of another resource that this resource cites, mentions, uses as source material, or builds upon. Use this when your resource depends on or acknowledges external works (e.g., dataset citing source data, article referencing prior research, software documenting dependencies). Helps establish scholarly context and dependencies.",
+                "rights": "Information about rights held in and over the resource, including copyright status, licensing terms, access restrictions, or usage permissions. Include license names (e.g., 'CC-BY-4.0', 'CC0 1.0'), embargo periods, or custom terms. Provide license URI when available. Clarifies legal conditions for access and reuse.",
+                "source": "URI of a related resource from which this resource is physically or logically derived. Use this for digitizations (original manuscript → digital scan), extractions (full database → subset), or transformations (raw data → processed dataset). The source is the prior state or material from which this was created.",
+                "spatial": "Spatial characteristics, coverage, or geographic location of the resource. Include place names (e.g., 'Paris, France'), coordinates, bounding boxes, or geospatial references. Repeat for multiple locations. Helps users understand the geographic scope and enables spatial search and mapping applications.",
+                "subject": "Topics, keywords, classification terms, or concepts that characterize the resource's content. Use terms from established controlled vocabularies (e.g., LCSH, MeSH, FAST) when possible. Include specific disciplinary terms, research areas, or themes. Multiple subjects help with discovery across search systems and categories.",
+                "temporal": "Time period covered by the resource using ISO 8601 interval format (e.g., '2020-01-01/2023-12-31', '2020/2023', '2020-01-01/', '/2023-12-31'). Indicates the chronological scope or historical period represented by the resource's content, not its creation dates.",
+                "title": "A name, heading, or label by which the resource is formally known. Use the most prominent, official, or commonly recognized title. Include subtitles or alternative titles in separate title fields if needed. Primary access point for discovery and citation.",
+                "type": "The nature, genre, or digital category of the resource using the DCMI Type Vocabulary or discipline-specific terms (e.g., 'Text', 'Image', 'Moving Image', 'Dataset', 'Software', 'Physical Object', 'Service'). Multiple types possible for compound resources. Essential for resource categorization and processing.",
+                "valid": "Date or date range during which the resource content is current, applicable, or authoritative. Use YYYY-MM-DD or ISO 8601 interval format. For standards, policies, price lists, or time-sensitive data, indicates period of validity. Different from creation/publication dates — focuses on content applicability."
+              },
+              "interaction": [
+                {
+                  "arguments": {
+                    "conformsTo": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/conformsToURI"
+                    },
+                    "created": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "dateAccepted": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "format": {
+                      "type": "Text",
+                      "placeholder": "PDF, XML, application/pdf, text/xml, etc..."
+                    },
+                    "hasPart": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/hasPartURI"
+                    },
+                    "hasVersion": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/hasVersionURI"
+                    },
+                    "identifier": {
+                      "type": "Text",
+                      "placeholder": "10.1234/foo"
+                    },
+                    "isPartOf": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/isPartOfURI"
+                    },
+                    "isReferencedBy": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/isReferencedByURI"
+                    },
+                    "isVersionOf": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/isVersionOfURI"
+                    },
+                    "issued": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "language": {
+                      "type": "Text",
+                      "placeholder": "en, fr, etc..."
+                    },
+                    "modified": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "references": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/referencesURI"
+                    },
+                    "source": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/sourceURI"
+                    },
+                    "temporal": {
+                      "type": "Text",
+                      "placeholder": "YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY, etc."
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "d": "###formDigest###",
+              "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
+              "type": "###formType###",
+              "language": "fra",
+              "description": {
+                "conformsTo": "URI of an established standard, specification, or schema to which this resource adheres or conforms. This indicates what formal rules, guidelines, or technical requirements the resource follows (e.g., 'http://purl.org/dc/terms/' for Dublin Core Terms, 'http://www.w3.org/2001/XMLSchema' for XML Schema, 'http://www.oasis-open.org/committees/office/' for OpenDocument Format). Use only stable, authoritative URIs pointing to the actual specification document.",
+                "contributor": "People, organizations, or services responsible for making secondary contributions to the resource. This includes editors, illustrators, translators, data managers, supervisors, funders, or anyone who supported the resource's development but is not the primary creator. List contributors in order of their contribution significance, with their specific roles clearly understood by the community.",
+                "created": "The date when the resource was first created or originated by its primary creator(s). This marks the beginning of the resource's lifecycle and is distinct from publication or issuance dates. Use ISO 8601 format (YYYY-MM-DD). For datasets, this is when data collection or generation began; for software, when coding started; for documents, when drafting began.",
+                "creator": "The primary individuals, research teams, organizations, or services principally responsible for making or generating the intellectual content of the resource. List creators in order of their primary contribution or authorship order. For collaborative works, include key lead researchers first. Use standardized name formats for disambiguation across systems.",
+                "dateAccepted": "The date when the resource was formally accepted by an authority, institution, or publisher after review or evaluation. This applies to theses accepted by universities, articles accepted by journals, grant proposals accepted by funding agencies, or datasets accepted into repositories. Use YYYY-MM-DD format. This date signifies official validation before publication.",
+                "description": "An account of the resource that enables users to decide whether the resource will meet their needs. Include abstracts, summaries, methods descriptions, technical specifications, table of contents, or any information that clarifies the resource's purpose, scope, creation process, or unique features. Be specific about what the resource contains and how it was made.",
+                "format": "The technical file format, physical medium, dimensions, or digital representation of the resource. Use standardized identifiers like MIME types (e.g., 'application/pdf', 'image/jpeg', 'text/csv'), PRONOM codes (e.g., 'fmt/100' for PDF), or file extensions with media types. This helps systems determine how to process, display, or preserve the resource correctly.",
+                "hasPart": "URI of another resource that is a constituent or component of this resource. Use this when your resource contains or includes subordinate resources (e.g., chapters in a book, articles in a journal issue, files in a dataset package, tracks in an audio album). The referenced resource is smaller or more specific than this one.",
+                "hasVersion": "URI of a subsequent version, edition, translation, adaptation, or derivative work of this resource. Use this when a later iteration exists with substantive content changes, revisions, or updates. Points forward in version history (e.g., v1.0 → v2.0). Changes should represent meaningful evolution, not just minor corrections.",
+                "identifier": "A unique and unambiguous string that permanently identifies this specific resource across systems and time. Use globally resolvable identifiers like DOI (10.1234/example), ARK, Handle, ISBN, ISSN, or stable institutional URIs. This identifier should remain valid even if the resource moves locations or metadata changes.",
+                "isPartOf": "URI of a larger resource or aggregation of which this resource is a constituent or component. Use this when your resource is contained within or subordinate to a bigger work (e.g., article within a journal issue, chapter within a book, file within a dataset package). The referenced resource is larger or more general than this one.",
+                "isReferencedBy": "URI of another resource that references, cites, mentions, or otherwise points to this resource. Use this when external works acknowledge or build upon your resource (e.g., articles citing your dataset, reviews mentioning your publication). This helps track impact and relationships across scholarly works.",
+                "isVersionOf": "URI of the prior version, edition, or source from which this current resource was derived, revised, translated, or adapted. Use this when your resource represents a later iteration of an earlier work. Points backward in version history (e.g., v2.0 → v1.0). Helps trace lineage and evolution of content.",
+                "issued": "The date of formal issuance, release, or first public dissemination of the resource. This marks when the resource became officially available to the public, regardless of when it was created. Use YYYY-MM-DD format. For publications, this is the publication date; for datasets, deposit date; for software, release date.",
+                "language": "The language(s) in which the resource is written, spoken, or presented. Use standard ISO 639-1 or 639-2 language codes (e.g., 'eng' for English, 'spa' for Spanish, 'fra' for French, 'zho' for Chinese). List primary language first if multiple languages are present. Helps systems with language-specific processing and display.",
+                "modified": "The date of the most recent substantive modification or update to the resource's content. Use YYYY-MM-DD format. This excludes trivial changes like metadata corrections or file format conversions. For software, this is the latest release date; for datasets, when data was last substantively updated; for documents, last content revision.",
+                "provenance": "A statement about the history, origin, ownership, custody, or significant changes that affect the resource's authenticity, integrity, or interpretation. Include information about previous owners, digitization processes, data transformations, or chain of custody that impacts trustworthiness. Essential for cultural heritage and scientific reproducibility.",
+                "publisher": "The entity responsible for making the resource available to the public. This includes universities, data centers, archives, journal publishers, software distributors, or repository managers who handle dissemination, hosting, or distribution. Different from creator (who made it) — publisher makes it accessible. Used in formal citations.",
+                "references": "URI of another resource that this resource cites, mentions, uses as source material, or builds upon. Use this when your resource depends on or acknowledges external works (e.g., dataset citing source data, article referencing prior research, software documenting dependencies). Helps establish scholarly context and dependencies.",
+                "rights": "Information about rights held in and over the resource, including copyright status, licensing terms, access restrictions, or usage permissions. Include license names (e.g., 'CC-BY-4.0', 'CC0 1.0'), embargo periods, or custom terms. Provide license URI when available. Clarifies legal conditions for access and reuse.",
+                "source": "URI of a related resource from which this resource is physically or logically derived. Use this for digitizations (original manuscript → digital scan), extractions (full database → subset), or transformations (raw data → processed dataset). The source is the prior state or material from which this was created.",
+                "spatial": "Spatial characteristics, coverage, or geographic location of the resource. Include place names (e.g., 'Paris, France'), coordinates, bounding boxes, or geospatial references. Repeat for multiple locations. Helps users understand the geographic scope and enables spatial search and mapping applications.",
+                "subject": "Topics, keywords, classification terms, or concepts that characterize the resource's content. Use terms from established controlled vocabularies (e.g., LCSH, MeSH, FAST) when possible. Include specific disciplinary terms, research areas, or themes. Multiple subjects help with discovery across search systems and categories.",
+                "temporal": "Time period covered by the resource using ISO 8601 interval format (e.g., '2020-01-01/2023-12-31', '2020/2023', '2020-01-01/', '/2023-12-31'). Indicates the chronological scope or historical period represented by the resource's content, not its creation dates.",
+                "title": "A name, heading, or label by which the resource is formally known. Use the most prominent, official, or commonly recognized title. Include subtitles or alternative titles in separate title fields if needed. Primary access point for discovery and citation.",
+                "type": "The nature, genre, or digital category of the resource using the DCMI Type Vocabulary or discipline-specific terms (e.g., 'Text', 'Image', 'Moving Image', 'Dataset', 'Software', 'Physical Object', 'Service'). Multiple types possible for compound resources. Essential for resource categorization and processing.",
+                "valid": "Date or date range during which the resource content is current, applicable, or authoritative. Use YYYY-MM-DD or ISO 8601 interval format. For standards, policies, price lists, or time-sensitive data, indicates period of validity. Different from creation/publication dates — focuses on content applicability."
+              },
+              "interaction": [
+                {
+                  "arguments": {
+                    "conformsTo": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/conformsToURI"
+                    },
+                    "created": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "dateAccepted": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "format": {
+                      "type": "Text",
+                      "placeholder": "PDF, XML, application/pdf, text/xml, etc..."
+                    },
+                    "hasPart": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/hasPartURI"
+                    },
+                    "hasVersion": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/hasVersionURI"
+                    },
+                    "identifier": {
+                      "type": "Text",
+                      "placeholder": "10.1234/foo"
+                    },
+                    "isPartOf": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/isPartOfURI"
+                    },
+                    "isReferencedBy": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/isReferencedByURI"
+                    },
+                    "isVersionOf": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/isVersionOfURI"
+                    },
+                    "issued": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "language": {
+                      "type": "Text",
+                      "placeholder": "en, fr, etc..."
+                    },
+                    "modified": {
+                      "type": "DateTime",
+                      "placeholder": "YYYY-MM-DD"
+                    },
+                    "references": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/referencesURI"
+                    },
+                    "source": {
+                      "type": "Text",
+                      "placeholder": "https://an.example.com/sourceURI"
+                    },
+                    "temporal": {
+                      "type": "Text",
+                      "placeholder": "YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY, etc."
+                    }
+                  }
+                }
+              ]
+            }
+          ],
           "ordering": {
-            "d": "ENBOvdtZl6FqraslIqvwDlRBNQsyNsTMwUzhdbx9SEV0",
-            "capture_base": "EHw1CnWAeezvaLECvM-5bQ5U8t0uF8qv8tOOW22va4sk",
+            "d": "EKk3huFXKxpNxjuy3uiXlVyMMOtTkAjIUQTrRZ9DDCyl",
+            "capture_base": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
             "type": "community/overlays/adc/ordering/1.0",
             "attribute_ordering": [
+              "identifier",
               "title",
               "creator",
+              "publisher",
+              "created",
+              "dateAccepted",
+              "issued",
+              "modified",
+              "valid",
+              "type",
+              "language",
+              "contributor",
+              "provenance",
               "subject",
               "description",
-              "date",
-              "type",
-              "format",
-              "identifier",
-              "language",
               "rights",
-              "publisher",
-              "contributor",
+              "format",
               "source",
-              "relation",
-              "issued",
-              "spatial",
               "temporal",
-              "provenance",
+              "spatial",
+              "hasVersion",
+              "isVersionOf",
+              "references",
+              "isReferencedBy",
+              "hasPart",
+              "isPartOf",
               "conformsTo"
             ],
             "entry_code_ordering": {
