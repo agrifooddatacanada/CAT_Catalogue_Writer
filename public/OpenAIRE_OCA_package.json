@@ -1427,27 +1427,6 @@
               "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
               "type": "###formType###",
               "language": "eng",
-              "pages": [
-                {
-                  "named_section": "page-1",
-                  "attribute_order": [
-                    {
-                      "named_section": "section-1",
-                      "attribute_order": ["q1", "q2"]
-                    }
-                  ]
-                }
-              ],
-              "page_order": ["page-1"],
-              "page_labels": {
-                "page-1": "Page 1: Data Request Schema"
-              },
-              "sidebar_label": {
-                "page-1": "sidebar: Data Request Schema"
-              },
-              "subheading": {
-                "page-1": "subheading: Catalogue Writer"
-              },
               "description": {
                 "affiliation": "The name of the organization, institution, university, company, or department with which the creator or contributor is affiliated at the time of creating the resource. Include the official name of the institution or the larger organization if the creator or contributor is part of a specific department or faculty.",
                 "alternateIdentifier": "Any secondary identifier for your resource other than the primary one, such as a local accession number, inventory number, or serial number. This helps track your resource in multiple systems.",
@@ -1551,35 +1530,13 @@
                     }
                   }
                 }
-              ],
-              "title": "Catalogue Writer"
+              ]
             },
             {
               "d": "###formDigest###",
               "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
               "type": "###formType###",
               "language": "fra",
-              "pages": [
-                {
-                  "named_section": "page-1",
-                  "attribute_order": [
-                    {
-                      "named_section": "section-1",
-                      "attribute_order": ["q1", "q2"]
-                    }
-                  ]
-                }
-              ],
-              "page_order": ["page-1"],
-              "page_labels": {
-                "page-1": "Page 1: Data Request Schema"
-              },
-              "sidebar_label": {
-                "page-1": "sidebar: Data Request Schema"
-              },
-              "subheading": {
-                "page-1": "subheading: Catalogue Writer"
-              },
               "description": {
                 "affiliation": "Le nom de l’organisation, de l’institution, de l’université, de l’entreprise ou du département auquel le créateur ou le contributeur est affilié au moment de la création de la ressource. Incluez le nom officiel de l’institution ou de l’organisme plus large si le créateur ou le contributeur fait partie d’un département ou d’une faculté spécifique.",
                 "alternateIdentifier": "Tout identifiant secondaire de votre ressource autre que l’identifiant principal, comme un numéro d’acquisition local, un numéro d’inventaire ou un numéro de série. Cela aide à suivre votre ressource dans plusieurs systèmes.",
@@ -1683,8 +1640,7 @@
                     }
                   }
                 }
-              ],
-              "title": "Catalogue Writer"
+              ]
             }
           ],
           "ordering": {
