@@ -267,7 +267,14 @@ const FormInputSingle = ({
           />
         ) : (
           // Show interactive DatePicker when not readOnly
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <LocalizationProvider
+            dateAdapter={AdapterDateFns}
+            localeText={{
+              fieldDayPlaceholder: () => "DD",
+              fieldMonthPlaceholder: () => "MM",
+              fieldYearPlaceholder: () => "YYYY",
+            }}
+          >
             <DatePicker
               views={placeholder === "YYYY" ? ["year"] : undefined}
               value={
@@ -304,7 +311,7 @@ const FormInputSingle = ({
                   onChange(path, "");
                 }
               }}
-              inputFormat={placeholder === "YYYY" ? "yyyy" : "yyyy-MM-dd"}
+              inputFormat={placeholder === "YYYY" ? "yyyy" : "MM/dd/yyyy"}
               renderInput={(params) => (
                 <TextField
                   {...params}

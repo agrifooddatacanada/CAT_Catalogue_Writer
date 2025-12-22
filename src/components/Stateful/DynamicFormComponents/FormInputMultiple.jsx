@@ -28,7 +28,9 @@ const FormInputMultiple = ({
     children && children.length > 0
       ? children.map((child) => child.name)
       : value.length > 0
-      ? Object.keys(value[0])
+      ? typeof value[0] === "object" && value[0] !== null
+        ? Object.keys(value[0])
+        : [name]
       : [];
 
   // Build map from attribute name to label for table header
@@ -114,18 +116,22 @@ const FormInputMultiple = ({
                     border: "1px solid #ddd",
                   }}
                 >
-                  {columns.map((col) => (
-                    <td
-                      key={col}
-                      style={{
-                        border: "1px solid #ccc",
-                        padding: "8px",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {formatValue(entry[col])}
-                    </td>
-                  ))}
+                  {columns.map((col) => {
+                    const cellValue =
+                      typeof entry === "string" ? entry : entry[col];
+                    return (
+                      <td
+                        key={col}
+                        style={{
+                          border: "1px solid #ccc",
+                          padding: "8px",
+                          whiteSpace: "pre-wrap",
+                        }}
+                      >
+                        {formatValue(cellValue)}
+                      </td>
+                    );
+                  })}
                   {!readOnly ? (
                     <td
                       style={{
@@ -138,9 +144,10 @@ const FormInputMultiple = ({
                         size="small"
                         onClick={() => {
                           // Use deep copy to avoid mutation side-effects
-                          const entryCopy = JSON.parse(
-                            JSON.stringify(value[idx])
-                          );
+                          const entryCopy =
+                            typeof entry === "string"
+                              ? { [name]: entry }
+                              : JSON.parse(JSON.stringify(entry));
                           setPopupValue(entryCopy);
                           setEditingIndex(idx);
                           setDialogOpen(path);

@@ -253,20 +253,25 @@ function useDynamicFormState(jsonData, language = "eng", initialData = null) {
             setPopupErrors(errors);
             return; // block save if invalid
         }
+
+        const hasChildren = popupField.children && popupField.children.length > 0;
+        const valueToSave = hasChildren
+            ? popupValue
+            : popupValue[popupField.name];
     
         //
         if (editingIndex !== null) {
             // Update existing entry at editingIndex
             setFormState((prev) => {
                 const arr = Array.isArray(getNestedValue(prev, dialogOpen))
-                ? [...getNestedValue(prev, dialogOpen)]
-                : [];
-                arr[editingIndex] = popupValue;
+                    ? [...getNestedValue(prev, dialogOpen)]
+                    : [];
+                arr[editingIndex] = valueToSave;
                 return setNestedValue(prev, dialogOpen, arr);
             });
         } else {
             // Add new entry
-            handleDialogSave(dialogOpen, popupValue);
+            handleDialogSave(dialogOpen, valueToSave);
         }
     
         // Clear popup errors and close dialog
