@@ -16,6 +16,7 @@ import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 import theme from "../../theme";
 import canonicalize from "../../utils/canonicalize";
 import Pagination from "@mui/material/Pagination";
+import { getContextUrl } from "../../utils/schemaContextMapping";
 
 //
 const checkMultipleEntriesFilled = (fields, state) => {
@@ -83,6 +84,7 @@ function DynamicForm({
   readOnly = false,
   isEditMode = false,
   onSave,
+  schema = "OpenAIRE",
 }) {
   //
   const {
@@ -186,14 +188,21 @@ function DynamicForm({
       delete nestedState.catalogue_id;
     }
 
+    // Remove existing @context if any
+    if ("@context" in nestedState) {
+      delete nestedState["@context"];
+    }
+
     // ADD CANONICALISATION HERE
     const canonicalizedState = canonicalize(nestedState);
     const formData = JSON.parse(canonicalizedState);
 
+    const contextUrl = getContextUrl(schema);
+
     // Add a unique file identifier
     const formDataWithId = {
-      "@context": "https://schema.org",
-      "@type": "Catalogue",
+      "@context": contextUrl,
+      "@type": "Catalogue Record",
       catalogue_id: "",
       ...formData,
     };

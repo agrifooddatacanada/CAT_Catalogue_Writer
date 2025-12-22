@@ -70,6 +70,7 @@ function FormPage() {
           initialData={uploadedJson}
           isEditMode={!!uploadedJson} // TRUE when editing existing data
           onSave={handleSave}
+          schema={schema}
         />
       </Box>
       <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />

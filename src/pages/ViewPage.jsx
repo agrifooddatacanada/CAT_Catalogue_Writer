@@ -94,6 +94,7 @@ function ViewPage() {
           language={lang}
           initialData={uploadedJson}
           readOnly={true} // Prop for view mode
+          schema={schema}
         />
 
         <Button
