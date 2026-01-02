@@ -1,3 +1,4 @@
+// Schema Context Map
 export const SCHEMA_CONTEXT_MAP = {
     "OpenAIRE": "https://www.openaire.eu/",
     "Dublin Core (Repository-specific) [Test]": "http://purl.org/dc/elements/1.1/",
