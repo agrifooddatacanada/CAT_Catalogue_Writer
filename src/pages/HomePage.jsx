@@ -51,6 +51,7 @@ function HomePage() {
     reader.readAsText(file);
   };
 
+  // Form Routing
   const getFormRoute = () => {
     switch (schema) {
       case "OpenAIRE":
@@ -152,6 +153,8 @@ function HomePage() {
             <FormHelperText sx={{ textAlign: "center", fontSize: "15px" }}>
               Select a Schema to Proceed
             </FormHelperText>
+
+            {/* Schema Selection Menu */}
             <FormControl sx={{ width: "75%" }}>
               <Select value={schema} onChange={handleSchemaSelect} displayEmpty>
                 <MenuItem value="" sx={{ color: "rgba(100, 100, 100, 1)" }}>

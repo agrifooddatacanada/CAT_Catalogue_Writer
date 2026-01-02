@@ -1,7 +1,7 @@
 {
   "homepage": {
     "semantic_engine": "Semantic Engine",
-    "catalogue": "Catalogue",
+    "catalogue": "Catalogue Record",
     "content_heading": "Cataloguez votre travail",
     "content": "Facilitez la tâche aux autres pour suivre votre travail et citer ce que vous créez",
     "quick_start_heading": "Démarrage rapide:",
@@ -42,8 +42,8 @@
     "all_fields": "Tous les champs avec ( ",
     "are_mandatory": " ) sont obligatoires",
     "page": "Page",
-    "of": "of",
-    "fields": "fields"
+    "of": "sur",
+    "fields": "champs"
   },
   "viewpage": {
     "loading": "Chargement du schéma...",
