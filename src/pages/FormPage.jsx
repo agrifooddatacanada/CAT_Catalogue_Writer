@@ -73,7 +73,7 @@ function FormPage() {
     };
 
     loadSchema();
-  }, [schema, fields?.length]); // deps: schema changes or fields empty
+  }, [schema, dispatch, fields, fields?.length]); // deps: schema changes or fields empty
 
   // Loading states
   if (!schema) {
