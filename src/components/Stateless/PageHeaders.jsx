@@ -4,7 +4,6 @@ import SelectLanguage from "../Stateful/LanguageSelector";
 import { Stack, Box } from "@mui/system";
 import { Tooltip, Button } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { useNavigate } from "react-router-dom";
 import theme from "../../theme";
 
 function PageHeaders({
@@ -13,8 +12,6 @@ function PageHeaders({
   help_button_redirect,
 }) {
   const { t } = useTranslation(); // use translation function
-
-  const navigate = useNavigate();
 
   return (
     <div className="Header">
