@@ -33,7 +33,7 @@ const FormInputMultiple = ({ valuePath, depth = 0 }) => {
   const fieldPath = removeIndices(valuePath);
   const field = useSelector(selectFieldByPath(fieldPath));
   const instanceCount = useSelector(selectInstanceCount(fieldPath)) || 0;
-  const fieldValues = useSelector(selectFormValueByPrefix(fieldPath)) || [];
+  const fieldValues = useSelector(selectFormValueByPrefix(fieldPath));
 
   const handleDelete = useCallback(
     (indexToDelete) => {
