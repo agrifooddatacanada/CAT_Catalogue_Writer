@@ -10,25 +10,45 @@ import {
 } from "@mui/material";
 import AccordionExpand from "../components/Stateless/Accordion";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
-//import SelectLanguage from "../components/Stateful/LanguageSelector";
+import { extractAttributes } from "../utils/extractAttributes";
 import UploadButton from "../components/Stateful/UploadButton";
 import Footer from "../components/Stateless/Footer";
 import theme from "../theme";
 import HomeHeader from "../components/Stateless/HomeHeader";
 import HomeSubHeader from "../components/Stateless/HomeSubHeader";
 import HomeQuickStart from "../components/Stateless/HomeQuickStart";
+import {
+  setFields,
+  setSchemaName,
+  setDepFormatPatterns,
+  setFormatPatterns,
+} from "../store/slices/fieldSchemaSlice";
+import { useDispatch } from "react-redux";
+import { extractJsonSchemaAsync } from "../utils/extractJsonSchema";
+import { setInitialFormState } from "../store/slices/formValueSlice.js";
+import { buildInstanceCountsFromValues } from "../utils/instanceCounts";
+import {
+  setAllInstanceCounts,
+  setInstanceCount,
+} from "../store/slices/instanceCountsSlice";
+import { serializeRegexPatterns } from "../utils/regexUtils.js";
+import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths.js";
+import { setMode } from "../store/slices/modeSlice.js";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
   const [jsonContent, setJsonContent] = useState(null);
-  const [schema, setSchema] = useState(null);
+  const [schema, setSchema] = useState("");
   const navigate = useNavigate();
   const { t } = useTranslation(); // use translation function
+  const dispatch = useDispatch();
 
   const isSchemaSelected = schema !== null && schema !== "";
 
+  //
   const handleSchemaSelect = (e) => {
     setSchema(e.target.value);
+    dispatch(setSchemaName(e.target.value));
     // Reset files when schema changes to ensure schema-file match
     if (uploadedFiles) {
       setUploadedFiles(null);
@@ -36,6 +56,7 @@ function HomePage() {
     }
   };
 
+  //
   const handleFileSelect = (files) => {
     const file = files[0];
     const reader = new FileReader();
@@ -51,32 +72,115 @@ function HomePage() {
     reader.readAsText(file);
   };
 
-  // Form Routing
-  const getFormRoute = () => {
-    switch (schema) {
-      case "OpenAIRE":
-        return "/form";
-      case "Dublin Core (Repository-specific) [Test]":
-        return "/form-dublincore-repository";
-      case "Dublin Core (Project-specific) [Test]":
-        return "/form-dublincore-project";
-      case "DataCite [Test]":
-        return "/form-datacite";
-      default:
-        return "/form";
+  // FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
+  function flatten(obj, parentKey = "", result = {}) {
+    if (Array.isArray(obj)) {
+      if (obj.length === 0) {
+        // Always include the array path
+        result[parentKey] = obj;
+      } else {
+        // Then recurse into elements
+        obj.forEach((item, index) => {
+          const newKey = `${parentKey}[${index}]`;
+          if (item !== null && typeof item === "object") {
+            flatten(item, newKey, result);
+          } else {
+            result[newKey] = item;
+          }
+        });
+      }
+      return result;
     }
+    // Object case
+    for (const key in obj) {
+      if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+      const value = obj[key];
+      const newKey = parentKey ? `${parentKey}.${key}` : key;
+      if (value !== null && typeof value === "object") {
+        // Then recurse into children
+        flatten(value, newKey, result);
+      } else {
+        // Primitive → set directly
+        result[newKey] = value;
+      }
+    }
+    return result;
+  }
+
+  // Form Routing
+  const getFormRoute = async () => {
+    const jsonSchema = await extractJsonSchemaAsync(schema);
+    const { fields, formatPatterns, depFormatPatterns } =
+      extractAttributes(jsonSchema);
+    // Enrich fields with paths BEFORE dispatching
+    const enrichedFields = enrichFieldsWithPaths(fields);
+
+    dispatch(setFields(enrichedFields));
+    dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
+    dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+
+    // Return route WITH schema param
+    const routeMap = {
+      OpenAIRE: "/form",
+      "Dublin Core (Repository-specific) [Test]": "/form-dublincore-repository",
+      "Dublin Core (Project-specific) [Test]": "/form-dublincore-project",
+      "DataCite [Test]": "/form-datacite",
+    };
+
+    const baseRoute = routeMap[schema] || "/form";
+    return `${baseRoute}?schema=${encodeURIComponent(schema)}`;
   };
 
-  const handleViewClick = () => {
+  //
+  const handleNavigate = async () => {
+    const route = await getFormRoute(); // Awaits schema extraction & dispatches
+    dispatch(setMode("edit"));
+    navigate(route);
+  };
+
+  //
+  const handleViewClick = async () => {
     if (jsonContent) {
-      navigate("/view", { state: { jsonContent, schema } });
+      const jsonSchema = await extractJsonSchemaAsync(schema);
+      const formValues = flatten(jsonContent);
+      dispatch(setInitialFormState(formValues));
+      const { fields, formatPatterns, depFormatPatterns } =
+        extractAttributes(jsonSchema);
+      // Enrich fields with paths BEFORE dispatching
+      const enrichedFields = enrichFieldsWithPaths(fields);
+      dispatch(setFields(enrichedFields));
+      dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
+      dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+      const instanceCount = buildInstanceCountsFromValues(formValues);
+      console.log("instanceCount:", instanceCount);
+      dispatch(setAllInstanceCounts(instanceCount));
+      dispatch(setMode("view"));
+      navigate("/view");
     }
   };
 
   //
-  const handleEditClick = () => {
+  const handleEditClick = async () => {
     if (jsonContent) {
-      navigate(getFormRoute(), { state: { jsonContent, schema } });
+      const jsonSchema = await extractJsonSchemaAsync(schema);
+      const formValues = flatten(jsonContent);
+      dispatch(setInitialFormState(formValues));
+
+      const { fields, formatPatterns, depFormatPatterns } =
+        extractAttributes(jsonSchema);
+      // Enrich fields with paths BEFORE dispatching
+      const enrichedFields = enrichFieldsWithPaths(fields);
+      dispatch(setFields(enrichedFields));
+      dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
+      dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+
+      const instanceCount = buildInstanceCountsFromValues(formValues);
+      dispatch(setInstanceCount(instanceCount));
+
+      dispatch(setMode("edit"));
+
+      const route = await getFormRoute();
+      navigate(route + `?schema=${encodeURIComponent(schema)}`);
     }
   };
 
@@ -176,8 +280,8 @@ function HomePage() {
           {isSchemaSelected && (
             <Box
               component={Link}
-              to={getFormRoute()}
-              state={{ schema }}
+              onClick={handleNavigate}
+              //state={{ schema }}
               sx={{
                 fontSize: "1.25rem",
                 fontWeight: "500",

@@ -1,46 +1,21 @@
-// This component receives the array of nested fields (`children`), `label`, `name`, 
-// currrent `path`, current `depth`, and `renderInput` function as props.
-// It renders a header for the group
-
-
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import { removeIndices } from "../../../utils/removeIndices";
+import { useSelector } from "react-redux";
+import { selectFieldByPath } from "../../../store/selectors/formSelectors";
+import FieldChecker from "./FieldChecker";
 
-
-const FormInputGroup = ({ 
-  children, 
-  label,
-  name, 
-  path, 
-  depth = 0, 
-  renderInput, 
-  required,
-  readOnly
-}) => {
+const FormInputGroup = ({ valuePath, depth = 0 }) => {
+  const fieldPath = removeIndices(valuePath);
+  const field = useSelector(selectFieldByPath(fieldPath));
   return (
     <Box>
-      <Typography variant={depth === 0 ? "h6" : "h8"} gutterBottom>
-        {label || name}
-        {/* Show asterisk only if group itself is required, otherwise nothing */}
-        {required && (
-          !readOnly && (
-            <span style={{ color: "red", marginLeft: 4 }}>*</span>
-          )
-        )}
-      </Typography>
-      {children.map((child) =>
-        renderInput(
-          {
-            ...child,
-            path: path ? `${path}.${child.name}` : child.name,
-          },
-          depth + 1,
-          child.name
-        )
-      )}
+      {field.children?.map((child, idx) => {
+        const childPath = `${valuePath}.${child.name}`;
+        return <FieldChecker key={childPath} valuePath={childPath} depth={1} />;
+      })}
     </Box>
   );
 };
-
 
 export default FormInputGroup;

@@ -1,25 +1,29 @@
 // PULL TOP-LEVEL ATTRIBUTE LABELS FROM MAIN BUNDLE OVERLAYS
 function extractBundleLabelsByLanguage(jsonData, lang) {
-    const labelOverlays = jsonData?.oca_bundle?.bundle?.overlays?.label;
-    if (!labelOverlays || !Array.isArray(labelOverlays)) return {};
+  const labelOverlays = jsonData?.oca_bundle?.bundle?.overlays?.label;
+  if (!labelOverlays || !Array.isArray(labelOverlays)) return {};
 
-    // Find the overlay with matching language
-    const overlayForLang = labelOverlays.find((overlay) => overlay.language === lang);
-    if (!overlayForLang) return labelOverlays[0].attribute_labels || {};
+  // Find the overlay with matching language
+  const overlayForLang = labelOverlays.find(
+    (overlay) => overlay.language === lang,
+  );
+  if (!overlayForLang) return labelOverlays[0].attribute_labels || {};
 
-    return overlayForLang.attribute_labels || {};
+  return overlayForLang.attribute_labels || {};
 }
 
 // PULL ATTRIBUTE LABELS FROM SPECIFIC DEPENDENCY OVERLAY
 function extractLabelsFromDependency(dependency, lang) {
-    const labelOverlays = dependency?.overlays?.label;
-    if (!labelOverlays || !Array.isArray(labelOverlays)) return {};
+  const labelOverlays = dependency?.overlays?.label;
+  if (!labelOverlays || !Array.isArray(labelOverlays)) return {};
 
-    // Find the overlay with matching language
-    const overlayForLang = labelOverlays.find((overlay) => overlay.language === lang);
-    if (!overlayForLang) return labelOverlays[0].attribute_labels || {};
+  // Find the overlay with matching language
+  const overlayForLang = labelOverlays.find(
+    (overlay) => overlay.language === lang,
+  );
+  if (!overlayForLang) return labelOverlays[0].attribute_labels || {};
 
-    return overlayForLang.attribute_labels || {};
+  return overlayForLang.attribute_labels || {};
 }
 
 //
@@ -45,7 +49,7 @@ function extractPlaceholdersFromFormExtension(extensions, lang) {
         const args = interactionKey.arguments || {};
         for (const [attrName, argDef] of Object.entries(args)) {
           const placeholder = argDef.placeholder;
-          if (typeof placeholder === 'string' && placeholder.trim() !== '') {
+          if (typeof placeholder === "string" && placeholder.trim() !== "") {
             placeholders[attrName] = placeholder;
           }
         }
@@ -57,168 +61,198 @@ function extractPlaceholdersFromFormExtension(extensions, lang) {
 
 // IDENTIFY PREFERRED ATTRIBUTE ORDERING FROM EXTENSIONS
 function getAttributeOrdering(jsonData) {
-    const adcExtensions = jsonData?.extensions?.adc || [];
-    for (const ext of Object.values(adcExtensions)) {
-        const ordering = ext?.overlays?.ordering;
-        if (ordering && ordering.attribute_ordering) {
-            return ordering.attribute_ordering;
-        }
+  const adcExtensions = jsonData?.extensions?.adc || [];
+  for (const ext of Object.values(adcExtensions)) {
+    const ordering = ext?.overlays?.ordering;
+    if (ordering && ordering.attribute_ordering) {
+      return ordering.attribute_ordering;
     }
-    return [];
+  }
+  return [];
 }
 
 // REORDER THE EXTRACTED FIELDS
 function sortFieldsByOrdering(fields, ordering) {
-    const orderMap = new Map(ordering.map((name, index) => [name, index]));
-    return fields.sort((a, b) => {
-        const indexA = orderMap.has(a.name) ? orderMap.get(a.name) : Number.MAX_SAFE_INTEGER;
-        const indexB = orderMap.has(b.name) ? orderMap.get(b.name) : Number.MAX_SAFE_INTEGER;
-        return indexA - indexB;
-    });
+  const orderMap = new Map(ordering.map((name, index) => [name, index]));
+  return fields.sort((a, b) => {
+    const indexA = orderMap.has(a.name)
+      ? orderMap.get(a.name)
+      : Number.MAX_SAFE_INTEGER;
+    const indexB = orderMap.has(b.name)
+      ? orderMap.get(b.name)
+      : Number.MAX_SAFE_INTEGER;
+    return indexA - indexB;
+  });
 }
 
 // PULL ENTRY VALUES (HUMAN-READABLE) FROM MAIN BUNDLE OVERLAYS
 function extractLocalizedEntryValues(jsonData, lang) {
-    // Access overlays in bundle
-    const overlays = jsonData?.oca_bundle?.bundle?.overlays;
-    if (!overlays) return {};
+  // Access overlays in bundle
+  const overlays = jsonData?.oca_bundle?.bundle?.overlays;
+  if (!overlays) return {};
 
-    // 'entry' overlays is an array, need to find one matching the language
-    const entryOverlays = Array.isArray(overlays.entry) ? overlays.entry : [];
+  // 'entry' overlays is an array, need to find one matching the language
+  const entryOverlays = Array.isArray(overlays.entry) ? overlays.entry : [];
 
-    // Find the overlay with matching language
-    let overlayForLang = entryOverlays.find(overlay => overlay.language === lang);
+  // Find the overlay with matching language
+  let overlayForLang = entryOverlays.find(
+    (overlay) => overlay.language === lang,
+  );
 
-    // If no overlay for requested lang, fallback to first available overlay
-    if (!overlayForLang && entryOverlays.length > 0) {
-        overlayForLang = entryOverlays[0];
-    }
+  // If no overlay for requested lang, fallback to first available overlay
+  if (!overlayForLang && entryOverlays.length > 0) {
+    overlayForLang = entryOverlays[0];
+  }
 
-    if (!overlayForLang) return {};
+  if (!overlayForLang) return {};
 
-    const attributeEntries = overlayForLang.attribute_entries || {};
-    const entryValuesMap = {};
+  const attributeEntries = overlayForLang.attribute_entries || {};
+  const entryValuesMap = {};
 
-    // Iterate over each attribute in attribute_entries
-    for (const attrName in attributeEntries) {
-        const entriesObj = attributeEntries[attrName];
-        // Extract the values which are the human-readable labels
-        entryValuesMap[attrName] = Object.entries(entriesObj).map(
-            ([code, label]) => `${code} (${label})`
-        );
-    }
-    return entryValuesMap;
+  // Iterate over each attribute in attribute_entries
+  for (const attrName in attributeEntries) {
+    const entriesObj = attributeEntries[attrName];
+    // Extract the values which are the human-readable labels
+    entryValuesMap[attrName] = Object.entries(entriesObj).map(
+      ([code, label]) => `${code} (${label})`,
+    );
+  }
+  return entryValuesMap;
 }
 
 // PULL ATTRIBUTE ENTRIES FROM SPECIFIC DEPENDENCY OVERLAY
 function extractEntriesFromDependency(dependency, lang) {
-    const entryOverlays = dependency?.overlays?.entry;
-    if (!entryOverlays || !Array.isArray(entryOverlays)) return {};
+  const entryOverlays = dependency?.overlays?.entry;
+  if (!entryOverlays || !Array.isArray(entryOverlays)) return {};
 
-    // Find the overlay with matching language
-    let overlayForLang = entryOverlays.find(overlay => overlay.language === lang);
+  // Find the overlay with matching language
+  let overlayForLang = entryOverlays.find(
+    (overlay) => overlay.language === lang,
+  );
 
-    // If no overlay for requested lang, fallback to first available overlay
-    if (!overlayForLang && entryOverlays.length > 0) {
-        overlayForLang = entryOverlays[0];
-    }
+  // If no overlay for requested lang, fallback to first available overlay
+  if (!overlayForLang && entryOverlays.length > 0) {
+    overlayForLang = entryOverlays[0];
+  }
 
-    if (!overlayForLang) return {};
+  if (!overlayForLang) return {};
 
-    const attributeEntries = overlayForLang.attribute_entries || {};
-    const entryValuesMap = {};
+  const attributeEntries = overlayForLang.attribute_entries || {};
+  const entryValuesMap = {};
 
-    for (const attrName in attributeEntries) {
-        const entriesObj = attributeEntries[attrName];
-        entryValuesMap[attrName] = Object.entries(entriesObj).map(
-            ([code, label]) => `${code} (${label})`
-        );
-    }
-    return entryValuesMap;
+  for (const attrName in attributeEntries) {
+    const entriesObj = attributeEntries[attrName];
+    entryValuesMap[attrName] = Object.entries(entriesObj).map(
+      ([code, label]) => `${code} (${label})`,
+    );
+  }
+  return entryValuesMap;
 }
 
 // GET CONFORMANCE WITH DEFAULT
 function getConformanceValue(conformances, key) {
-    return conformances[key] || "O";
+  return conformances[key] || "O";
+}
+
+// NORMALIZE `value` TO A REFERENCE (refs) STRING BEFORE CHECKING
+function getRefString(value) {
+  if (typeof value === "string") return value;
+  if (
+    Array.isArray(value) &&
+    value.length === 1 &&
+    typeof value[0] === "string"
+  ) {
+    return value[0];
+  }
+  return null;
 }
 
 // RECURSIVELY PROCESS `capture_base`
 function extractAttributesFromCaptureBase(
-    captureBase,
-    dependencies,
-    visitedRefs,
-    lang,
-    labels,
-    entryCodes,
-    conformances,
-    cardinalities,
-    placeholders,
-    descriptions
+  captureBase,
+  dependencies,
+  visitedRefs,
+  lang,
+  labels,
+  entryCodes,
+  conformances,
+  cardinalities,
+  placeholders,
+  descriptions,
 ) {
-    const attributes = captureBase.attributes || {};
-    const fields = [];
+  const attributes = captureBase.attributes || {};
+  const fields = [];
 
-    for (const [key, value] of Object.entries(attributes)) {
-        let fieldType = value;
-        let children = [];
+  for (const [key, value] of Object.entries(attributes)) {
+    let fieldType = value;
+    let children = [];
 
-        // RESOLVE REFERENCES
-        if (typeof value === "string" && value.startsWith("refs:")) {
-            const refKey = value.replace("refs:", "");
-            if (!visitedRefs.has(refKey)) {
-                visitedRefs.add(refKey);
-                const dep = dependencies.find((dep) => dep.d === refKey);
-                if (dep && dep.capture_base) {
-                    // EXTRACT OVERLAYS FROM DEPENDENCY
-                    const depLabels = extractLabelsFromDependency(dep, lang);
-                    const depEntries = extractEntriesFromDependency(dep, lang);
-                    const depConformances = dep.overlays?.conformance?.attribute_conformance || {};
-                    const depCardinalities = dep.overlays?.cardinality?.attribute_cardinality || {};
-                    
-                    // ATTACH CHILDREN
-                    children = extractAttributesFromCaptureBase(
-                        dep.capture_base,
-                        dependencies,
-                        visitedRefs,
-                        lang,
-                        depLabels,
-                        depEntries,
-                        depConformances,
-                        depCardinalities,
-                        placeholders,
-                        descriptions
-                    );
-                }
-            }
-            fieldType = "object";
+    const refString = getRefString(value);
+
+    // RESOLVE REFERENCES
+    if (refString && refString.includes("refs:")) {
+      const refKey = refString.replace("refs:", "");
+      if (!visitedRefs.has(refKey)) {
+        visitedRefs.add(refKey);
+        const dep = dependencies.find((dep) => dep.d === refKey);
+        if (dep && dep.capture_base) {
+          // EXTRACT OVERLAYS FROM DEPENDENCY
+          const depLabels = extractLabelsFromDependency(dep, lang);
+          const depEntries = extractEntriesFromDependency(dep, lang);
+          const depConformances =
+            dep.overlays?.conformance?.attribute_conformance || {};
+          const depCardinalities =
+            dep.overlays?.cardinality?.attribute_cardinality || {};
+
+          // ATTACH CHILDREN
+          children = extractAttributesFromCaptureBase(
+            dep.capture_base,
+            dependencies,
+            visitedRefs,
+            lang,
+            depLabels,
+            depEntries,
+            depConformances,
+            depCardinalities,
+            placeholders,
+            descriptions,
+          );
         }
-
-        // ATTACH LABELS, CATEGORIES, REQUIRED/MULTIPLE FLAGS
-        const conformanceValue = getConformanceValue(conformances, key);
-        const required = conformanceValue === "M";
-        const recommended = conformanceValue === "R";
-        const optional = conformanceValue === "O";
-        const multiple = cardinalities[key]?.includes("n") || cardinalities[key] === "1-" || cardinalities[key] === "0-";
-        const categories = entryCodes[key] || null;
-        const label = labels[key] || key;  // This will now use dependency-specific labels
-        const placeholder = placeholders[key] || "";
-        const description = descriptions[key] || "";
-
-        fields.push({
-            name: key,
-            label,
-            placeholder,
-            description,
-            type: fieldType,
-            required,
-            recommended,
-            optional,
-            multiple,
-            categories,
-            children,
-        });
+      }
+      fieldType = "object";
     }
-    return fields;
+
+    // ATTACH LABELS, CATEGORIES, REQUIRED/MULTIPLE FLAGS
+    const conformanceValue = getConformanceValue(conformances, key);
+    const required = conformanceValue === "M";
+    const recommended = conformanceValue === "R";
+    const optional = conformanceValue === "O";
+    const cardinality = cardinalities[key];
+    const multiple = cardinality
+      ? cardinality.includes("n") ||
+        cardinality === "1-" ||
+        cardinality === "0-"
+      : false;
+    const categories = entryCodes[key] || null;
+    const label = labels[key] || key; // This will now use dependency-specific labels
+    const placeholder = placeholders[key] || "";
+    const description = descriptions[key] || "";
+
+    fields.push({
+      name: key,
+      label,
+      placeholder,
+      description,
+      type: fieldType,
+      required,
+      recommended,
+      optional,
+      multiple,
+      categories,
+      children,
+    });
+  }
+  return fields;
 }
 
 //
@@ -251,142 +285,167 @@ function extractDescriptionsFromFormExtension(extensions, lang) {
 
 // COLLECT REGEX VALIDATION PATTERN FOR ATTRIBUTES
 function extractFormatPatterns(jsonData) {
-    const formatPatterns = {};
-    const formatOverlay = jsonData?.oca_bundle?.bundle?.overlays?.format || [];
+  const formatPatterns = {};
+  const formatOverlay = jsonData?.oca_bundle?.bundle?.overlays?.format || [];
 
-    if (formatOverlay && formatOverlay.attribute_formats) {
-        // Iterate over each attribute format regex string
-        for (const [attr, regexStr] of Object.entries(formatOverlay.attribute_formats)) {
-            try {
-                // Covert regex string to RegExp object
-                formatPatterns[attr] = new RegExp(regexStr);
-            } catch (e) {
-                console.warn(`Invalid ${attr}: ${regexStr}`, e)
-            }
-        }
+  if (formatOverlay && formatOverlay.attribute_formats) {
+    // Iterate over each attribute format regex string
+    for (const [attr, regexStr] of Object.entries(
+      formatOverlay.attribute_formats,
+    )) {
+      try {
+        // Covert regex string to RegExp object
+        formatPatterns[attr] = new RegExp(regexStr);
+      } catch (e) {
+        console.warn(`Invalid ${attr}: ${regexStr}`, e);
+      }
     }
-    return formatPatterns;
+  }
+  return formatPatterns;
 }
 
 // COLLECT REGEX VALIDATION PATTERN FOR ATTRIBUTES FROM DEPENDENCIES
 function extractFormatPatternsFromDep(dependencies) {
-    const depFormatPatterns = {};
+  const depFormatPatterns = {};
 
-    dependencies.forEach((dep) => {
-        const formatOverlay = dep.overlays?.format;
-        if (formatOverlay && formatOverlay.attribute_formats) {
-            // Iterate over each attribute format regex string
-            for (const [attr, regexStr] of Object.entries(formatOverlay.attribute_formats)) {
-                try {
-                    // Covert regex string to RegExp object
-                    depFormatPatterns[attr] = new RegExp(regexStr);
-                } catch (e) {
-                    console.warn(`Invalid ${attr}: ${regexStr}`, e)
-                }
-
-            }
+  dependencies.forEach((dep) => {
+    const formatOverlay = dep.overlays?.format;
+    if (formatOverlay && formatOverlay.attribute_formats) {
+      // Iterate over each attribute format regex string
+      for (const [attr, regexStr] of Object.entries(
+        formatOverlay.attribute_formats,
+      )) {
+        try {
+          // Covert regex string to RegExp object
+          depFormatPatterns[attr] = new RegExp(regexStr);
+        } catch (e) {
+          console.warn(`Invalid ${attr}: ${regexStr}`, e);
         }
-    });
-    return depFormatPatterns;
+      }
+    }
+  });
+  return depFormatPatterns;
 }
 
 // MAIN EXPORT (ORACHESTRATES EVERYTHING)
-export function extractAttributes(jsonData, baseKey = "capture_base", lang, visitedRefs = new Set()) {
-    const bundle = jsonData?.oca_bundle?.bundle;
-    const dependencies = jsonData?.oca_bundle?.dependencies || [];
-    if (!bundle) return [];
+export function extractAttributes(
+  jsonData,
+  baseKey = "capture_base",
+  lang = "eng",
+  visitedRefs = new Set(),
+) {
+  const bundle = jsonData?.oca_bundle?.bundle;
+  const dependencies = jsonData?.oca_bundle?.dependencies || [];
+  if (!bundle) return [];
 
-    // GET FORMAT PATTERNS FROM DEPENDENCIES
-    const formatPatterns = extractFormatPatterns(jsonData);
+  // GET FORMAT PATTERNS FROM DEPENDENCIES
+  const formatPatterns = extractFormatPatterns(jsonData);
 
-    // GET FORMAT PATTERNS FROM DEPENDENCIES
-    const depFormatPatterns = extractFormatPatternsFromDep(dependencies);
+  // GET FORMAT PATTERNS FROM DEPENDENCIES
+  const depFormatPatterns = extractFormatPatternsFromDep(dependencies);
 
-    // READ `capture_base` FROM THE BUNDLE
-    const captureBase = bundle[baseKey];
-    if (!captureBase) return [];
+  // READ `capture_base` FROM THE BUNDLE
+  const captureBase = bundle[baseKey];
+  if (!captureBase) return [];
 
-    // GET CARDINALITIES, CONFORMANCES, LABELS, ENTRY CODES
-    const cardinalities = bundle.overlays?.cardinality?.attribute_cardinality || {};
-    const conformances = bundle.overlays?.conformance?.attribute_conformance || {};
-    const entryCodes = extractLocalizedEntryValues(jsonData, lang);
-    const mainLabels = extractBundleLabelsByLanguage(jsonData, lang);
-    const placeholders = extractPlaceholdersFromFormExtension(jsonData?.extensions || {}, lang);
-    const descriptions = extractDescriptionsFromFormExtension(jsonData?.extensions || {}, lang);
+  // GET CARDINALITIES, CONFORMANCES, LABELS, ENTRY CODES
+  const cardinalities =
+    bundle.overlays?.cardinality?.attribute_cardinality || {};
+  const conformances =
+    bundle.overlays?.conformance?.attribute_conformance || {};
+  const entryCodes = extractLocalizedEntryValues(jsonData, lang);
+  const mainLabels = extractBundleLabelsByLanguage(jsonData, lang);
+  const placeholders = extractPlaceholdersFromFormExtension(
+    jsonData?.extensions || {},
+    lang,
+  );
+  const descriptions = extractDescriptionsFromFormExtension(
+    jsonData?.extensions || {},
+    lang,
+  );
 
-    let fields = [];
+  let fields = [];
 
-    // RECURSIVELY BUILD ATTRIBUTE FIELD DEFINITIONS
-    const attributes = captureBase.attributes || {};
-    for (const [key, value] of Object.entries(attributes)) {
-        let fieldType = value;
-        let children = [];
+  // RECURSIVELY BUILD ATTRIBUTE FIELD DEFINITIONS
+  const attributes = captureBase.attributes || {};
+  for (const [key, value] of Object.entries(attributes)) {
+    let fieldType = value;
+    let children = [];
 
-        if (typeof value === "string" && value.startsWith("refs:")) {
-            const refKey = value.replace("refs:", "");
-            if (!visitedRefs.has(refKey)) {
-                visitedRefs.add(refKey);
+    const refString = getRefString(value);
 
-                // Try to find dependency with a matching d key
-                const dep = dependencies.find((dep) => dep.d === refKey);
+    if (refString && refString.includes("refs:")) {
+      const refKey = refString.replace("refs:", "");
+      if (!visitedRefs.has(refKey)) {
+        visitedRefs.add(refKey);
 
-                if (dep && dep.capture_base) {
-                    // Extract labels and entries from this specific dependency
-                    const depLabels = extractLabelsFromDependency(dep, lang);
-                    const depEntries = extractEntriesFromDependency(dep, lang);
-                    const depConformances = dep.overlays?.conformance?.attribute_conformance || {};
-                    const depCardinalities = dep.overlays?.cardinality?.attribute_cardinality || {};
+        // Try to find dependency with a matching d key
+        const dep = dependencies.find((dep) => dep.d === refKey);
 
-                    // Extract children from dependency's capture_base
-                    children = extractAttributesFromCaptureBase(
-                        dep.capture_base,
-                        dependencies,
-                        visitedRefs,
-                        lang,
-                        depLabels,
-                        depEntries,
-                        depConformances,
-                        depCardinalities,
-                        placeholders,
-                        descriptions
-                    );
-                } else {
-                    // fallabck: extract normally from bundle if key present
-                    children = extractAttributes(jsonData, refKey, visitedRefs, lang)
-                }
-            }
-            fieldType = "object";
+        if (dep && dep.capture_base) {
+          // Extract labels and entries from this specific dependency
+          const depLabels = extractLabelsFromDependency(dep, lang);
+          const depEntries = extractEntriesFromDependency(dep, lang);
+          const depConformances =
+            dep.overlays?.conformance?.attribute_conformance || {};
+          const depCardinalities =
+            dep.overlays?.cardinality?.attribute_cardinality || {};
+
+          // Extract children from dependency's capture_base
+          children = extractAttributesFromCaptureBase(
+            dep.capture_base,
+            dependencies,
+            visitedRefs,
+            lang,
+            depLabels,
+            depEntries,
+            depConformances,
+            depCardinalities,
+            placeholders,
+            descriptions,
+          );
+        } else {
+          // fallabck: extract normally from bundle if key present
+          children = extractAttributes(jsonData, refKey, visitedRefs, lang);
         }
-
-        const conformanceValue = getConformanceValue(conformances, key);
-        const required = conformanceValue === "M";
-        const recommended = conformanceValue === "R";
-        const optional = conformanceValue === "O";
-        const multiple = cardinalities[key]?.includes("n") || cardinalities[key] === "1-" || cardinalities[key] === "0-";
-        const categories = entryCodes[key] || null;
-        const label = mainLabels[key] || key;
-        const placeholder = placeholders[key] || "";
-        const description = descriptions[key] || "";
-
-        fields.push({
-            name: key,
-            label,
-            placeholder,
-            description,
-            type: fieldType,
-            required,
-            recommended,
-            optional,
-            multiple,
-            categories,
-            children,
-        });
+      }
+      fieldType = "object";
     }
 
-    // GET ATTRIBUTE ORDERING FROM EXTENSIONS
-    const ordering = getAttributeOrdering(jsonData);
-    // APPLY ORDERING
-    fields = sortFieldsByOrdering(fields, ordering);
+    const conformanceValue = getConformanceValue(conformances, key);
+    const required = conformanceValue === "M";
+    const recommended = conformanceValue === "R";
+    const optional = conformanceValue === "O";
+    const cardinality = cardinalities[key];
+    const multiple = cardinality
+      ? cardinality.includes("n") ||
+        cardinality === "1-" ||
+        cardinality === "0-"
+      : false;
+    const categories = entryCodes[key] || null;
+    const label = mainLabels[key] || key;
+    const placeholder = placeholders[key] || "";
+    const description = descriptions[key] || "";
 
-    return { fields, formatPatterns, depFormatPatterns };
+    fields.push({
+      name: key,
+      label,
+      placeholder,
+      description,
+      type: fieldType,
+      required,
+      recommended,
+      optional,
+      multiple,
+      categories,
+      children,
+    });
+  }
+
+  // GET ATTRIBUTE ORDERING FROM EXTENSIONS
+  const ordering = getAttributeOrdering(jsonData);
+  // APPLY ORDERING
+  fields = sortFieldsByOrdering(fields, ordering);
+
+  return { fields, formatPatterns, depFormatPatterns };
 }

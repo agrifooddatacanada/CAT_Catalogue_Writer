@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Box } from "@mui/system";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
 import Footer from "../components/Stateless/Footer";
@@ -10,92 +10,138 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import PageHeaders from "../components/Stateless/PageHeaders";
 import { saidify } from "saidify";
 import theme from "../theme";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  selectHasFormData,
+  selectFields,
+  selectAllFormValues,
+} from "../store/selectors/formSelectors";
+import { setMode } from "../store/slices/modeSlice";
 
 function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function
-  const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const uploadedJson = location.state?.jsonContent || null;
-  const isModified = location.state?.isModified || false;
-  const schema = location.state?.schema || "OpenAIRE"; // Get schema from navigation state
+  const isUploadedJson = useSelector(selectHasFormData);
+  const flatFormState = useSelector(selectAllFormValues);
 
-  const [jsonSchema, setJsonSchema] = useState(null);
+  function unflatten(flatObject) {
+    const result = {};
+    for (const [key, value] of Object.entries(flatObject)) {
+      const path = parsePath(key);
+      let current = result;
+      for (let i = 0; i < path.length; i++) {
+        const segment = path[i];
+        const isLast = i === path.length - 1;
+        const nextSegment = path[i + 1];
+        if (isLast) {
+          // Leaf - deep clone the value to avoid frozen object issues
+          current[segment] = deepClone(value);
+        } else {
+          const isNextArrayIndex = typeof nextSegment === "number";
+          if (typeof segment === "number") {
+            // Current container MUST be an array
+            if (!Array.isArray(current)) {
+              current = [];
+            }
+            ensureIndex(current, segment);
+            if (current[segment] == null) {
+              current[segment] = isNextArrayIndex ? [] : {};
+            }
+            current = current[segment];
+          } else {
+            // segment is a string key
+            if (current[segment] == null) {
+              current[segment] = isNextArrayIndex ? [] : {};
+            }
+            current = current[segment];
+          }
+        }
+      }
+    }
+    return result;
+  }
+  // Deep clone to handle frozen/immutable objects
+  function deepClone(value) {
+    if (value === null || typeof value !== "object") {
+      return value;
+    }
+    if (Array.isArray(value)) {
+      return value.map(deepClone);
+    }
+    const cloned = {};
+    for (const key in value) {
+      if (Object.prototype.hasOwnProperty.call(value, key)) {
+        cloned[key] = deepClone(value[key]);
+      }
+    }
+    return cloned;
+  }
+  function ensureIndex(arr, index) {
+    while (arr.length <= index) {
+      arr.push(null);
+    }
+  }
+  function parsePath(path) {
+    if (!path) return [];
+    return path
+      .split(/\.|\[/)
+      .filter(Boolean)
+      .map((segment) => {
+        segment = segment.replace(/]$/, "");
+        return /^\d+$/.test(segment) ? parseInt(segment, 10) : segment;
+      });
+  }
+
+  const formState = unflatten(flatFormState);
+
+  const jsonSchema = useSelector(selectFields);
 
   const downloadJson = (jsonData) => {
-    const [, objWithSaid] = saidify(jsonData, "catalogue_id");
+    const [, objWithSaid] = saidify(jsonData, "d");
     const content = JSON.stringify(objWithSaid);
     const blob = new Blob([content], { type: "application/ld+json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `catalogue-${objWithSaid.catalogue_id || "export"}.json`;
+    link.download = `catalogue-${objWithSaid.d || objWithSaid.catalogue_id || "export"}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
-  // LOAD FORM SCHEMA JSON BASED ON SCHEMA
-  useEffect(() => {
-    // Map schema name -> file name
-    const fileMap = {
-      OpenAIRE: "./OpenAIRE_OCA_package.json",
-      "Dublin Core (Repository-specific) [Test]":
-        "./Dublin_Core_Repository_OCA_package.json",
-      "Dublin Core (Project-specific) [Test]":
-        "./Dublin_Core_Project_OCA_package.json",
-      "DataCite [Test]": "./Trial_DataCite_OCA_package.json",
-    };
-
-    const filePath = fileMap[schema] || fileMap.OpenAIRE;
-
-    fetch(filePath)
-      .then((res) => res.json())
-      .then(setJsonSchema)
-      .catch((err) => {
-        console.error(`Failed to load schema for ${schema}:`, err);
-      });
-  }, [schema]);
-
   if (!jsonSchema) {
     return <div>{t("viewpage.loading")}</div>;
   }
 
-  if (!uploadedJson) {
+  if (!isUploadedJson) {
     return <p>{t("viewpage.no_catalogue")}</p>;
   }
 
   const handleEditClick = () => {
+    dispatch(setMode("edit"));
     // Pass schema back to form so it loads correct OCA package
-    navigate("/form", {
-      state: {
-        jsonContent: uploadedJson,
-        schema: schema,
-      },
-    });
+    navigate("/form");
   };
 
   return (
     <div className="ViewPage">
       <PageHeaders
-        page_heading={isModified ? t("viewpage.review") : t("viewpage.view")}
+        page_heading={
+          !isUploadedJson ? t("viewpage.review") : t("viewpage.view")
+        }
         tooltip_description={
-          isModified ? t("viewpage.review_tooltip") : t("viewpage.view_tooltip")
+          !isUploadedJson
+            ? t("viewpage.review_tooltip")
+            : t("viewpage.view_tooltip")
         }
-        help_button_redirect={() =>
-          navigate("/view-help", { state: { isModified: isModified } })
-        }
+        help_button_redirect={() => navigate("/view-help")}
       />
 
       <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
-        <DynamicForm
-          jsonData={jsonSchema}
-          language={lang}
-          initialData={uploadedJson}
-          readOnly={true} // Prop for view mode
-          schema={schema}
-        />
+        <DynamicForm language={lang} />
 
         <Button
           variant="contained"
@@ -116,7 +162,6 @@ function ViewPage() {
         <Button
           variant="contained"
           type="submit"
-          disabled={!isModified}
           sx={{
             backgroundColor: theme.primaryColor,
             "&:hover": {
@@ -125,7 +170,7 @@ function ViewPage() {
             mt: "2px",
             mr: "10px",
           }}
-          onClick={() => downloadJson(uploadedJson)}
+          onClick={() => downloadJson(formState)}
           startIcon={<FileDownloadIcon />}
         >
           {t("viewpage.download")}

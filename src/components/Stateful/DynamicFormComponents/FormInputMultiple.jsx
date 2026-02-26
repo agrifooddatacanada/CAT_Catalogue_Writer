@@ -1,181 +1,117 @@
-import React from "react";
-import { Box, Typography, Button } from "@mui/material";
+import React, { useCallback } from "react";
+import { Box, Button, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 import theme from "../../../theme";
+import {
+  selectFieldByPath,
+  selectInstanceCount,
+  selectFormValueByPrefix,
+} from "../../../store/selectors/formSelectors";
+import {
+  incrementInstanceCount,
+  decrementInstanceCount,
+} from "../../../store/slices/instanceCountsSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { removeIndices } from "../../../utils/removeIndices";
+import FormInputSingle from "./FormInputSingle";
+import {
+  setFieldValue,
+  removeFieldValue,
+} from "../../../store/slices/formValueSlice";
+import { selectMode } from "../../../store/slices/modeSlice";
 
-const FormInputMultiple = ({
-  required,
-  label,
-  name,
-  path,
-  children,
-  multiple,
-  value = [], // Array of entries for this field
-  setPopupValue, // Handler from DynamicForm to control popup editing
-  setEditingIndex, // Handler from DynamicForm to control popup editing
-  setDialogOpen, // Handler from DynamicForm to control popup editing
-  handleItemDelete, // Function to delete an entry in parent state
-  depth = 0, // For styling
-  readOnly,
-  isEditMode,
-}) => {
-  const { t } = useTranslation(); // use translation function
+const FormInputMultiple = ({ valuePath, depth = 0 }) => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
 
-  const columns =
-    children && children.length > 0
-      ? children.map((child) => child.name)
-      : value.length > 0
-      ? typeof value[0] === "object" && value[0] !== null
-        ? Object.keys(value[0])
-        : [name]
-      : [];
+  const mode = useSelector(selectMode);
+  const readOnly = mode === "view";
+  // console.log("mode:", mode, "| readOnly:", readOnly);
 
-  // Build map from attribute name to label for table header
-  const labelMap =
-    children?.reduce((acc, child) => {
-      acc[child.name] = child.label || child.name;
-      return acc;
-    }, {}) || {};
+  const fieldPath = removeIndices(valuePath);
+  const field = useSelector(selectFieldByPath(fieldPath));
+  const instanceCount = useSelector(selectInstanceCount(fieldPath)) || 0;
+  const fieldValues = useSelector(selectFormValueByPrefix(fieldPath)) || [];
 
-  if (!children || children.length === 0) {
-    labelMap[name] = label || name;
-  }
+  const handleDelete = useCallback(
+    (indexToDelete) => {
+      // 1. Shift all values after indexToDelete down by one
+      for (let i = indexToDelete + 1; i < instanceCount; i++) {
+        const fromKey = `${fieldPath}[${i}]`;
+        const toKey = `${fieldPath}[${i - 1}]`;
+        const fromValue = fieldValues[fromKey];
+        if (fromValue !== undefined && fromValue !== null && fromValue !== "") {
+          dispatch(setFieldValue({ path: toKey, value: fromValue }));
+        } else {
+          // If there was nothing at fromKey, clear toKey
+          dispatch(removeFieldValue(toKey));
+        }
+      }
+      // 2. Remove the last (now duplicated) entry
+      if (instanceCount > 0) {
+        const lastKey = `${fieldPath}[${instanceCount - 1}]`;
+        dispatch(removeFieldValue(lastKey));
+      }
+      // 3. Decrement instanceCount
+      dispatch(decrementInstanceCount(fieldPath));
+    },
+    [dispatch, fieldPath, fieldValues, instanceCount],
+  );
 
-  const formatValue = (val) => {
-    if (val === null || val === undefined) return "";
-    if (typeof val === "object") return JSON.stringify(val, null, 2);
-    return val;
+  if (!field) return null;
+
+  // Extract just the first `instanceCount` values by parsing indices from keys
+  const existingValues = Array.from({ length: instanceCount }).map(
+    (_, index) => {
+      const key = `${fieldPath}[${index}]`;
+      return fieldValues[key];
+    },
+  );
+
+  // Check if any existing instance is empty
+  const hasEmptyEntries = existingValues.some(
+    (value) => !value || value.trim() === "",
+  );
+
+  const handleAdd = () => {
+    // Promote the current "nextValuePath" to a real instance
+    dispatch(incrementInstanceCount(fieldPath));
   };
 
+  const { name, label } = field;
+
   return (
-    <Box sx={{ mb: 2 }}>
-      <Typography variant={depth === 0 ? "h6" : "h8"}>
-        {label || name}
-        {required && !readOnly && (
-          <span style={{ color: "red", marginLeft: 4 }}>*</span>
-        )}
-      </Typography>
-
-      {/* Table showing existing entries */}
-      {value.length > 0 && (
-        <Box
-          sx={{
-            overflowX: "auto",
-            mt: "16.5px",
-            mb: "16.5px",
-          }}
-        >
-          <table
-            style={{
-              border: "1px solid #ccc",
-              borderCollapse: "collapse",
-              width: "100%",
-            }}
+    <Box sx={{ mt: 0, mb: 2, width: "100%" }}>
+      {/* All instances */}
+      {Array.from({ length: instanceCount }).map((_, index) => {
+        const instancePath = `${fieldPath}[${index}]`;
+        return (
+          <Box
+            key={instancePath}
+            sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
           >
-            <thead>
-              <tr>
-                {!children || children.length === 0
-                  ? null
-                  : columns.map((col) => (
-                      <th
-                        key={col}
-                        style={{
-                          border: "1px solid #ccc",
-                          padding: "8px",
-                          textAlign: "left",
-                          backgroundColor: "#eee",
-                        }}
-                      >
-                        {labelMap[col] || col}
-                      </th>
-                    ))}
-                {!readOnly ? (
-                  !children || children.length === 0 ? null : (
-                    <th
-                      style={{
-                        border: "1px solid #ccc",
-                        padding: "8px",
-                        textAlign: "center",
-                        backgroundColor: "#eee",
-                      }}
-                    >
-                      {t("forminputmultiple.actions")}
-                    </th>
-                  )
-                ) : null}
-              </tr>
-            </thead>
-            <tbody>
-              {value.map((entry, idx) => (
-                <tr
-                  key={idx}
-                  style={{
-                    border: "1px solid #ddd",
-                  }}
-                >
-                  {columns.map((col) => {
-                    const cellValue =
-                      typeof entry === "string" ? entry : entry[col];
-                    return (
-                      <td
-                        key={col}
-                        style={{
-                          border: "1px solid #ccc",
-                          padding: "8px",
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
-                        {formatValue(cellValue)}
-                      </td>
-                    );
-                  })}
-                  {!readOnly ? (
-                    <td
-                      style={{
-                        border: "1px solid #ccc",
-                        padding: "8px",
-                        textAlign: "center",
-                      }}
-                    >
-                      <Button
-                        size="small"
-                        onClick={() => {
-                          // Use deep copy to avoid mutation side-effects
-                          const entryCopy =
-                            typeof entry === "string"
-                              ? { [name]: entry }
-                              : JSON.parse(JSON.stringify(entry));
-                          setPopupValue(entryCopy);
-                          setEditingIndex(idx);
-                          setDialogOpen(path);
-                        }}
-                        sx={{ mr: 1 }}
-                        startIcon={<EditIcon />}
-                      >
-                        {t("forminputmultiple.edit")}
-                      </Button>
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={() => handleItemDelete(path, idx)}
-                        endIcon={<DeleteIcon />}
-                      >
-                        {t("forminputmultiple.delete")}
-                      </Button>
-                    </td>
-                  ) : null}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Box>
-      )}
+            <Box sx={{ flex: 1, mb: "0px" }}>
+              <FormInputSingle valuePath={instancePath} depth={depth} />
+            </Box>
+            {!readOnly && (
+              <IconButton
+                size="small"
+                onClick={() => handleDelete(index)}
+                sx={{ color: "error.main" }}
+              >
+                <DeleteIcon fontSize="medium" />
+              </IconButton>
+            )}
+          </Box>
+        );
+      })}
 
-      {!readOnly ? (
+      {/* Add button */}
+      {!readOnly && (
         <Button
+          disabled={readOnly || hasEmptyEntries}
           sx={{
             color: theme.primaryColor,
             borderColor: theme.primaryColor,
@@ -183,18 +119,18 @@ const FormInputMultiple = ({
               borderColor: theme.primaryColor,
               backgroundColor: theme.backgroundColor,
             },
+            mt: 1.5,
           }}
           variant="outlined"
-          onClick={() => {
-            setPopupValue(multiple ? {} : "");
-            setEditingIndex(null);
-            setDialogOpen(path);
-          }}
+          onClick={handleAdd}
           startIcon={<AddIcon />}
         >
           {t("forminputmultiple.add")} {label || name}
         </Button>
-      ) : !isEditMode && value.length === 0 ? (
+      )}
+
+      {/* Show "no data" message in readOnly mode when empty */}
+      {readOnly && instanceCount === 0 && fieldValues.length === 0 && (
         <span
           style={{
             display: "inline-block",
@@ -207,7 +143,7 @@ const FormInputMultiple = ({
         >
           {t("no_data")} {label || name}
         </span>
-      ) : null}
+      )}
     </Box>
   );
 };

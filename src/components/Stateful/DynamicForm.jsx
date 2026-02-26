@@ -1,15 +1,10 @@
-import React, { useRef, useEffect, useState } from "react";
-import { isEqual } from "lodash";
+import React, { useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import FormInputSingle from "./DynamicFormComponents/FormInputSingle";
 import FormInputMultiple from "./DynamicFormComponents/FormInputMultiple";
 import FormInputGroup from "./DynamicFormComponents/FormInputGroup";
-import PopupDialog from "./DynamicFormComponents/PopupDialog";
-import { getNestedValue, setNestedValue } from "../../utils/formStateUtils";
-import { validateFieldsForState } from "../../utils/formValidation";
-import useDynamicFormState from "../../hooks/useDynamicFormState";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
@@ -17,145 +12,98 @@ import theme from "../../theme";
 import canonicalize from "../../utils/canonicalize";
 import Pagination from "@mui/material/Pagination";
 import { getContextUrl } from "../../utils/schemaContextMapping";
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { setFormState } from "../../store/slices/formValueSlice";
+import { buildInstanceCountsFromValues } from "../../utils/instanceCounts";
+import { setInstanceCount } from "../../store/slices/instanceCountsSlice";
+import {
+  selectAllFormValues,
+  selectFields,
+  selectSchemaName,
+} from "../../store/selectors/formSelectors";
+import FieldChecker from "./DynamicFormComponents/FieldChecker";
+import { selectIsRootFormValid } from "../../store/selectors/popupValidationSelectors";
+import { selectMode, setMode } from "../../store/slices/modeSlice";
 
-//
-const checkMultipleEntriesFilled = (fields, state) => {
-  for (const field of fields) {
-    // Only enforce check if field is required & multiple
-    if (field.required && field.multiple) {
-      const val = getNestedValue(state, field.path);
-      // If missing or empty array, fail validity
-      if (!Array.isArray(val) || val.length === 0) {
-        return false; // empty required multiple field disables Submit
-      }
-    }
-
-    if (field.children && field.children.length > 0) {
-      if (!checkMultipleEntriesFilled(field.children, state)) {
-        return false;
-      }
-    }
-  }
-  return true;
-};
-
-//
 const filterMandatoryFields = (fields) => {
+  if (!Array.isArray(fields)) return [];
   return fields
-    .filter((field) => field.required) // keep only required parents and singles
+    .filter((field) => field.required)
     .map((field) => ({
       ...field,
       children: field.children ? filterMandatoryFields(field.children) : [],
     }));
 };
 
-//
 const filterRecommendedFields = (fields) => {
+  if (!Array.isArray(fields)) return [];
   return fields
-    .filter((field) => field.required || field.recommended) // keep only recommended parents and singles
+    .filter((field) => field.required || field.recommended)
     .map((field) => ({
       ...field,
       children: field.children ? filterRecommendedFields(field.children) : [],
     }));
 };
 
-//
-function unflatten(formState) {
-  const result = {};
-  Object.keys(formState).forEach((flatKey) => {
-    const keys = flatKey.split(".");
-    keys.reduce((acc, key, idx) => {
-      if (idx === keys.length - 1) {
-        acc[key] = formState[flatKey];
-        return null;
-      }
-      if (!acc[key]) acc[key] = {};
-      return acc[key];
-    }, result);
-  });
-  return result;
-}
-
 // COMPONENT STATE
-function DynamicForm({
-  jsonData,
-  language = "eng",
-  initialData = null,
-  readOnly = false,
-  isEditMode = false,
-  onSave,
-  schema = "OpenAIRE",
-}) {
-  //
-  const {
-    fields,
-    formState,
-    setFormState,
-    errors,
-    setErrors,
-    popupErrors,
-    dialogOpen,
-    setDialogOpen,
-    popupValue,
-    setPopupValue,
-    setEditingIndex,
-    formatPatterns,
-    depFormatPatterns,
-    handleItemDelete,
-    handlePopupSave,
-    findFieldByPath,
-    matches,
-    flatten,
-  } = useDynamicFormState(jsonData, language, initialData); // Pass `initialData` here
-
+function DynamicForm({ language = "eng", isEditMode = false }) {
   const { t } = useTranslation(); // use translation function
-  const popupField = findFieldByPath(fields, dialogOpen);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const formState = useSelector(selectAllFormValues);
+  const fields = useSelector(selectFields);
+  const schema = useSelector(selectSchemaName);
 
-  //
-  const [isFormValid, setIsFormValid] = useState();
+  const rootIsValid = useSelector(selectIsRootFormValid);
+
+  const mode = useSelector(selectMode);
+  const readOnly = mode === "view";
 
   // Helper functions
-  const hasMandatoryFields = (fields) => fields.some((field) => field.required);
-  const hasRecommendedFields = (fields) =>
-    fields.some((field) => field.recommended);
-  const hasOptionalFields = (fields) => fields.some((field) => field.optional);
-
-  // Calculate button visibility
-  const showMandatoryButton = hasMandatoryFields(fields);
-  const showRecommendedButton = hasRecommendedFields(fields);
-  const showCompleteButton = hasOptionalFields(fields);
+  const hasMandatoryFields = (fields) => {
+    return Array.isArray(fields) && fields.some((f) => f.required);
+  };
+  const hasRecommendedFields = (fields) => {
+    return (
+      Array.isArray(fields) && fields.some((f) => f.recommended && !f.required)
+    );
+  };
+  const hasOptionalFields = (fields) => {
+    return Array.isArray(fields) && fields.some((f) => f.optional);
+  };
 
   // Initialize state with safe default
   const [viewMode, setViewMode] = useState("mandatory");
 
   // Set correct view mode once fields load
   useEffect(() => {
-    if (fields && fields.length > 0) {
-      // Move getInitialViewMode inside useEffect
+    if (Array.isArray(fields) && fields.length > 0) {
       const getInitialViewMode = (fields) => {
         if (hasMandatoryFields(fields)) return "mandatory";
         if (hasRecommendedFields(fields)) return "recommended";
         if (hasOptionalFields(fields)) return "complete";
         return "complete";
       };
-
       setViewMode(getInitialViewMode(fields));
     }
-  }, [fields]);
+  }, [fields]); // removed the inline helpers
 
-  // Update your displayedFields logic:
+  // displayedFields logic
   const getDisplayedFields = () => {
+    if (!Array.isArray(fields)) return [];
+
     switch (viewMode) {
       case "mandatory":
         return filterMandatoryFields(fields);
       case "recommended":
         return filterRecommendedFields(fields);
       case "complete":
-        return fields;
       default:
         return fields;
     }
   };
+
   const displayedFields = getDisplayedFields();
 
   // Pagination State
@@ -163,14 +111,17 @@ function DynamicForm({
   const fieldsPerPage = 6;
 
   // Calculate Pagination
-  const totalPages = Math.ceil(displayedFields.length / fieldsPerPage);
+  // const totalPages = Math.ceil(displayedFields.length / fieldsPerPage);
   const startIndex = (currentPage - 1) * fieldsPerPage;
   const endIndex = startIndex + fieldsPerPage;
-  const currentPageFields = displayedFields.slice(startIndex, endIndex);
+  // const currentPageFields = displayedFields.slice(startIndex, endIndex);
 
-  //
-  const initialFormStateRef = useRef(null);
-  const [isModified, setIsModified] = useState(false);
+  const totalPages = Array.isArray(displayedFields)
+    ? Math.ceil(displayedFields.length / fieldsPerPage)
+    : 0;
+  const currentPageFields = Array.isArray(displayedFields)
+    ? displayedFields.slice(startIndex, endIndex)
+    : [];
 
   // Reset to first page when switching between Mandatory/Complete view
   useEffect(() => {
@@ -181,11 +132,16 @@ function DynamicForm({
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const nestedState = unflatten(formState);
+    const nestedState = { ...formState };
 
     // Remove existing catalogue_id if any
     if ("catalogue_id" in nestedState) {
       delete nestedState.catalogue_id;
+    }
+
+    // Remove existing catalogue_id if any
+    if ("d" in nestedState) {
+      delete nestedState.d;
     }
 
     // Remove existing @context if any
@@ -203,368 +159,158 @@ function DynamicForm({
     const formDataWithId = {
       "@context": contextUrl,
       "@type": "Catalogue Record",
-      catalogue_id: "",
+      d: "",
       ...formData,
     };
 
-    // Instead of download, call onSave with data
-    if (typeof onSave === "function") {
-      onSave(formDataWithId, isModified);
-    }
+    dispatch(setFormState(formDataWithId));
+    const instanceCount = buildInstanceCountsFromValues(formDataWithId);
+    dispatch(setInstanceCount(instanceCount));
+    dispatch(setMode("view"));
+    navigate("/view");
   };
 
-  // Form validation - only disable REVIEW for required field errors
-  useEffect(() => {
-    // Validate whole form state, including multiple-entry arrays
-    const newErrors = validateFieldsForState(fields, formState, formatPatterns);
-    setErrors(newErrors); // Still show all errors
-
-    // Check if all required multiple-entry fields are filled
-    const multipleFilled = checkMultipleEntriesFilled(fields, formState);
-
-    // Filter errors to only include REQUIRED fields
-    const requiredFieldErrors = {};
-
-    Object.keys(newErrors).forEach((errorPath) => {
-      const field = findFieldByPath(fields, errorPath);
-
-      // Only count errors from REQUIRED fields
-      if (field && field.required) {
-        requiredFieldErrors[errorPath] = newErrors[errorPath];
-      }
-    });
-
-    // Form valid = no required errors + all required multiples filled
-    const hasRequiredErrors = Object.keys(requiredFieldErrors).length > 0;
-    const isValid = !hasRequiredErrors && multipleFilled;
-
-    setIsFormValid(isValid);
-  }, [formState, fields, formatPatterns, setErrors, findFieldByPath]);
-
-  //
-  useEffect(() => {
-    // When `formState` or `initialData` changes, update the reference
-    if (initialData) {
-      initialFormStateRef.current = flatten(initialData);
-    } else {
-      initialFormStateRef.current = {};
-    }
-  }, [initialData, flatten]);
-
-  //
-  useEffect(() => {
-    if (!initialFormStateRef.current) return;
-    // Compare current formState with initial
-    const modified = !isEqual(formState, initialFormStateRef.current);
-    setIsModified(modified);
-  }, [formState]);
-
-  //
-  const isValueFilled = (val) => {
-    if (val === null || val === undefined) return false;
-    if (typeof val === "string") return val.trim() !== "";
-    if (Array.isArray(val)) return val.length > 0;
-    if (typeof val === "object") return Object.keys(val).length > 0;
-    return true; // For numbers or booleans
-  };
-
-  // Popup validation - wrap simple field values for proper validation
-  const isPopupSaveEnabled = () => {
-    if (!popupField) return false;
-
-    // Determine field type
-    const hasChildren = popupField.children && popupField.children.length > 0;
-    const fieldsToCheck = hasChildren ? popupField.children : [popupField];
-
-    // // Wrap simple values so validator receives consistent structure
-    // const valueToValidate = hasChildren
-    //   ? popupValue
-    //   : { [popupField.name]: popupValue }; // Wrap simple value
-
-    let valueToValidate;
-    if (hasChildren) {
-      valueToValidate = popupValue;
-    } else {
-      // Check if already wrapped - only wrap if needed
-      if (
-        typeof popupValue === "object" &&
-        popupValue !== null &&
-        popupField.name in popupValue &&
-        Object.keys(popupValue).length === 1
-      ) {
-        valueToValidate = popupValue; // Already wrapped - use as-is
-      } else {
-        valueToValidate = { [popupField.name]: popupValue }; // Wrap it
-      }
-    }
-
-    const patternsToUse = hasChildren ? depFormatPatterns : formatPatterns;
-
-    // Validate all fields first
-    const errors = validateFieldsForState(
-      fieldsToCheck,
-      valueToValidate, // Consistent structure
-      patternsToUse
-    );
-
-    console.log("errors:", errors);
-
-    if (Object.keys(errors).length > 0) {
-      return false; // has validation errors, disable save
-    }
-
-    // Clear logic for simple vs grouped fields
-    if (!hasChildren) {
-      // Simple field (TextField, DatePicker, Select)
-      if (popupField.required) {
-        return isValueFilled(popupValue); // popupValue is simple value
-      }
-    }
-
-    // Grouped field (has child properties)
-    const requiredFields = fieldsToCheck.filter((f) => f.required);
-    if (requiredFields.length > 0) {
-      // All required fields must be filled
-      const allRequiredFilled = requiredFields.every((f) =>
-        isValueFilled(popupValue[f.name])
-      );
-      return allRequiredFilled;
-    } else {
-      // No required fields, enable Save if at least one field is filled
-      return fieldsToCheck.some((f) => isValueFilled(popupValue[f.name]));
-    }
-  };
-
-  //
   const hasAsterisk = (fields) => {
+    if (!Array.isArray(fields)) return false;
+
     for (const field of fields) {
       if (
         field.required ||
-        (field.children && field.children.some((child) => child.required))
+        (Array.isArray(field.children) &&
+          field.children.some((child) => child.required))
       ) {
         return true;
       }
     }
     return false;
   };
+
   const showAsterisk = hasAsterisk(fields);
 
   // RECURSIVE RENDERER (INDIVIDUAL INPUTS)
-  const renderInput = (
-    field,
-    depth = 0,
-    key,
-    mode = "form",
-    errorState = {}
-  ) => {
-    const {
-      name,
-      label,
-      placeholder,
-      description,
-      type,
-      multiple,
-      categories,
-      children,
-      path,
-      required,
-      recommended,
-      optional,
-    } = field;
+  const renderInput = (field, depth = 0, key) => {
+    const { path } = field;
 
-    const value =
-      mode === "popup"
-        ? getNestedValue(popupValue, path)
-        : getNestedValue(formState, path);
-
-    const error = mode === "popup" ? errorState[path] : errors[path];
-
-    // CHANGE HANDLER BASED ON MODE
-    const onChange = (p, val) => {
-      if (mode === "popup") {
-        setPopupValue((prev) => setNestedValue(prev, p, val));
-      } else {
-        setFormState((prev) => setNestedValue(prev, p, val));
-      }
-    };
-
-    // RENDER ADD BUTTON AND DISPLAY EXISTING ITEMS AS LIST FOR FIELDS THAT CAN HAVE MULTIPLE VALUES
-    if (multiple) {
-      return (
-        <FormInputMultiple
-          key={key}
-          required={required}
-          recommended={recommended}
-          optional={optional}
-          label={label}
-          name={name}
-          path={path}
-          children={children}
-          multiple={multiple}
-          value={value || []}
-          setPopupValue={setPopupValue}
-          setEditingIndex={setEditingIndex}
-          setDialogOpen={setDialogOpen}
-          handleItemDelete={handleItemDelete}
-          depth={depth}
-          readOnly={readOnly}
-          isEditMode={isEditMode}
-        />
-      );
-    }
-
-    if (children && children.length > 0) {
-      return (
-        <FormInputGroup
-          key={key}
-          children={children}
-          label={label}
-          name={name}
-          path={path}
-          depth={depth}
-          renderInput={renderInput}
-          required={required}
-          recommended={recommended}
-          optional={optional}
-          readOnly={readOnly}
-        />
-      );
-    }
-
-    return (
-      <FormInputSingle
-        key={key}
-        name={name}
-        label={label}
-        type={type}
-        multiple={multiple}
-        categories={categories}
-        children={children}
-        path={path}
-        value={value}
-        error={error}
-        onChange={onChange}
-        required={required}
-        recommended={recommended}
-        optional={optional}
-        depth={depth}
-        readOnly={readOnly}
-        isEditMode={isEditMode}
-        placeholder={placeholder}
-        description={description}
-      />
-    );
+    return <FieldChecker key={key} valuePath={path} depth={depth} />;
   };
 
   // RETURN JSX
   return (
     <>
       <Box sx={{ mb: 2, display: "flex", gap: 2, justifyContent: "center" }}>
-        {/* MANDATORY BUTTON */}
-        {showMandatoryButton && (
-          <Button
-            variant="contained"
-            onClick={() => setViewMode("mandatory")}
-            sx={{
-              backgroundColor:
-                viewMode === "mandatory"
-                  ? theme.primaryColor
-                  : theme.backgroundColor,
-              color:
-                viewMode === "mandatory"
-                  ? theme.backgroundColor
-                  : theme.primaryColor,
-              borderColor:
-                viewMode === "mandatory"
-                  ? theme.backgroundColor
-                  : theme.primaryColor,
-              border:
-                viewMode === "mandatory"
-                  ? "1px solid transparent"
-                  : "1px solid currentColor",
-              "&:hover": {
-                backgroundColor:
-                  viewMode === "mandatory"
-                    ? theme.primaryColor
-                    : theme.hoverUnselectedBgColor,
-                borderColor: theme.primaryColor,
-              },
-            }}
-          >
-            {t("dynamicform.mandatory")}
-          </Button>
-        )}
+        {Array.isArray(fields) && (
+          <>
+            {hasMandatoryFields(fields) && (
+              <Button
+                variant="contained"
+                onClick={() => setViewMode("mandatory")}
+                sx={{
+                  backgroundColor:
+                    viewMode === "mandatory"
+                      ? theme.primaryColor
+                      : theme.backgroundColor,
+                  color:
+                    viewMode === "mandatory"
+                      ? theme.backgroundColor
+                      : theme.primaryColor,
+                  borderColor:
+                    viewMode === "mandatory"
+                      ? theme.backgroundColor
+                      : theme.primaryColor,
+                  border:
+                    viewMode === "mandatory"
+                      ? "1px solid transparent"
+                      : "1px solid currentColor",
+                  "&:hover": {
+                    backgroundColor:
+                      viewMode === "mandatory"
+                        ? theme.primaryColor
+                        : theme.hoverUnselectedBgColor,
+                    borderColor: theme.primaryColor,
+                  },
+                }}
+              >
+                {t("dynamicform.mandatory")}
+              </Button>
+            )}
 
-        {/* RECOMMENDED BUTTON - ONLY IF RECOMMENDED FIELDS EXIST */}
-        {showRecommendedButton && (
-          <Button
-            variant="contained"
-            onClick={() => setViewMode("recommended")}
-            sx={{
-              backgroundColor:
-                viewMode === "recommended"
-                  ? theme.primaryColor
-                  : theme.backgroundColor,
-              color:
-                viewMode === "recommended"
-                  ? theme.backgroundColor
-                  : theme.primaryColor,
-              borderColor:
-                viewMode === "recommended"
-                  ? theme.backgroundColor
-                  : theme.primaryColor,
-              border:
-                viewMode === "recommended"
-                  ? "1px solid transparent"
-                  : "1px solid currentColor",
-              "&:hover": {
-                backgroundColor:
-                  viewMode === "recommended"
-                    ? theme.primaryColor
-                    : theme.hoverUnselectedBgColor,
-                borderColor: theme.primaryColor,
-              },
-            }}
-          >
-            {t("dynamicform.recommended")}
-          </Button>
-        )}
+            {hasRecommendedFields(fields) && (
+              <Button
+                variant="contained"
+                onClick={() => setViewMode("recommended")}
+                sx={{
+                  backgroundColor:
+                    viewMode === "recommended"
+                      ? theme.primaryColor
+                      : theme.backgroundColor,
+                  color:
+                    viewMode === "recommended"
+                      ? theme.backgroundColor
+                      : theme.primaryColor,
+                  borderColor:
+                    viewMode === "recommended"
+                      ? theme.backgroundColor
+                      : theme.primaryColor,
+                  border:
+                    viewMode === "recommended"
+                      ? "1px solid transparent"
+                      : "1px solid currentColor",
+                  "&:hover": {
+                    backgroundColor:
+                      viewMode === "recommended"
+                        ? theme.primaryColor
+                        : theme.hoverUnselectedBgColor,
+                    borderColor: theme.primaryColor,
+                  },
+                }}
+              >
+                {t("dynamicform.recommended")}
+              </Button>
+            )}
 
-        {/* COMPLETE BUTTON */}
-        {showCompleteButton && (
-          <Button
-            variant="contained"
-            onClick={() => setViewMode("complete")}
-            sx={{
-              backgroundColor:
-                viewMode === "complete"
-                  ? theme.primaryColor
-                  : theme.backgroundColor,
-              color:
-                viewMode === "complete"
-                  ? theme.backgroundColor
-                  : theme.primaryColor,
-              borderColor:
-                viewMode === "complete"
-                  ? theme.backgroundColor
-                  : theme.primaryColor,
-              border:
-                viewMode === "complete"
-                  ? "1px solid transparent"
-                  : "1px solid currentColor",
-              "&:hover": {
-                backgroundColor:
-                  viewMode === "complete"
-                    ? theme.primaryColor
-                    : theme.hoverUnselectedBgColor,
-                borderColor: theme.primaryColor,
-              },
-            }}
-          >
-            {t("dynamicform.complete")}
-          </Button>
+            {hasOptionalFields(fields) && (
+              <Button
+                variant="contained"
+                onClick={() => setViewMode("complete")}
+                sx={{
+                  backgroundColor:
+                    viewMode === "complete"
+                      ? theme.primaryColor
+                      : theme.backgroundColor,
+                  color:
+                    viewMode === "complete"
+                      ? theme.backgroundColor
+                      : theme.primaryColor,
+                  borderColor:
+                    viewMode === "complete"
+                      ? theme.backgroundColor
+                      : theme.primaryColor,
+                  border:
+                    viewMode === "complete"
+                      ? "1px solid transparent"
+                      : "1px solid currentColor",
+                  "&:hover": {
+                    backgroundColor:
+                      viewMode === "complete"
+                        ? theme.primaryColor
+                        : theme.hoverUnselectedBgColor,
+                    borderColor: theme.primaryColor,
+                  },
+                }}
+              >
+                {t("dynamicform.complete")}
+              </Button>
+            )}
+          </>
         )}
       </Box>
+
+      {/* Add loading state ABOVE the buttons */}
+      {!Array.isArray(fields) && (
+        <Box sx={{ textAlign: "center", py: 4 }}>
+          <Typography>Loading form...</Typography>
+        </Box>
+      )}
 
       {!readOnly && showAsterisk && (
         <Typography sx={{ mb: "15px", fontSize: "13px", fontStyle: "italic" }}>
@@ -574,90 +320,82 @@ function DynamicForm({
         </Typography>
       )}
 
-      {/* PAGE INDICATOR */}
-      <Box sx={{ mb: 3, textAlign: "center" }}>
-        <Typography variant="body2" color="textSecondary">
-          {t("dynamicform.page")} {currentPage} {t("dynamicform.of")}{" "}
-          {totalPages}&nbsp; ({startIndex + 1}-
-          {Math.min(endIndex, displayedFields.length)} {t("dynamicform.of")}{" "}
-          {displayedFields.length} {t("dynamicform.fields")})
-        </Typography>
-      </Box>
-
-      {/* GENERATED FORM (RECURSICE INPUT RENDERING + SUBMIT BUTTON) */}
-      <form onSubmit={handleSubmit}>
-        {currentPageFields.map((field, index) =>
-          renderInput(
-            { ...field, path: field.name },
-            0,
-            `${field.name}-${startIndex + index}`
-          )
-        )}
-
-        {/*PAGINATION CONTROLS */}
-        {totalPages > 1 && (
-          <Box sx={{ mt: 2, mb: 2, display: "flex", justifyContent: "center" }}>
-            <Pagination
-              count={totalPages}
-              page={currentPage}
-              onChange={(e, page) => setCurrentPage(page)}
-              size="large"
-              sx={{
-                "& .MuiPaginationItem-root": {
-                  color: theme.primaryColor,
-                },
-                "& .MuiPaginationItem-root.Mui-selected": {
-                  backgroundColor: theme.primaryColor,
-                  color: theme.backgroundColor,
-                  "&:hover": {
-                    backgroundColor: theme.primaryColor,
-                  },
-                },
-                "& .MuiPaginationItem-root:hover": {
-                  backgroundColor: theme.secondaryColor, // Light hover effect
-                },
-              }}
-            />
+      {/* Hide pagination + page indicator when no fields */}
+      {Array.isArray(displayedFields) && displayedFields.length > 0 && (
+        <>
+          {/* PAGE INDICATOR */}
+          <Box sx={{ mb: 3, textAlign: "center" }}>
+            <Typography variant="body2" color="textSecondary">
+              Page {currentPage} of {totalPages} ({startIndex + 1}-
+              {Math.min(endIndex, displayedFields.length)} of{" "}
+              {displayedFields.length} fields)
+            </Typography>
           </Box>
-        )}
 
-        {!readOnly && (
-          <>
-            <Button
-              variant="contained"
-              type="submit"
-              disabled={!isFormValid || !isModified}
-              sx={{
-                mt: 2,
-                backgroundColor: theme.primaryColor,
-                "&:hover": {
-                  backgroundColor: theme.primaryColor,
-                },
-              }}
-              startIcon={isEditMode && <SaveIcon />}
-              endIcon={!isEditMode && <SendIcon />}
-            >
-              {isEditMode
-                ? t("dynamicform.save_changes")
-                : t("dynamicform.review")}
-            </Button>
-          </>
-        )}
-      </form>
+          {/* GENERATED FORM (RECURSICE INPUT RENDERING + SUBMIT BUTTON) */}
+          <form onSubmit={handleSubmit}>
+            {currentPageFields.map((field, index) =>
+              renderInput(
+                { ...field },
+                0,
+                `${field.name}-${startIndex + index}`,
+              ),
+            )}
 
-      {/* DIALOG POP-UP JSX RENDERED INSIDE MAIN COMPONENT TO ACCESS HOOKS AND UPDATE STATE */}
-      <PopupDialog
-        open={!!dialogOpen}
-        onClose={() => setDialogOpen(null)}
-        matches={matches}
-        popupField={popupField}
-        popupValue={popupValue}
-        setPopupValue={setPopupValue}
-        popupErrors={popupErrors}
-        handlePopupSave={handlePopupSave}
-        isPopupSaveEnabled={isPopupSaveEnabled}
-        renderInput={renderInput}
-      />
+            {/*PAGINATION CONTROLS */}
+            {totalPages > 1 && (
+              <Box
+                sx={{ mt: 2, mb: 2, display: "flex", justifyContent: "center" }}
+              >
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={(e, page) => setCurrentPage(page)}
+                  size="large"
+                  sx={{
+                    "& .MuiPaginationItem-root": {
+                      color: theme.primaryColor,
+                    },
+                    "& .MuiPaginationItem-root.Mui-selected": {
+                      backgroundColor: theme.primaryColor,
+                      color: theme.backgroundColor,
+                      "&:hover": {
+                        backgroundColor: theme.primaryColor,
+                      },
+                    },
+                    "& .MuiPaginationItem-root:hover": {
+                      backgroundColor: theme.secondaryColor, // Light hover effect
+                    },
+                  }}
+                />
+              </Box>
+            )}
+
+            {!readOnly && (
+              <>
+                <Button
+                  variant="contained"
+                  type="submit"
+                  disabled={!rootIsValid}
+                  sx={{
+                    mt: 2,
+                    backgroundColor: theme.primaryColor,
+                    "&:hover": {
+                      backgroundColor: theme.primaryColor,
+                    },
+                  }}
+                  startIcon={isEditMode && <SaveIcon />}
+                  endIcon={!isEditMode && <SendIcon />}
+                >
+                  {isEditMode
+                    ? t("dynamicform.save_changes")
+                    : t("dynamicform.review")}
+                </Button>
+              </>
+            )}
+          </form>
+        </>
+      )}
 
       {/* DEBUG PANEL SHOWING EXTRACTED FIELDS JSON FOR VERIFICATION */}
       {/* <Box
@@ -670,6 +408,10 @@ function DynamicForm({
           fontSize: "0.875rem",
         }}
       >
+        <Typography variant="h6" gutterBottom>
+          FormState:
+        </Typography>
+        <pre>{JSON.stringify(formState, null, 2)}</pre>
         <Typography variant="h6" gutterBottom>
           Extracted Fields (for verification):
         </Typography>
