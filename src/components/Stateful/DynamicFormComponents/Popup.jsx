@@ -58,7 +58,7 @@ const Popup = ({ nextValuePath, open, onClose }) => {
       // Optional: clear snapshot so first render with open=false does nothing
       prevFieldValuesRef.current = undefined;
     }
-  }, [open, nextValuePath, dispatch]); // intentionally NOT including `fieldValues`
+  }, [open, fieldValues, nextValuePath, dispatch]); // intentionally NOT including `fieldValues`
 
   const handleSave = () => {
     if (!isPopupValid) return; // runtime guard
