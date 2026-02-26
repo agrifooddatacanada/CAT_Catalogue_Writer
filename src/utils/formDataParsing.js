@@ -1,5 +1,3 @@
-// formDataParsing.js
-
 // EXTRACT LOCALIZED CATEGORIES DIRECTLY FROM ENTRY OVERLAYS IN MAIN BUNDLE
 
 export function extractEntryValuesByLanguage(jsonData, language) {
