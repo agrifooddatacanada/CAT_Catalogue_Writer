@@ -8,12 +8,12 @@ export const SCHEMA_CONTEXT_MAP = {
 };
 
 export const SCHEMA_ID_MAP = {
-  OpenAIRE: "####digest-of-openaire####",
+  OpenAIRE: "ELFQbADu3w__7hDbaF6iY_1nOa68LgJWmqf3B_dTV0e5",
   "Dublin Core (Repository-specific) [Test]":
-    "####digest-of-dublin_core_repository####",
+    "EDqM_wwgWgRrEd609T9X8wTasxpp1e_QJYmdBxFVRoii",
   "Dublin Core (Project-specific) [Test]":
-    "####digest-of-dublin_core_project####",
-  "DataCite [Test]": "####digest-of-datacite####",
+    "EJ4icsxrpbxRHy0Eo_zHMB9_kTkrZ4hmT7r4CKLtL41_",
+  "DataCite [Test]": "####digest_of_oca_datacite_package####",
 };
 
 export const getContextUrl = (schema) => {
