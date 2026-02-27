@@ -8,7 +8,6 @@ import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 import theme from "../../theme";
 import canonicalize from "../../utils/canonicalize";
 import Pagination from "@mui/material/Pagination";
-import { getContextUrl } from "../../utils/schemaContextMapping";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setFormState } from "../../store/slices/formValueSlice";
@@ -17,7 +16,6 @@ import { setInstanceCount } from "../../store/slices/instanceCountsSlice";
 import {
   selectAllFormValues,
   selectFields,
-  selectSchemaName,
 } from "../../store/selectors/formSelectors";
 import FieldChecker from "./DynamicFormComponents/FieldChecker";
 import { selectIsRootFormValid } from "../../store/selectors/popupValidationSelectors";
@@ -50,7 +48,6 @@ function DynamicForm({ language = "eng", isEditMode = false }) {
   const dispatch = useDispatch();
   const formState = useSelector(selectAllFormValues);
   const fields = useSelector(selectFields);
-  const schema = useSelector(selectSchemaName);
 
   const rootIsValid = useSelector(selectIsRootFormValid);
 
@@ -131,37 +128,18 @@ function DynamicForm({ language = "eng", isEditMode = false }) {
 
     const nestedState = { ...formState };
 
-    // Remove existing catalogue_id if any
-    if ("catalogue_id" in nestedState) {
-      delete nestedState.catalogue_id;
-    }
-
-    // Remove existing catalogue_id if any
-    if ("d" in nestedState) {
-      delete nestedState.d;
-    }
-
-    // Remove existing @context if any
-    if ("@context" in nestedState) {
-      delete nestedState["@context"];
-    }
+    // Clean up any existing metadata fields (optional, for consistency)
+    const cleanKeys = ["catalogue_id", "d", "@context"];
+    cleanKeys.forEach((key) => {
+      if (key in nestedState) delete nestedState[key];
+    });
 
     // ADD CANONICALISATION HERE
     const canonicalizedState = canonicalize(nestedState);
-    const formData = JSON.parse(canonicalizedState);
+    const cleanFormData = JSON.parse(canonicalizedState);
 
-    const contextUrl = getContextUrl(schema);
-
-    // Add a unique file identifier
-    const formDataWithId = {
-      "@context": contextUrl,
-      "@type": "Catalogue Record",
-      d: "",
-      ...formData,
-    };
-
-    dispatch(setFormState(formDataWithId));
-    const instanceCount = buildInstanceCountsFromValues(formDataWithId);
+    dispatch(setFormState(cleanFormData));
+    const instanceCount = buildInstanceCountsFromValues(cleanFormData);
     dispatch(setInstanceCount(instanceCount));
     dispatch(setMode("view"));
     navigate("/view");

@@ -151,9 +151,10 @@ function HomePage() {
       dispatch(setFields(enrichedFields));
       dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
       dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+
       const instanceCount = buildInstanceCountsFromValues(formValues);
-      console.log("instanceCount:", instanceCount);
       dispatch(setAllInstanceCounts(instanceCount));
+
       dispatch(setMode("view"));
       navigate("/view");
     }
