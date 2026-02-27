@@ -26,6 +26,7 @@ function ViewPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const schema = useSelector(selectSchemaName);
   const isUploadedJson = useSelector(selectHasFormData);
   const flatFormState = useSelector(selectAllFormValues);
 
@@ -120,11 +121,13 @@ function ViewPage() {
 
     // Get context from schema or Redux (match your logic)
     const contextUrl = getContextUrl(jsonSchema);
+    const schemaId = getSchemaId(schema);
 
     // Build exact structure: @context, @type, d (empty), then form data
     const formDataWithId = {
       "@context": contextUrl,
       "@type": "Catalogue Record",
+      "@schema_id": schemaId,
       d: "",
       ...formData,
     };
