@@ -15,8 +15,11 @@ import {
   selectHasFormData,
   selectFields,
   selectAllFormValues,
+  selectSchemaName,
 } from "../store/selectors/formSelectors";
 import { setMode } from "../store/slices/modeSlice";
+import canonicalize from "../utils/canonicalize";
+import { getContextUrl, getSchemaId } from "../utils/schemaContextMapping";
 
 function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function
@@ -62,6 +65,7 @@ function ViewPage() {
     }
     return result;
   }
+
   // Deep clone to handle frozen/immutable objects
   function deepClone(value) {
     if (value === null || typeof value !== "object") {
@@ -78,11 +82,13 @@ function ViewPage() {
     }
     return cloned;
   }
+
   function ensureIndex(arr, index) {
     while (arr.length <= index) {
       arr.push(null);
     }
   }
+
   function parsePath(path) {
     if (!path) return [];
     return path
@@ -99,13 +105,39 @@ function ViewPage() {
   const jsonSchema = useSelector(selectFields);
 
   const downloadJson = (jsonData) => {
-    const [, objWithSaid] = saidify(jsonData, "d");
+    // Deep clone to avoid mutating original formState
+    const dataForSaid = deepClone(jsonData);
+
+    // Clean existing metadata fields
+    const cleanKeys = ["catalogue_id", "d", "@context", "@schema_id"];
+    cleanKeys.forEach((key) => {
+      if (key in dataForSaid) delete dataForSaid[key];
+    });
+
+    // Canonicalize (assuming you import canonicalize)
+    const canonicalizedState = canonicalize(dataForSaid);
+    const formData = JSON.parse(canonicalizedState);
+
+    // Get context from schema or Redux (match your logic)
+    const contextUrl = getContextUrl(jsonSchema);
+
+    // Build exact structure: @context, @type, d (empty), then form data
+    const formDataWithId = {
+      "@context": contextUrl,
+      "@type": "Catalogue Record",
+      d: "",
+      ...formData,
+    };
+
+    // Compute SAID using modified data
+    const [, objWithSaid] = saidify(formDataWithId, "d");
+
     const content = JSON.stringify(objWithSaid);
     const blob = new Blob([content], { type: "application/ld+json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `catalogue-${objWithSaid.d || objWithSaid.catalogue_id || "export"}.json`;
+    link.download = `catalogue-${objWithSaid.d || "export"}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
