@@ -17,16 +17,15 @@ export const SCHEMA_ID_MAP = {
 };
 
 export const getContextUrl = (schema) => {
-  return SCHEMA_CONTEXT_MAP[schema] || "https://schema.org";
+  return SCHEMA_CONTEXT_MAP[schema] || null;
 };
 
 export const getSchemaId = (schema) => {
-  return SCHEMA_ID_MAP[schema] || "####digest-of-schema####";
+  return SCHEMA_ID_MAP[schema] || null;
 };
 
 const ID_TO_SCHEMA_MAP = Object.fromEntries(
   Object.entries(SCHEMA_ID_MAP).map(([k, v]) => [v, k]),
 );
 
-export const getSchemaFromId = (schemaId) =>
-  ID_TO_SCHEMA_MAP[schemaId] || "OpenAIRE";
+export const getSchemaFromId = (schemaId) => ID_TO_SCHEMA_MAP[schemaId] || null;

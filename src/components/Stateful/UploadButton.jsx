@@ -1,13 +1,11 @@
-// UploadButton.jsx
 import React, { useState } from "react";
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone';
-import Button from '@mui/material/Button';
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
+import Button from "@mui/material/Button";
 import theme from "../../theme";
 
-export default function UploadButton({ onFileSelect, upload_file, disabled }) {
+export default function UploadButton({ onFileSelect, upload_file }) {
   const [dragOver, setDragOver] = useState(false);
-
   const [isUploaded, setIsUploaded] = useState(false);
 
   const handleFileChange = (event) => {
@@ -44,7 +42,6 @@ export default function UploadButton({ onFileSelect, upload_file, disabled }) {
       component="label"
       role={undefined}
       variant="contained"
-      disabled={disabled}
       tabIndex={-1}
       sx={{
         width: "85%",
@@ -62,8 +59,8 @@ export default function UploadButton({ onFileSelect, upload_file, disabled }) {
         backgroundColor: dragOver
           ? theme.hoverUnselectedBgColor
           : "rgba(185, 190, 185, 1)",
-        '&:hover': {
-          backgroundColor: theme.hoverUnselectedBgColor
+        "&:hover": {
+          backgroundColor: theme.hoverUnselectedBgColor,
         },
         display: "flex",
         alignItems: "center",
