@@ -34,6 +34,7 @@ import {
 import { serializeRegexPatterns } from "../utils/regexUtils.js";
 import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths.js";
 import { setMode } from "../store/slices/modeSlice.js";
+import { getSchemaFromId } from "../utils/schemaContextMapping.js";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
@@ -43,32 +44,65 @@ function HomePage() {
   const { t } = useTranslation(); // use translation function
   const dispatch = useDispatch();
 
-  const isSchemaSelected = schema !== null && schema !== "";
+  const [schemaLocked, setSchemaLocked] = useState(false); // true when schema came from @schema_id
+
+  const isSchemaSelected = !!schema;
+  const hasUploadedFile = !!uploadedFiles;
 
   //
   const handleSchemaSelect = (e) => {
-    setSchema(e.target.value);
-    dispatch(setSchemaName(e.target.value));
-    // Reset files when schema changes to ensure schema-file match
-    if (uploadedFiles) {
-      setUploadedFiles(null);
-      setJsonContent(null);
-    }
+    const value = e.target.value;
+
+    setSchema(value);
+    dispatch(setSchemaName(value));
+
+    // This is a manual schema choice, so it should not be "locked by file"
+    setSchemaLocked(false);
   };
 
   //
   const handleFileSelect = (files) => {
     const file = files[0];
     const reader = new FileReader();
+
     reader.onload = (e) => {
       try {
         const jsonData = JSON.parse(e.target.result);
+
+        // Store file + content in all success cases
         setJsonContent(jsonData);
         setUploadedFiles(files);
-      } catch (e) {
+
+        // 1) Read `@schema_id` from the uploaded JSON-LD
+        const schemaId = jsonData["@schema_id"];
+
+        // 2) Map it to internal schema name
+        const detectedSchema = schemaId ? getSchemaFromId(schemaId) : null;
+
+        if (detectedSchema) {
+          // Case 1: file HAS @schema_id
+          setSchema(detectedSchema);
+          dispatch(setSchemaName(detectedSchema));
+          setSchemaLocked(true);
+        } else {
+          // Case 2: file has NO @schema_id
+          alert(
+            "Could not detect schema from the uploaded file. Please select it manually.",
+          );
+          // Do NOT touch existing schema; user might already have selected it
+          setSchemaLocked(false); // user can choose schema from the menu
+        }
+      } catch (err) {
+        console.error(err);
         alert("Invalid JSON file");
+        setJsonContent(null);
+        setUploadedFiles(null);
+        setSchema("");
+        dispatch(setSchemaName(""));
+        setSchemaLocked(false);
       }
     };
+
     reader.readAsText(file);
   };
 
@@ -140,6 +174,17 @@ function HomePage() {
 
   //
   const handleViewClick = async () => {
+    if (!jsonContent) {
+      alert("No JSON content loaded.");
+      return;
+    }
+    if (!schema) {
+      alert(
+        "Schema not detected yet. Please upload a JSON-LD file with @schema_id or select a schema.",
+      );
+      return;
+    }
+
     if (jsonContent) {
       const jsonSchema = await extractJsonSchemaAsync(schema);
       const formValues = flatten(jsonContent);
@@ -162,6 +207,17 @@ function HomePage() {
 
   //
   const handleEditClick = async () => {
+    if (!jsonContent) {
+      alert("No JSON content loaded.");
+      return;
+    }
+    if (!schema) {
+      alert(
+        "Schema not detected yet. Please upload a JSON-LD file with @schema_id or select a schema.",
+      );
+      return;
+    }
+
     if (jsonContent) {
       const jsonSchema = await extractJsonSchemaAsync(schema);
       const formValues = flatten(jsonContent);
@@ -255,13 +311,20 @@ function HomePage() {
             {t("homepage.quick_links")}
           </p>
           <Box sx={{ mb: "20px" }}>
-            <FormHelperText sx={{ textAlign: "center", fontSize: "15px" }}>
-              Select a Schema to Proceed
-            </FormHelperText>
+            {!schemaLocked && (
+              <FormHelperText sx={{ textAlign: "center", fontSize: "15px" }}>
+                Select a Schema to Proceed
+              </FormHelperText>
+            )}
 
             {/* Schema Selection Menu */}
             <FormControl sx={{ width: "75%" }}>
-              <Select value={schema} onChange={handleSchemaSelect} displayEmpty>
+              <Select
+                value={schema}
+                onChange={handleSchemaSelect}
+                displayEmpty
+                disabled={schemaLocked} // disabled only when file set the schema
+              >
                 <MenuItem value="" sx={{ color: "rgba(100, 100, 100, 1)" }}>
                   <em>None</em>
                 </MenuItem>
@@ -278,17 +341,14 @@ function HomePage() {
           </Box>
 
           {/* Write link - enabled when any schema is selected */}
-          {isSchemaSelected && (
+          {isSchemaSelected && !hasUploadedFile && (
             <Box
               component={Link}
               onClick={handleNavigate}
-              //state={{ schema }}
               sx={{
                 fontSize: "1.25rem",
                 fontWeight: "500",
-                color: isSchemaSelected
-                  ? theme.primaryColor
-                  : "rgba(100, 100, 100, 1)",
+                color: schema ? theme.primaryColor : "rgba(100, 100, 100, 1)",
                 textDecoration: "underline",
                 textUnderlineOffset: "2px",
                 textDecorationColor: theme.underlineColor,
@@ -314,10 +374,9 @@ function HomePage() {
           <UploadButton
             onFileSelect={handleFileSelect}
             upload_file={t("homepage.upload_file")}
-            disabled={!isSchemaSelected}
           />
           <Box sx={{ width: "90%" }}>
-            {uploadedFiles && (
+            {hasUploadedFile && (
               <p>
                 {t("homepage.file_uploaded")}
                 {uploadedFiles[0].name}
@@ -334,38 +393,44 @@ function HomePage() {
           >
             <Button
               variant="contained"
-              disabled={!uploadedFiles}
+              disabled={!hasUploadedFile || !isSchemaSelected}
               onClick={handleViewClick}
               sx={{
                 width: "75%",
-                backgroundColor: uploadedFiles
-                  ? theme.primaryColor
-                  : "rgba(255, 255, 255, 0.25)",
+                backgroundColor:
+                  hasUploadedFile && isSchemaSelected
+                    ? theme.primaryColor
+                    : "rgba(255, 255, 255, 0.25)",
                 "&:hover": {
                   backgroundColor: theme.primaryColor,
                 },
-                color: uploadedFiles ? "white" : "gray",
-                boxShadow: uploadedFiles ? undefined : "none",
-                cursor: uploadedFiles ? "pointer" : "default",
+                color: hasUploadedFile && isSchemaSelected ? "white" : "gray",
+                boxShadow:
+                  hasUploadedFile && isSchemaSelected ? undefined : "none",
+                cursor:
+                  hasUploadedFile && isSchemaSelected ? "pointer" : "default",
               }}
             >
               {t("homepage.view")}
             </Button>
             <Button
               variant="contained"
-              disabled={!uploadedFiles}
+              disabled={!hasUploadedFile || !isSchemaSelected}
               onClick={handleEditClick}
               sx={{
                 width: "75%",
-                backgroundColor: uploadedFiles
-                  ? theme.primaryColor
-                  : "rgba(255, 255, 255, 0.25)",
+                backgroundColor:
+                  hasUploadedFile && isSchemaSelected
+                    ? theme.primaryColor
+                    : "rgba(255, 255, 255, 0.25)",
                 "&:hover": {
                   backgroundColor: theme.primaryColor,
                 },
-                color: uploadedFiles ? "white" : "gray",
-                boxShadow: uploadedFiles ? undefined : "none",
-                cursor: uploadedFiles ? "pointer" : "default",
+                color: hasUploadedFile && isSchemaSelected ? "white" : "gray",
+                boxShadow:
+                  hasUploadedFile && isSchemaSelected ? undefined : "none",
+                cursor:
+                  hasUploadedFile && isSchemaSelected ? "pointer" : "default",
               }}
             >
               {t("homepage.edit")}
