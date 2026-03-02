@@ -8,25 +8,24 @@ export const SCHEMA_CONTEXT_MAP = {
 };
 
 export const SCHEMA_ID_MAP = {
-  OpenAIRE: "####digest-of-openaire####",
+  OpenAIRE: "ELFQbADu3w__7hDbaF6iY_1nOa68LgJWmqf3B_dTV0e5",
   "Dublin Core (Repository-specific) [Test]":
-    "####digest-of-dublin_core_repository####",
+    "EDqM_wwgWgRrEd609T9X8wTasxpp1e_QJYmdBxFVRoii",
   "Dublin Core (Project-specific) [Test]":
-    "####digest-of-dublin_core_project####",
-  "DataCite [Test]": "####digest-of-datacite####",
+    "EJ4icsxrpbxRHy0Eo_zHMB9_kTkrZ4hmT7r4CKLtL41_",
+  "DataCite [Test]": "####digest_of_oca_datacite_package####",
 };
 
 export const getContextUrl = (schema) => {
-  return SCHEMA_CONTEXT_MAP[schema] || "https://schema.org";
+  return SCHEMA_CONTEXT_MAP[schema] || null;
 };
 
 export const getSchemaId = (schema) => {
-  return SCHEMA_ID_MAP[schema] || "####digest-of-schema####";
+  return SCHEMA_ID_MAP[schema] || null;
 };
 
 const ID_TO_SCHEMA_MAP = Object.fromEntries(
   Object.entries(SCHEMA_ID_MAP).map(([k, v]) => [v, k]),
 );
 
-export const getSchemaFromId = (schemaId) =>
-  ID_TO_SCHEMA_MAP[schemaId] || "OpenAIRE";
+export const getSchemaFromId = (schemaId) => ID_TO_SCHEMA_MAP[schemaId] || null;
