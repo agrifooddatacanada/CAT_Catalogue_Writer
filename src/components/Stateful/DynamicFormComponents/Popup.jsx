@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 import {
   Dialog,
   DialogTitle,
@@ -24,6 +25,7 @@ import { removeFieldValue } from "../../../store/slices/formValueSlice";
 import { makeSelectIsPopupValid } from "../../../store/selectors/popupValidationSelectors";
 
 const Popup = ({ nextValuePath, open, onClose }) => {
+  const { t } = useTranslation(); // use translation function
   const dispatch = useDispatch();
   const fullScreen = useMediaQuery("(max-width:600px)");
   const fieldPath = removeIndices(nextValuePath);
@@ -109,7 +111,7 @@ const Popup = ({ nextValuePath, open, onClose }) => {
         }}
       >
         <Button color="error" onClick={onClose}>
-          Cancel
+          {t("popup.cancel")}
         </Button>
         <Button
           variant="contained"
@@ -123,7 +125,7 @@ const Popup = ({ nextValuePath, open, onClose }) => {
           }}
           startIcon={<SaveIcon />}
         >
-          Save
+          {t("popup.save")}
         </Button>
       </DialogActions>
     </Dialog>

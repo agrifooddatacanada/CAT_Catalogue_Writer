@@ -1,8 +1,8 @@
 {
   "homepage": {
     "semantic_engine": "Semantic Engine",
-    "catalogue": "Catalogue Record",
-    "content_heading": "Cataloguez votre travail",
+    "records": "Records",
+    "content_heading": "Décrivez votre travail",
     "content": "Facilitez la tâche aux autres pour suivre votre travail et citer ce que vous créez",
     "quick_start_heading": "Démarrage rapide:",
     "step_1": "1. ",
@@ -13,13 +13,14 @@
     "step_2": "2. Rédigez votre Catalogue et générez un fichier .json.",
     "step_3": "3. Utilisez votre Catalogue ici pour visualiser et générer un JSON-LD destiné à l’entrée des données conforme aux standards de métadonnées Open-AIRE.",
     "step_4": "4. Stockez vos fichiers de Catalogue avec vos données, placez-les dans un dépôt ou collaborez en les partageant avec d’autres.",
-    "accordion_question_1": "1. Qu’est-ce qu’un Catalogue ?",
-    "accordion_summary_1": "1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
-    "accordion_question_2": "2. Qu’est-ce qu’un Catalogue ?",
+    "accordion_question_1": "Qu’est‑ce qu’un record?",
+    "accordion_summary_1": "Un enregistrement est un fichier de métadonnées structuré et lisible par machine qui décrit votre travail de manière standardisée. Grâce à l’utilisation de normes de données et de métadonnées largement adoptées, les enregistrements facilitent la compréhension, le partage et l’intégration de vos projets entre les systèmes. Ils contribuent à garantir que votre travail soit découvrable, réutilisable et compatible avec les infrastructures de recherche et les catalogues de données.\n\nAvec les enregistrements, vous pouvez documenter presque tout : projets, jeux de données, schémas de données, bibliothèques d’exemples, flux de travail, etc. Chaque enregistrement capture les détails essentiels de votre travail et les exprime dans un format cohérent interprétable par d’autres outils et plateformes.\n\nL’outil d’enregistrement inclut une bibliothèque de schémas intégrés, vous permettant de rédiger des métadonnées conformes aux normes spécifiques de votre communauté ou organisation. Chaque enregistrement est généré au format JSON, ce qui facilite son intégration aux systèmes existants, l’automatisation des flux de travail et le maintien de l’interopérabilité au sein de votre écosystème de données.",
+    "accordion_question_2": "2. Qu’est-ce qu’un Catalogue?",
     "accordion_summary_2": "2. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
-    "accordion_question_3": "3. Qu’est-ce qu’un Catalogue ?",
+    "accordion_question_3": "3. Qu’est-ce qu’un Catalogue?",
     "accordion_summary_3": "3. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
     "quick_links": "Liens rapides",
+    "select_schema": "Sélectionnez un schéma pour continuer",
     "write": "Rédigez un enregistrement de Catalogue",
     "upload_file": "Téléchargez un enregistrement de Catalogue précédent ou glissez-déposez un fichier (.json)",
     "file_uploaded": "Fichier téléchargé : ",
@@ -37,6 +38,7 @@
     "mandatory": "Obligatoire",
     "recommended": "Recommandé",
     "complete": "Complété",
+    "loading": "Chargement du formulaire...",
     "save_changes": "Enregistrer les modifications",
     "review": "Réviser",
     "all_fields": "Tous les champs avec ( ",
@@ -47,7 +49,7 @@
   },
   "viewpage": {
     "loading": "Chargement du schéma...",
-    "no_catalogue": "Aucun Catalogue chargé. Veuillez d'abord télécharger un fichier pour pouvoir le visualiser ensuite.",
+    "no_catalogue": "Aucun Catalogue chargé. Veuillez d’abord télécharger un fichier pour pouvoir le visualiser ensuite.",
     "review": "Réviser l’enregistrement du Catalogue",
     "view": "Voir l’enregistrement du Catalogue",
     "edit": "Modifier",
@@ -68,7 +70,7 @@
     "show_more": "Afficher plus",
     "show_less": "Afficher moins"
   },
-  "popupdialog": {
+  "popup": {
     "add": "Ajouter",
     "cancel": "Annuler",
     "save": "Enregistrer"
