@@ -16,7 +16,7 @@ import Footer from "../components/Stateless/Footer";
 import theme from "../theme";
 import HomeHeader from "../components/Stateless/HomeHeader";
 import HomeSubHeader from "../components/Stateless/HomeSubHeader";
-import HomeQuickStart from "../components/Stateless/HomeQuickStart";
+// import HomeQuickStart from "../components/Stateless/HomeQuickStart";
 import {
   setFields,
   setSchemaName,
@@ -245,13 +245,13 @@ function HomePage() {
     <div className="HomePage">
       <HomeHeader
         semantic_engine={t("homepage.semantic_engine")}
-        catalogue={t("homepage.catalogue")}
+        catalogue={t("homepage.records")}
       />
       <HomeSubHeader
         content_heading={t("homepage.content_heading")}
         content={t("homepage.content")}
       />
-      <HomeQuickStart
+      {/* <HomeQuickStart
         quick_start_heading={t("homepage.quick_start_heading")}
         step_1={t("homepage.step_1")}
         watch_tutorial_video={t("homepage.watch_tutorial_video")}
@@ -261,7 +261,7 @@ function HomePage() {
         step_2={t("homepage.step_2")}
         step_3={t("homepage.step_3")}
         step_4={t("homepage.step_4")}
-      />
+      /> */}
 
       <br />
       <Stack
@@ -284,10 +284,22 @@ function HomePage() {
           <div className="MainContent" style={{ padding: "0px 10px" }}>
             <AccordionExpand
               accordion_question={t("homepage.accordion_question_1")}
-              accordion_summary={t("homepage.accordion_summary_1")}
+              accordion_summary={
+                // t("homepage.accordion_summary_1")}
+                t("homepage.accordion_summary_1")
+                  .split("\n")
+                  .map((line, i) => (
+                    <React.Fragment key={i}>
+                      {line}
+                      {i <
+                        t("homepage.accordion_summary_1").split("\n").length -
+                          1 && <br />}
+                    </React.Fragment>
+                  ))
+              }
             />
             <br />
-            <AccordionExpand
+            {/* <AccordionExpand
               accordion_question={t("homepage.accordion_question_2")}
               accordion_summary={t("homepage.accordion_summary_2")}
             />
@@ -295,7 +307,7 @@ function HomePage() {
             <AccordionExpand
               accordion_question={t("homepage.accordion_question_3")}
               accordion_summary={t("homepage.accordion_summary_3")}
-            />
+            /> */}
           </div>
         </Box>
         <Box
@@ -313,7 +325,7 @@ function HomePage() {
           <Box sx={{ mb: "20px" }}>
             {!schemaLocked && (
               <FormHelperText sx={{ textAlign: "center", fontSize: "15px" }}>
-                Select a Schema to Proceed
+                {t("homepage.select_schema")}
               </FormHelperText>
             )}
 

@@ -283,7 +283,7 @@ function DynamicForm({ language = "eng", isEditMode = false }) {
       {/* Add loading state ABOVE the buttons */}
       {!Array.isArray(fields) && (
         <Box sx={{ textAlign: "center", py: 4 }}>
-          <Typography>Loading form...</Typography>
+          <Typography>{t("dynamicform.loading")}</Typography>
         </Box>
       )}
 
@@ -301,9 +301,10 @@ function DynamicForm({ language = "eng", isEditMode = false }) {
           {/* PAGE INDICATOR */}
           <Box sx={{ mb: 3, textAlign: "center" }}>
             <Typography variant="body2" color="textSecondary">
-              Page {currentPage} of {totalPages} ({startIndex + 1}-
-              {Math.min(endIndex, displayedFields.length)} of{" "}
-              {displayedFields.length} fields)
+              {t("dynamicform.page")} {currentPage} {t("dynamicform.of")}{" "}
+              {totalPages} ({startIndex + 1}-
+              {Math.min(endIndex, displayedFields.length)} {t("dynamicform.of")}{" "}
+              {displayedFields.length} {t("dynamicform.fields")})
             </Typography>
           </Box>
 

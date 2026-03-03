@@ -1,8 +1,8 @@
 {
   "homepage": {
     "semantic_engine": "Semantic Engine",
-    "catalogue": "Catalogue Record",
-    "content_heading": "Catalogue your work",
+    "records": "Records",
+    "content_heading": "Describe your work",
     "content": "Make it easier for others to track your work and cite what you make",
     "quick_start_heading": "Quick-Start:",
     "step_1": "1. ",
@@ -13,13 +13,14 @@
     "step_2": "2. Write your catalogue and generate a .json.",
     "step_3": "3. Use your catalogue here to view, and generate a JSON-LD for data input aligned with Open-AIRE metadata standards.",
     "step_4": "4. Store your catalogue files with your data, put them in a repository, or collaborate by sharing them with others.",
-    "accordion_question_1": "1. What is a Catalogue?",
-    "accordion_summary_1": "1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
+    "accordion_question_1": "What is a Record?",
+    "accordion_summary_1": "A record is a structured, machine‑readable metadata file that describes your work in a standardized way. By using widely adopted data and metadata standards, records make your projects easier to understand, share, and integrate across systems. They help ensure your work is discoverable, reusable, and compatible with research infrastructure and data catalogues.\n\nWith records, you can document almost anything—projects, datasets, data schemas, sample libraries, workflows, and more. Each record captures essential details about your work and expresses them in a consistent format that other tools and platforms can interpret.\n\nThe record tool includes a library of built‑in schemas, letting you write metadata that follows specific community or organizational standards. Every record is generated as JSON, making it easy to integrate into existing systems, automate workflows, and maintain interoperability across your data ecosystem.​",
     "accordion_question_2": "2. What is a Catalogue?",
     "accordion_summary_2": "2. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
     "accordion_question_3": "3. What is a Catalogue?",
     "accordion_summary_3": "3. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
     "quick_links": "Quick Links",
+    "select_schema": "Select a Schema to Proceed",
     "write": "Write a Catalogue Record",
     "upload_file": "Upload a previous Catalogue Record or drag and drop one (.json file)",
     "file_uploaded": "File uploaded: ",
@@ -37,6 +38,7 @@
     "mandatory": "Mandatory",
     "recommended": "Recommended",
     "complete": "Complete",
+    "loading": "Loading form...",
     "save_changes": "Save Changes",
     "review": "Review",
     "all_fields": "All fields with ( ",
@@ -68,7 +70,7 @@
     "show_more": "Show more",
     "show_less": "Show less"
   },
-  "popupdialog": {
+  "popup": {
     "add": "Add",
     "cancel": "Cancel",
     "save": "Save"
