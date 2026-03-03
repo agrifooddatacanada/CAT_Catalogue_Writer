@@ -387,7 +387,7 @@ function HomePage() {
             onFileSelect={handleFileSelect}
             upload_file={t("homepage.upload_file")}
           />
-          <Box sx={{ width: "90%" }}>
+          <Box sx={{ width: "100%", mb: 3 }}>
             {hasUploadedFile && (
               <p>
                 {t("homepage.file_uploaded")}
