@@ -120,7 +120,7 @@ function ViewPage() {
     const formData = JSON.parse(canonicalizedState);
 
     // Get context from schema or Redux (match your logic)
-    const contextUrl = getContextUrl(jsonSchema);
+    const contextUrl = getContextUrl(schema);
     const schemaId = getSchemaId(schema);
 
     // Build exact structure: @context, @type, d (empty), then form data
