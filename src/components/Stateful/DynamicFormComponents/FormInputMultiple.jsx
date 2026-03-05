@@ -130,7 +130,7 @@ const FormInputMultiple = ({ valuePath, depth = 0 }) => {
       )}
 
       {/* Show "no data" message in readOnly mode when empty */}
-      {readOnly && instanceCount === 0 && fieldValues.length === 0 && (
+      {readOnly && instanceCount === 0 && existingValues.length === 0 && (
         <span
           style={{
             display: "inline-block",
