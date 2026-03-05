@@ -10,32 +10,72 @@
         "d": "ELdCRfkRI5lA18YB00ILJCppWJnvln0MFjwrhnLyfFNe",
         "type": "spec/capture_base/1.1",
         "attributes": {
-          "conformsTo": ["Text"],
-          "contributor": ["Text"],
+          "conformsTo": [
+            "Text"
+          ],
+          "contributor": [
+            "Text"
+          ],
           "created": "DateTime",
-          "creator": ["Text"],
+          "creator": [
+            "Text"
+          ],
           "dateAccepted": "DateTime",
-          "description": ["Text"],
-          "format": ["Text"],
-          "hasPart": ["Text"],
-          "hasVersion": ["Text"],
-          "identifier": ["Text"],
-          "isPartOf": ["Text"],
-          "isReferencedBy": ["Text"],
-          "isVersionOf": ["Text"],
+          "description": [
+            "Text"
+          ],
+          "format": [
+            "Text"
+          ],
+          "hasPart": [
+            "Text"
+          ],
+          "hasVersion": [
+            "Text"
+          ],
+          "identifier": [
+            "Text"
+          ],
+          "isPartOf": [
+            "Text"
+          ],
+          "isReferencedBy": [
+            "Text"
+          ],
+          "isVersionOf": [
+            "Text"
+          ],
           "issued": "DateTime",
-          "language": ["Text"],
+          "language": [
+            "Text"
+          ],
           "modified": "DateTime",
-          "provenance": ["Text"],
+          "provenance": [
+            "Text"
+          ],
           "publisher": "Text",
-          "references": ["Text"],
-          "rights": ["Text"],
-          "source": ["Text"],
-          "spatial": ["Text"],
-          "subject": ["Text"],
+          "references": [
+            "Text"
+          ],
+          "rights": [
+            "Text"
+          ],
+          "source": [
+            "Text"
+          ],
+          "spatial": [
+            "Text"
+          ],
+          "subject": [
+            "Text"
+          ],
           "temporal": "Text",
-          "title": ["Text"],
-          "type": ["Text"],
+          "title": [
+            "Text"
+          ],
+          "type": [
+            "Text"
+          ],
           "valid": "DateTime"
         },
         "classification": "",
@@ -260,8 +300,8 @@
               "hasVersion": "Has Version",
               "identifier": "Identifier",
               "isPartOf": "Is Part Of",
-              "isReferencedBy": "Is Replaced By",
-              "isVersionOf": "Is Referenced By",
+              "isReferencedBy": "Is Referenced By",
+              "isVersionOf": "Is Version Of",
               "issued": "Date Issued",
               "language": "Language",
               "modified": "Date Modified",

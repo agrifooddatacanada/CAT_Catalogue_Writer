@@ -31,7 +31,9 @@ function FormPage() {
 
   const dispatch = useDispatch();
 
-  dispatch(setMode("edit"));
+  useEffect(() => {
+    dispatch(setMode("edit"));
+  }, [dispatch]);
 
   const [searchParams] = useSearchParams();
 
