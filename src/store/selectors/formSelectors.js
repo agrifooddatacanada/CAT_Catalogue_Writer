@@ -23,6 +23,20 @@ export const selectHasFormData = createSelector(
 export const selectFieldValue = (path) =>
   createSelector([selectFormState], (formState) => formState[path]);
 
+export const selectCheckboxValues = (path) =>
+  createSelector(
+    [selectFormValueByPrefix(path), selectInstanceCount(path)],
+    (fieldValues, instanceCount) => {
+      const values = [];
+      for (let i = 0; i < instanceCount; i++) {
+        const key = `${path}[${i}]`;
+        const val = fieldValues[key];
+        if (val && val.trim()) values.push(val);
+      }
+      return values;
+    },
+  );
+
 // Convenience selectors for common patterns in your dynamic forms
 export const selectFormValueByPrefix = (prefix) =>
   createSelector([selectAllFormValues], (values) => {
