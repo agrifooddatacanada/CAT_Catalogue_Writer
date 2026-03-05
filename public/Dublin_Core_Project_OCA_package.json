@@ -10,32 +10,76 @@
         "d": "EO4E27qNpoPLz-wJcw2oD4Uxg-kJcdQncNzwSxMPz2lH",
         "type": "spec/capture_base/1.1",
         "attributes": {
-          "accrualMethod": ["Text"],
-          "conformsTo": ["Text"],
-          "contributor": ["Text"],
+          "accrualMethod": [
+            "Text"
+          ],
+          "conformsTo": [
+            "Text"
+          ],
+          "contributor": [
+            "Text"
+          ],
           "created": "DateTime",
-          "creator": ["Text"],
-          "description": ["Text"],
-          "extent": ["Text"],
-          "format": ["Text"],
-          "hasPart": ["Text"],
-          "hasVersion": ["Text"],
-          "identifier": ["Text"],
-          "isPartOf": ["Text"],
-          "isReferencedBy": ["Text"],
-          "isVersionOf": ["Text"],
-          "language": ["Text"],
+          "creator": [
+            "Text"
+          ],
+          "description": [
+            "Text"
+          ],
+          "extent": [
+            "Text"
+          ],
+          "format": [
+            "Text"
+          ],
+          "hasPart": [
+            "Text"
+          ],
+          "hasVersion": [
+            "Text"
+          ],
+          "identifier": [
+            "Text"
+          ],
+          "isPartOf": [
+            "Text"
+          ],
+          "isReferencedBy": [
+            "Text"
+          ],
+          "isVersionOf": [
+            "Text"
+          ],
+          "language": [
+            "Text"
+          ],
           "modified": "DateTime",
-          "provenance": ["Text"],
+          "provenance": [
+            "Text"
+          ],
           "publisher": "Text",
-          "references": ["Text"],
-          "rights": ["Text"],
-          "source": ["Text"],
-          "spatial": ["Text"],
-          "subject": ["Text"],
+          "references": [
+            "Text"
+          ],
+          "rights": [
+            "Text"
+          ],
+          "source": [
+            "Text"
+          ],
+          "spatial": [
+            "Text"
+          ],
+          "subject": [
+            "Text"
+          ],
           "temporal": "Text",
-          "title": ["Text"],
-          "type": ["Text"],
+          "title": [
+            "Text"
+          ],
+          "type": [
+            "Text"
+          ],
           "valid": "DateTime"
         },
         "classification": "",
@@ -277,8 +321,8 @@
               "hasVersion": "Has Version",
               "identifier": "Identifier",
               "isPartOf": "Is Part Of",
-              "isReferencedBy": "Is Replaced By",
-              "isVersionOf": "Is Referenced By",
+              "isReferencedBy": "Is Referenced By",
+              "isVersionOf": "Is Version Of",
               "language": "Language",
               "modified": "Date Modified",
               "provenance": "Provenance",
