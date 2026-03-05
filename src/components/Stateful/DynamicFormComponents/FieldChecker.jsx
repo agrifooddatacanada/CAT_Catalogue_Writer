@@ -16,7 +16,7 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
 
-  const { name, label, required, multiple, children } = field;
+  const { name, label, required, multiple, children, categories } = field;
 
   // multiple + has children → composite multiple
   if (multiple && children && children.length > 0) {
@@ -50,6 +50,27 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
           </Typography>
         </Box>
         <FormInputGroup valuePath={valuePath} />
+      </>
+    );
+  }
+
+  // multiple, categories → multi select checkbox
+  if (multiple && categories && categories.length > 0) {
+    return (
+      <>
+        <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
+          <Typography
+            variant={depth === 0 ? "h6" : "h7"}
+            component="label"
+            sx={{ display: "block" }}
+          >
+            {label || name}
+            {required && !readOnly && (
+              <span style={{ color: "red", marginLeft: 4 }}>*</span>
+            )}
+          </Typography>
+        </Box>
+        <FormInputSingle valuePath={valuePath} depth={depth} />
       </>
     );
   }
