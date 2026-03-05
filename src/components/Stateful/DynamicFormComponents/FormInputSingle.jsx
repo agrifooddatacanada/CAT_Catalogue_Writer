@@ -6,14 +6,17 @@ import React, {
   useState,
 } from "react";
 import {
-  TextField,
-  Chip,
   Box,
-  Select,
-  MenuItem,
+  Checkbox,
+  Chip,
   FormControl,
-  Typography,
+  FormControlLabel,
+  FormGroup,
   Link,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -27,10 +30,17 @@ import {
   selectFieldByPath,
   selectFieldValue,
   selectFormatPatterns,
+  selectFormValueByPrefix,
+  selectInstanceCount,
 } from "../../../store/selectors/formSelectors";
 import { removeIndices } from "../../../utils/removeIndices";
 import { getValidationError } from "../../../utils/validationUtils";
 import { selectMode } from "../../../store/slices/modeSlice";
+import {
+  incrementInstanceCount,
+  decrementInstanceCount,
+} from "../../../store/slices/instanceCountsSlice";
+import { removeFieldValue } from "../../../store/slices/formValueSlice";
 
 const FormInputSingle = ({ valuePath, depth = 0 }) => {
   const { t } = useTranslation(); // use translation function
@@ -38,15 +48,6 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
 
   const fieldPath = removeIndices(valuePath);
   const field = useSelector(selectFieldByPath(fieldPath));
-  const value = useSelector(selectFieldValue(valuePath)) || "";
-  const formatPatterns = useSelector(selectFormatPatterns); // Get format patterns
-  const depFormatPatterns = useSelector(selectDepFormatPatterns);
-
-  const mode = useSelector(selectMode);
-  const readOnly = mode === "view";
-  // console.log("mode:", mode, "| readOnly:", readOnly);
-
-  const [touched, setTouched] = useState(false);
 
   const {
     name,
@@ -58,6 +59,60 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     multiple,
     categories,
   } = field;
+
+  const instanceCount = useSelector(selectInstanceCount(fieldPath)) || 0;
+  const fieldValues = useSelector(selectFormValueByPrefix(fieldPath));
+
+  // Compute existing values (same exact logic)
+  const existingValues = Array.from({ length: instanceCount }).map(
+    (_, index) => {
+      const key = `${fieldPath}[${index}]`;
+      return fieldValues[key];
+    },
+  );
+
+  const handleDelete = useCallback(
+    (indexToDelete) => {
+      // EXACT SAME LOGIC as FormInputMultiple
+      for (let i = indexToDelete + 1; i < instanceCount; i++) {
+        const fromKey = `${fieldPath}[${i}]`;
+        const toKey = `${fieldPath}[${i - 1}]`;
+        const fromValue = fieldValues[fromKey];
+        if (fromValue !== undefined && fromValue !== null && fromValue !== "") {
+          dispatch(setFieldValue({ path: toKey, value: fromValue }));
+        } else {
+          dispatch(removeFieldValue(toKey));
+        }
+      }
+      if (instanceCount > 0) {
+        const lastKey = `${fieldPath}[${instanceCount - 1}]`;
+        dispatch(removeFieldValue(lastKey));
+      }
+      dispatch(decrementInstanceCount(fieldPath));
+    },
+    [dispatch, fieldPath, fieldValues, instanceCount],
+  );
+
+  // const value = useSelector(selectFieldValue(valuePath)) || "";
+  const rawValue = useSelector(selectFieldValue(valuePath));
+  const value = useMemo(() => {
+    if (rawValue === undefined || rawValue === null) {
+      return multiple ? [] : "";
+    }
+    if (multiple) {
+      return Array.isArray(rawValue) ? rawValue : [rawValue];
+    }
+    return rawValue;
+  }, [rawValue, multiple]);
+
+  const formatPatterns = useSelector(selectFormatPatterns); // Get format patterns
+  const depFormatPatterns = useSelector(selectDepFormatPatterns);
+
+  const mode = useSelector(selectMode);
+  const readOnly = mode === "view";
+  // console.log("mode:", mode, "| readOnly:", readOnly);
+
+  const [touched, setTouched] = useState(false);
 
   const validationError = useMemo(
     () =>
@@ -75,7 +130,12 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
   // Only show error text after the field has been touched
   const showError = touched && !!validationError;
 
-  const errorProps = showError
+  // const errorProps = showError
+  //   ? { error: true, helperText: validationError }
+  //   : {};
+
+  const fieldErrorProps = showError ? { error: true } : {};
+  const textErrorProps = showError
     ? { error: true, helperText: validationError }
     : {};
 
@@ -210,84 +270,193 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
       )}
 
       {categories && categories.length > 0 ? (
-        readOnly && value.length === 0 ? (
+        !multiple ? (
+          readOnly &&
+          (value.length === 0 || (Array.isArray(value) && value.length > 0)) ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                pl: 1.5,
+                fontStyle: "italic",
+                color: theme.descriptionColor,
+                py: 1.5,
+              }}
+            >
+              {t("no_data")} {label || name}
+            </Box>
+          ) : (
+            <FormControl fullWidth {...fieldErrorProps}>
+              <Select
+                disabled={readOnly}
+                sx={
+                  readOnly
+                    ? {
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "white", // border color always white
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "white", // prevent hover changing border color
+                        },
+                        "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "white", // disabled state border color white
+                        },
+                        "& .MuiSelect-select.Mui-disabled": {
+                          WebkitTextFillColor: "black", // disabled text color
+                        },
+                      }
+                    : {}
+                }
+                value={value}
+                displayEmpty
+                onChange={(e) => onChange(valuePath, e.target.value)}
+                onBlur={handleBlur}
+                // {...errorProps}
+                // multiple={isMulti}
+                renderValue={(selected) => {
+                  if (!Array.isArray(selected)) {
+                    return (
+                      selected || (
+                        <em>
+                          {t("forminputsingle.select")} {label}
+                        </em>
+                      )
+                    );
+                  }
+                  if (selected.length === 0) {
+                    return (
+                      <em>
+                        {t("forminputsingle.select")} {label}
+                      </em>
+                    );
+                  }
+                  return (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {selected.map((val) => (
+                        <Chip key={val} label={val} size="small" />
+                      ))}
+                    </Box>
+                  );
+                }}
+              >
+                {!required && (
+                  <MenuItem value="">
+                    <em>{t("forminputsingle.none")}</em>
+                  </MenuItem>
+                )}
+                {categories.map((option) => {
+                  const code = option.split(" ")[0];
+                  return (
+                    <MenuItem key={code} value={code}>
+                      {option}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+
+              {showError && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  sx={{ mt: 0.5, ml: 1 }}
+                >
+                  {validationError}
+                </Typography>
+                // <FormHelperText error>{validationError}</FormHelperText>
+              )}
+            </FormControl>
+          )
+        ) : readOnly && instanceCount === 0 ? (
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
               pl: 1.5,
+              py: 1.5,
               fontStyle: "italic",
               color: theme.descriptionColor,
-              py: 1.5,
             }}
           >
             {t("no_data")} {label || name}
           </Box>
         ) : (
-          <FormControl fullWidth {...errorProps}>
-            <Select
-              disabled={readOnly}
-              sx={
-                readOnly
-                  ? {
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "white", // border color always white
-                      },
-                      "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "white", // prevent hover changing border color
-                      },
-                      "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "white", // disabled state border color white
-                      },
-                      "& .MuiSelect-select.Mui-disabled": {
-                        WebkitTextFillColor: "black", // disabled text color
-                      },
-                    }
-                  : {}
-              }
-              value={value}
-              displayEmpty
-              onChange={(e) => onChange(valuePath, e.target.value)}
-              onBlur={handleBlur}
-              {...errorProps}
-              multiple={multiple}
-              renderValue={(selected) =>
-                multiple ? (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                    {selected.map((val) => (
-                      <Chip key={val} label={val} />
-                    ))}
-                  </Box>
-                ) : (
-                  selected || (
-                    <em>
-                      {t("forminputsingle.select")} {label}
-                    </em>
-                  )
-                )
-              }
-            >
-              {!required && (
-                <MenuItem value="">
-                  <em>{t("forminputsingle.none")}</em>
-                </MenuItem>
-              )}
-              {categories.map((option) => {
-                const code = option.split(" ")[0];
-                return (
-                  <MenuItem key={code} value={code}>
-                    {option}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-            {/* {errorProps && (
-              <FormHelperText error>{validationError}</FormHelperText>
-            )} */}
-          </FormControl>
+          <Box sx={{ mt: depth === 0 ? 1 : 0 }}>
+            {!readOnly && (
+              <FormControl fullWidth {...fieldErrorProps} sx={{ p: 1 }}>
+                <FormGroup>
+                  {categories.map((option) => {
+                    const code = option.split(" ")[0];
+
+                    // Check if ANY instance has this code
+                    const isChecked = existingValues.includes(code);
+
+                    return (
+                      <FormControlLabel
+                        key={code}
+                        control={
+                          <Checkbox
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+
+                              if (checked) {
+                                // ADD: new instance with this code
+                                const newIndex = instanceCount;
+                                const newPath = `${valuePath}[${newIndex}]`;
+                                dispatch(
+                                  setFieldValue({ path: newPath, value: code }),
+                                );
+                                dispatch(incrementInstanceCount(fieldPath));
+                              } else {
+                                // REMOVE: find & delete instance with this code
+                                const indexToDelete =
+                                  existingValues.indexOf(code);
+                                if (indexToDelete !== -1) {
+                                  handleDelete(indexToDelete);
+                                }
+                              }
+                            }}
+                            disabled={readOnly}
+                            size="small"
+                          />
+                        }
+                        label={option}
+                        sx={{
+                          m: 0,
+                          "& .MuiFormControlLabel-label": readOnly
+                            ? { color: "black" }
+                            : { color: "inherit" },
+                        }}
+                      />
+                    );
+                  })}
+                </FormGroup>
+
+                {showError && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ mt: 0.5, ml: 1 }}
+                  >
+                    {validationError}
+                  </Typography>
+                )}
+              </FormControl>
+            )}
+
+            {/* Read-only: Show selected chips */}
+            {readOnly && existingValues.length > 0 && (
+              <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                {existingValues.map((val, index) => (
+                  <Chip key={`${val}-${index}`} label={val} />
+                ))}
+              </Box>
+            )}
+          </Box>
         )
       ) : type.includes("DateTime") ? (
-        readOnly && value.length === 0 ? (
+        readOnly &&
+        (value.length === 0 || (Array.isArray(value) && value.length === 0)) ? (
           <Box
             sx={{
               display: "inline-block",
@@ -383,7 +552,8 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
             />
           </LocalizationProvider>
         )
-      ) : readOnly && value.length === 0 ? (
+      ) : readOnly &&
+        (value.length === 0 || (Array.isArray(value) && value.length === 0)) ? (
         <Box
           sx={{
             display: "inline-block",
@@ -424,7 +594,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
           placeholder={placeholder || `${t("forminputsingle.enter")} ${label}`}
           onChange={(e) => onChange(valuePath, e.target.value)}
           onBlur={handleBlur}
-          {...errorProps}
+          {...textErrorProps}
         />
       )}
       {/* {validationError && !readOnly && (
