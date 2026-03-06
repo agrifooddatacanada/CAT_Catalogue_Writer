@@ -385,7 +385,11 @@ function HomePage() {
           {/* Upload button - enabled when any schema is selected */}
           <UploadButton
             onFileSelect={handleFileSelect}
-            upload_file={t("homepage.upload_file")}
+            upload_file={
+              hasUploadedFile
+                ? "Click to upload a different Catalogue Record or drag and drop one (.json file)"
+                : t("homepage.upload_file")
+            }
           />
           <Box sx={{ width: "100%", mb: 3 }}>
             {hasUploadedFile && (
