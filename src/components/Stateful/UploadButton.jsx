@@ -3,10 +3,12 @@ import FileUploadIcon from "@mui/icons-material/FileUpload";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import Button from "@mui/material/Button";
 import theme from "../../theme";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectIsUploaded } from "../../store/slices/uploadFileSlice";
+import { setSchemaName } from "../../store/slices/fieldSchemaSlice";
 
 export default function UploadButton({ onFileSelect, upload_file }) {
+  const dispatch = useDispatch();
   const [dragOver, setDragOver] = useState(false);
 
   // const [isUploaded, setIsUploaded] = useState(false);
@@ -21,6 +23,7 @@ export default function UploadButton({ onFileSelect, upload_file }) {
   }, [isUploaded]);
 
   const handleFileChange = (event) => {
+    dispatch(setSchemaName(""));
     const files = event.target.files;
     if (files && files.length > 0) {
       onFileSelect(files);

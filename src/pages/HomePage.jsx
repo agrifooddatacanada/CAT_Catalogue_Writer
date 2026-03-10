@@ -87,6 +87,7 @@ function HomePage() {
 
   //
   const handleFileSelect = (files) => {
+    dispatch(setSchemaName(""));
     const file = files[0];
     const reader = new FileReader();
 
