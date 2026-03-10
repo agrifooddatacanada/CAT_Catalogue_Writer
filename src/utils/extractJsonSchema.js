@@ -1,11 +1,10 @@
 // Map schema name -> file name
 const fileMap = {
   OpenAIRE: "./OpenAIRE_OCA_package.json",
-  "Dublin Core (Repository-specific) [Test]":
+  "Dublin Core (Repository-specific)":
     "./Dublin_Core_Repository_OCA_package.json",
-  "Dublin Core (Project-specific) [Test]":
-    "./Dublin_Core_Project_OCA_package.json",
-  "DataCite [Test]": "./DataCite_OCA_package.json",
+  "Dublin Core (Project-specific)": "./Dublin_Core_Project_OCA_package.json",
+  DataCite: "./DataCite_OCA_package.json",
 };
 
 export async function extractJsonSchemaAsync(schema) {
