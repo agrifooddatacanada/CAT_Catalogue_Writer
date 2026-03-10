@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {};
+// const initialState = {};
 
 const fieldSchema = createSlice({
   name: "fieldSchema",
@@ -23,7 +23,12 @@ const fieldSchema = createSlice({
     setDepFormatPatterns: (state, action) => {
       state.depFormatPatterns = action.payload;
     },
-    resetFieldSchemas: () => initialState,
+    resetFieldSchemas: (state) => {
+      state.schemaName = "";
+      state.fields = {};
+      state.formatPatterns = {};
+      state.depFormatPatterns = {};
+    },
   },
 });
 
@@ -32,5 +37,6 @@ export const {
   setSchemaName,
   setDepFormatPatterns,
   setFormatPatterns,
+  resetFieldSchemas,
 } = fieldSchema.actions;
 export default fieldSchema.reducer;

@@ -3,6 +3,7 @@ import formValues from "./slices/formValueSlice";
 import fieldSchema from "./slices/fieldSchemaSlice";
 import instanceCounts from "./slices/instanceCountsSlice";
 import mode from "./slices/modeSlice";
+import uploadFile from "./slices/uploadFileSlice";
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     formValues,
     instanceCounts,
     mode,
+    uploadFile,
   },
 });
 

@@ -1,18 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import Button from "@mui/material/Button";
 import theme from "../../theme";
+import { useSelector } from "react-redux";
+import { selectIsUploaded } from "../../store/slices/uploadFileSlice";
 
 export default function UploadButton({ onFileSelect, upload_file }) {
   const [dragOver, setDragOver] = useState(false);
-  const [isUploaded, setIsUploaded] = useState(false);
+
+  // const [isUploaded, setIsUploaded] = useState(false);
+  const isUploaded = useSelector(selectIsUploaded);
+  const fileInputRef = useRef(null); // Ref to reset input
+
+  // Reset file input when upload is cancelled
+  useEffect(() => {
+    if (!isUploaded && fileInputRef.current) {
+      fileInputRef.current.value = ""; // Clear the cached file
+    }
+  }, [isUploaded]);
 
   const handleFileChange = (event) => {
     const files = event.target.files;
     if (files && files.length > 0) {
       onFileSelect(files);
-      setIsUploaded(true);
     }
   };
 
@@ -32,7 +43,6 @@ export default function UploadButton({ onFileSelect, upload_file }) {
     const files = event.dataTransfer.files;
     if (files && files.length > 0) {
       onFileSelect(files);
-      setIsUploaded(true);
       event.dataTransfer.clearData();
     }
   };
@@ -79,7 +89,13 @@ export default function UploadButton({ onFileSelect, upload_file }) {
       startIcon={isUploaded ? <FileDownloadDoneIcon /> : <FileUploadIcon />}
     >
       {upload_file}
-      <input type="file" accept=".json" hidden onChange={handleFileChange} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        hidden
+        onChange={handleFileChange}
+      />
     </Button>
   );
 }
