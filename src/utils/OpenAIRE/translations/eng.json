@@ -21,11 +21,19 @@
     "accordion_summary_3": "3. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.",
     "quick_links": "Quick Links",
     "select_schema": "Select a Schema to Proceed",
-    "write": "Write a Catalogue Record",
+    "write": "Write a Record",
     "upload_file": "Upload a previous Catalogue Record or drag and drop one (.json file)",
+    "upload_different": "Click to upload a different Catalogue Record or drag and drop one (.json file)",
     "file_uploaded": "File uploaded: ",
-    "view": "View Catalogue Record",
-    "edit": "Edit Catalogue Record"
+    "clear_upload": "Clear Upload & Start Over",
+    "view": "View Record",
+    "edit": "Edit Record",
+    "file_select_no_schema_detected": "Could not detect schema from the uploaded file. Please select it manually.",
+    "file_select_invalid_json": "Invalid JSON file.",
+    "view_click_no_content": "No JSON content loaded.",
+    "view_click_no_schemaId": "Schema not detected yet. Please upload a JSON-LD file with @schema_id or select a schema.",
+    "edit_click_no_content": "No JSON content loaded.",
+    "edit_click_no_schemaId": "Schema not detected yet. Please upload a JSON-LD file with @schema_id or select a schema."
   },
   "formpage": {
     "edit_header": "Edit Catalogue Record",
