@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Stack, Box } from "@mui/system";
+import { Stack, Box, margin } from "@mui/system";
 import {
   Button,
   FormControl,
   FormHelperText,
   MenuItem,
   Select,
+  Typography,
 } from "@mui/material";
 import AccordionExpand from "../components/Stateless/Accordion";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
@@ -22,8 +23,9 @@ import {
   setSchemaName,
   setDepFormatPatterns,
   setFormatPatterns,
+  resetFieldSchemas,
 } from "../store/slices/fieldSchemaSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { extractJsonSchemaAsync } from "../utils/extractJsonSchema";
 import { setInitialFormState } from "../store/slices/formValueSlice.js";
 import { buildInstanceCountsFromValues } from "../utils/instanceCounts";
@@ -35,25 +37,48 @@ import { serializeRegexPatterns } from "../utils/regexUtils.js";
 import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths.js";
 import { setMode } from "../store/slices/modeSlice.js";
 import { getSchemaFromId } from "../utils/schemaContextMapping.js";
+import {
+  resetUploaded,
+  selectIsUploaded,
+  setIsUploaded,
+} from "../store/slices/uploadFileSlice.js";
+import { selectSchemaName } from "../store/selectors/formSelectors.js";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
   const [jsonContent, setJsonContent] = useState(null);
-  const [schema, setSchema] = useState("");
+
+  // const [schema, setSchema] = useState("");
+  const schema = useSelector(selectSchemaName);
+  const isUploaded = useSelector(selectIsUploaded);
+  const isSchemaSelected = !!schema;
+  // const hasUploadedFile = !!uploadedFiles;
+  const hasUploadedFile = isUploaded;
+
+  const [schemaLocked, setSchemaLocked] = useState(false); // true when schema came from @schema_id
   const navigate = useNavigate();
   const { t } = useTranslation(); // use translation function
   const dispatch = useDispatch();
 
-  const [schemaLocked, setSchemaLocked] = useState(false); // true when schema came from @schema_id
+  // RESET on mount/return to HomePage
+  useEffect(() => {
+    // Reset Redux upload state
+    dispatch(resetUploaded());
 
-  const isSchemaSelected = !!schema;
-  const hasUploadedFile = !!uploadedFiles;
+    // Reset fieldSchema upload state
+    dispatch(resetFieldSchemas());
+
+    // Reset local state
+    setJsonContent(null);
+    setUploadedFiles(null);
+    setSchemaLocked(false);
+  }, [dispatch]); // empty deps = run once on mount
 
   //
   const handleSchemaSelect = (e) => {
     const value = e.target.value;
 
-    setSchema(value);
+    // setSchema(value);
     dispatch(setSchemaName(value));
 
     // This is a manual schema choice, so it should not be "locked by file"
@@ -73,6 +98,8 @@ function HomePage() {
         setJsonContent(jsonData);
         setUploadedFiles(files);
 
+        dispatch(setIsUploaded(true)); // mark as uploaded globally
+
         // 1) Read `@schema_id` from the uploaded JSON-LD
         const schemaId = jsonData["@schema_id"];
 
@@ -81,29 +108,43 @@ function HomePage() {
 
         if (detectedSchema) {
           // Case 1: file HAS @schema_id
-          setSchema(detectedSchema);
+          // setSchema(detectedSchema);
           dispatch(setSchemaName(detectedSchema));
           setSchemaLocked(true);
         } else {
           // Case 2: file has NO @schema_id
-          alert(
-            "Could not detect schema from the uploaded file. Please select it manually.",
-          );
+          alert(t("homepage.file_select_no_schema_detected"));
           // Do NOT touch existing schema; user might already have selected it
           setSchemaLocked(false); // user can choose schema from the menu
         }
       } catch (err) {
         console.error(err);
-        alert("Invalid JSON file");
+        alert(t("homepage.file_select_invalid_json"));
         setJsonContent(null);
         setUploadedFiles(null);
-        setSchema("");
+        // setSchema("");
         dispatch(setSchemaName(""));
         setSchemaLocked(false);
+        dispatch(setIsUploaded(false));
       }
     };
 
     reader.readAsText(file);
+  };
+
+  //
+  const handleCancelUpload = () => {
+    // Clear content and file
+    setJsonContent(null);
+    setUploadedFiles(null);
+
+    // Reset Redux upload state
+    dispatch(resetUploaded());
+
+    // Reset fieldSchema upload state
+    dispatch(resetFieldSchemas());
+
+    setSchemaLocked(false);
   };
 
   // FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
@@ -156,9 +197,9 @@ function HomePage() {
     // Return route WITH schema param
     const routeMap = {
       OpenAIRE: "/form",
-      "Dublin Core (Repository-specific) [Test]": "/form-dublincore-repository",
-      "Dublin Core (Project-specific) [Test]": "/form-dublincore-project",
-      "DataCite [Test]": "/form-datacite",
+      "Dublin Core (Repository-specific)": "/form-dublincore-repository",
+      "Dublin Core (Project-specific)": "/form-dublincore-project",
+      DataCite: "/form-datacite",
     };
 
     const baseRoute = routeMap[schema] || "/form";
@@ -175,13 +216,11 @@ function HomePage() {
   //
   const handleViewClick = async () => {
     if (!jsonContent) {
-      alert("No JSON content loaded.");
+      alert(t("homepage.view_click_no_content"));
       return;
     }
     if (!schema) {
-      alert(
-        "Schema not detected yet. Please upload a JSON-LD file with @schema_id or select a schema.",
-      );
+      alert(t("homepage.view_click_no_schemaId"));
       return;
     }
 
@@ -208,13 +247,11 @@ function HomePage() {
   //
   const handleEditClick = async () => {
     if (!jsonContent) {
-      alert("No JSON content loaded.");
+      alert(t("homepage.edit_click_no_content"));
       return;
     }
     if (!schema) {
-      alert(
-        "Schema not detected yet. Please upload a JSON-LD file with @schema_id or select a schema.",
-      );
+      alert(t("homepage.edit_click_no_schemaId"));
       return;
     }
 
@@ -341,18 +378,18 @@ function HomePage() {
                   <em>None</em>
                 </MenuItem>
                 <MenuItem value="OpenAIRE">OpenAIRE</MenuItem>
-                <MenuItem value="Dublin Core (Repository-specific) [Test]">
-                  Dublin Core (Repository-specific) [Test]
+                <MenuItem value="Dublin Core (Repository-specific)">
+                  Dublin Core (Repository-specific)
                 </MenuItem>
-                <MenuItem value="Dublin Core (Project-specific) [Test]">
-                  Dublin Core (Project-specific) [Test]
+                <MenuItem value="Dublin Core (Project-specific)">
+                  Dublin Core (Project-specific)
                 </MenuItem>
-                <MenuItem value="DataCite [Test]">DataCite [Demo]</MenuItem>
+                <MenuItem value="DataCite">DataCite</MenuItem>
               </Select>
             </FormControl>
           </Box>
 
-          {/* Write link - enabled when any schema is selected */}
+          {/* Write link - enabled when any schema is selected AND no uploaded file */}
           {isSchemaSelected && !hasUploadedFile && (
             <Box
               component={Link}
@@ -385,69 +422,113 @@ function HomePage() {
           {/* Upload button - enabled when any schema is selected */}
           <UploadButton
             onFileSelect={handleFileSelect}
-            upload_file={t("homepage.upload_file")}
+            upload_file={
+              hasUploadedFile
+                ? t("homepage.upload_different")
+                : t("homepage.upload_file")
+            }
           />
-          <Box sx={{ width: "100%", mb: 3 }}>
-            {hasUploadedFile && (
-              <p>
+
+          <Box sx={{ width: "100%", mb: 2 }}>
+            {hasUploadedFile && uploadedFiles?.[0]?.name && (
+              <Typography
+                sx={{
+                  whiteSpace: "normal",
+                  overflowWrap: "anywhere",
+                  wordWrap: "break-word",
+                  wordBreak: "break-word",
+                  margin: 1,
+                }}
+              >
                 {t("homepage.file_uploaded")}
                 {uploadedFiles[0].name}
-              </p>
+              </Typography>
             )}
           </Box>
 
+          {hasUploadedFile && (
+            <Button
+              variant="contained"
+              onClick={handleCancelUpload}
+              sx={{
+                mb: 1,
+                width: "50%",
+                backgroundColor: "red",
+                "&:hover": {
+                  backgroundColor: "red",
+                },
+                boxShadow: undefined,
+                cursor: "pointer",
+              }}
+            >
+              {t("homepage.clear_upload")}
+            </Button>
+          )}
+
+          {hasUploadedFile && isSchemaSelected && (
+            <hr
+              style={{
+                width: "80%",
+                border: `1px ${theme.primaryColor} solid`,
+                marginBottom: 20,
+              }}
+            />
+          )}
+
           {/* View and Edit buttons - only enabled when files uploaded */}
-          <Stack
-            direction="column"
-            spacing={2}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Button
-              variant="contained"
-              disabled={!hasUploadedFile || !isSchemaSelected}
-              onClick={handleViewClick}
-              sx={{
-                width: "75%",
-                backgroundColor:
-                  hasUploadedFile && isSchemaSelected
-                    ? theme.primaryColor
-                    : "rgba(255, 255, 255, 0.25)",
-                "&:hover": {
-                  backgroundColor: theme.primaryColor,
-                },
-                color: hasUploadedFile && isSchemaSelected ? "white" : "gray",
-                boxShadow:
-                  hasUploadedFile && isSchemaSelected ? undefined : "none",
-                cursor:
-                  hasUploadedFile && isSchemaSelected ? "pointer" : "default",
-              }}
+          {hasUploadedFile && isSchemaSelected && (
+            <Stack
+              direction="column"
+              spacing={2}
+              justifyContent="center"
+              alignItems="center"
             >
-              {t("homepage.view")}
-            </Button>
-            <Button
-              variant="contained"
-              disabled={!hasUploadedFile || !isSchemaSelected}
-              onClick={handleEditClick}
-              sx={{
-                width: "75%",
-                backgroundColor:
-                  hasUploadedFile && isSchemaSelected
-                    ? theme.primaryColor
-                    : "rgba(255, 255, 255, 0.25)",
-                "&:hover": {
-                  backgroundColor: theme.primaryColor,
-                },
-                color: hasUploadedFile && isSchemaSelected ? "white" : "gray",
-                boxShadow:
-                  hasUploadedFile && isSchemaSelected ? undefined : "none",
-                cursor:
-                  hasUploadedFile && isSchemaSelected ? "pointer" : "default",
-              }}
-            >
-              {t("homepage.edit")}
-            </Button>
-          </Stack>
+              <Button
+                variant="contained"
+                disabled={!hasUploadedFile || !isSchemaSelected}
+                onClick={handleViewClick}
+                sx={{
+                  width: "75%",
+                  backgroundColor:
+                    hasUploadedFile && isSchemaSelected
+                      ? theme.primaryColor
+                      : "rgba(255, 255, 255, 0.25)",
+                  "&:hover": {
+                    backgroundColor: theme.primaryColor,
+                  },
+                  color: hasUploadedFile && isSchemaSelected ? "white" : "gray",
+                  boxShadow:
+                    hasUploadedFile && isSchemaSelected ? undefined : "none",
+                  cursor:
+                    hasUploadedFile && isSchemaSelected ? "pointer" : "default",
+                }}
+              >
+                {t("homepage.view")}
+              </Button>
+              <Button
+                variant="contained"
+                disabled={!hasUploadedFile || !isSchemaSelected}
+                onClick={handleEditClick}
+                sx={{
+                  width: "75%",
+                  backgroundColor:
+                    hasUploadedFile && isSchemaSelected
+                      ? theme.primaryColor
+                      : "rgba(255, 255, 255, 0.25)",
+                  "&:hover": {
+                    backgroundColor: theme.primaryColor,
+                  },
+                  color: hasUploadedFile && isSchemaSelected ? "white" : "gray",
+                  boxShadow:
+                    hasUploadedFile && isSchemaSelected ? undefined : "none",
+                  cursor:
+                    hasUploadedFile && isSchemaSelected ? "pointer" : "default",
+                }}
+              >
+                {t("homepage.edit")}
+              </Button>
+            </Stack>
+          )}
         </Box>
       </Stack>
       <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />

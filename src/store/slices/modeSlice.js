@@ -11,11 +11,11 @@ const modeSlice = createSlice({
     setMode: (state, action) => {
       state.mode = action.payload; // "view" or "edit"
     },
-    // Optional: toggle
+    // Toggle
     toggleMode: (state) => {
       state.mode = state.mode === "view" ? "edit" : "view";
     },
-    // Optional: reset to default
+    // Reset to default
     resetMode: (state) => {
       state.mode = initialState.mode;
     },
