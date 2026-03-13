@@ -110,7 +110,6 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
 
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
-  // console.log("mode:", mode, "| readOnly:", readOnly);
 
   const [touched, setTouched] = useState(false);
 
@@ -345,7 +344,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                   </MenuItem>
                 )}
                 {categories.map((option) => {
-                  const code = option.split(" ")[0];
+                  const code = option.split(" (")[0];
                   return (
                     <MenuItem key={code} value={code}>
                       {option}
@@ -385,7 +384,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               <FormControl fullWidth {...fieldErrorProps} sx={{ p: 1 }}>
                 <FormGroup>
                   {categories.map((option) => {
-                    const code = option.split(" ")[0];
+                    const code = option.split(" (")[0];
 
                     // Check if ANY instance has this code
                     const isChecked = existingValues.includes(code);
