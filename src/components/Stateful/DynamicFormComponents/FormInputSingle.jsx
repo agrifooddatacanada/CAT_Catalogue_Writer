@@ -60,6 +60,8 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     categories,
   } = field;
 
+  console.log("categories:", categories);
+
   const instanceCount = useSelector(selectInstanceCount(fieldPath)) || 0;
   const fieldValues = useSelector(selectFormValueByPrefix(fieldPath));
 
@@ -345,7 +347,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                   </MenuItem>
                 )}
                 {categories.map((option) => {
-                  const code = option.split(" ")[0];
+                  const code = option.split(" (")[0];
                   return (
                     <MenuItem key={code} value={code}>
                       {option}
@@ -385,7 +387,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               <FormControl fullWidth {...fieldErrorProps} sx={{ p: 1 }}>
                 <FormGroup>
                   {categories.map((option) => {
-                    const code = option.split(" ")[0];
+                    const code = option.split(" (")[0];
 
                     // Check if ANY instance has this code
                     const isChecked = existingValues.includes(code);
