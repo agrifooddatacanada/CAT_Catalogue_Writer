@@ -60,8 +60,6 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     categories,
   } = field;
 
-  console.log("categories:", categories);
-
   const instanceCount = useSelector(selectInstanceCount(fieldPath)) || 0;
   const fieldValues = useSelector(selectFormValueByPrefix(fieldPath));
 
@@ -112,7 +110,6 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
 
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
-  // console.log("mode:", mode, "| readOnly:", readOnly);
 
   const [touched, setTouched] = useState(false);
 
