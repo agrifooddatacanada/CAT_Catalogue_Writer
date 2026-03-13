@@ -201,6 +201,7 @@ function HomePage() {
       "Dublin Core (Repository-specific)": "/form-dublincore-repository",
       "Dublin Core (Project-specific)": "/form-dublincore-project",
       DataCite: "/form-datacite",
+      "DCAT [Demo]": "/form-dcat-demo",
     };
 
     const baseRoute = routeMap[schema] || "/form";
@@ -386,6 +387,7 @@ function HomePage() {
                   Dublin Core (Project-specific)
                 </MenuItem>
                 <MenuItem value="DataCite">DataCite</MenuItem>
+                <MenuItem value="DCAT [Demo]">DCAT [Demo]</MenuItem>
               </Select>
             </FormControl>
           </Box>
