@@ -4,6 +4,7 @@ export const SCHEMA_CONTEXT_MAP = {
   "Dublin Core (Repository-specific)": "http://purl.org/dc/elements/1.1/",
   "Dublin Core (Project-specific)": "http://purl.org/dc/elements/1.1/",
   DataCite: "https://schema.datacite.org/",
+  "DCAT [Demo]": "http://purl.org/dc/terms/",
 };
 
 export const SCHEMA_ID_MAP = {
@@ -13,6 +14,7 @@ export const SCHEMA_ID_MAP = {
   "Dublin Core (Project-specific)":
     "EJ4icsxrpbxRHy0Eo_zHMB9_kTkrZ4hmT7r4CKLtL41_",
   DataCite: "####digest_of_oca_datacite_package####",
+  "DCAT [Demo]": "EFyyq7pbgewSwaeAZlBKl4Zk2nciNTfB2CpnEjphcnQ8",
 };
 
 export const getContextUrl = (schema) => {
