@@ -18,6 +18,7 @@ function App() {
           <Route path="/form-dublincore-project" element={<FormPage />} />
           <Route path="/form-datacite" element={<FormPage />} />
           <Route path="/form-dcat-demo" element={<FormPage />} />
+          <Route path="/form-project-raid-inspired" element={<FormPage />} />
           <Route path="/view" element={<ViewPage />} />
           <Route path="/view-help" element={<ViewHelpPage />} />
           <Route path="/form-help" element={<FormHelpPage />} />

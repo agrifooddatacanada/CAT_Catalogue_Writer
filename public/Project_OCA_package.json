@@ -1,0 +1,129 @@
+{
+  "d": "EOCArfeoEEQCo2HU7zuSAlqEevTxMLgg0-qgcTsp3BIP",
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "bundle": {
+      "v": "OCAS11JSON0009a1_",
+      "d": "EJ2BS57yocNR7EtGSTp-zrrpxzdKAOyQ16EvpIXtg0vR",
+      "capture_base": {
+        "d": "EHlB6DizC2kTWdP8Vg4epINhppV89w25VwA81b3M1lts",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "contributor": [
+            "Text"
+          ],
+          "description": "Text",
+          "endDate": "DateTime",
+          "identifier": "Text",
+          "startDate": "DateTime",
+          "title": "Text"
+        },
+        "classification": "",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "cardinality": {
+          "d": "EL_hCFqHDppHz-Su3AGSc_V7VrHNzrnbJw97DYNu1rXV",
+          "capture_base": "EHlB6DizC2kTWdP8Vg4epINhppV89w25VwA81b3M1lts",
+          "type": "spec/overlays/cardinality/1.1",
+          "attribute_cardinality": {
+            "contributor": "1-"
+          }
+        },
+        "conformance": {
+          "d": "EJ0H4mLkw_JgEZhUS1LMu8CMuO5bl_t0xxhxRUYwTE5p",
+          "capture_base": "EHlB6DizC2kTWdP8Vg4epINhppV89w25VwA81b3M1lts",
+          "type": "spec/overlays/conformance/1.1",
+          "attribute_conformance": {
+            "contributor": "M",
+            "description": "O",
+            "endDate": "O",
+            "identifier": "M",
+            "startDate": "M",
+            "title": "M"
+          }
+        },
+        "format": {
+          "d": "EPax9Q2P-IB5lvgago7avjniZ3bSTDluFQjXTyXnGYXp",
+          "capture_base": "EHlB6DizC2kTWdP8Vg4epINhppV89w25VwA81b3M1lts",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "description": "^.{0,4000}$",
+            "endDate": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "startDate": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "title": "^.{0,50}$"
+          }
+        },
+        "information": [
+          {
+            "d": "EFLtv0EZMk4IVY_-kpUHdLClvkXZ4ZxF6WLnqBEK8nwN",
+            "capture_base": "EHlB6DizC2kTWdP8Vg4epINhppV89w25VwA81b3M1lts",
+            "type": "spec/overlays/information/1.1",
+            "language": "eng",
+            "attribute_information": {
+              "contributor": "The contributor (person) associated with a project.",
+              "description": "A project description that may include any additional information not captured by other metadata properties.",
+              "endDate": "The project’s end date.",
+              "identifier": "An unique alphanumeric character string that identifies the project.",
+              "startDate": "The project’s start date.",
+              "title": "A name or title by which the project is known."
+            }
+          }
+        ],
+        "label": [
+          {
+            "d": "EKlhnpF3VgXR-IkH-tkH5WbBpZxjgsi_tavw_e1VMVSR",
+            "capture_base": "EHlB6DizC2kTWdP8Vg4epINhppV89w25VwA81b3M1lts",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "contributor": "Contributor",
+              "description": "Description",
+              "endDate": "End Date",
+              "identifier": "Identifier",
+              "startDate": "Start Date",
+              "title": "Title"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EANmryVoo77wkHWNhe8j5jBMhf6U56nSUPKLLIbMMOiV",
+            "capture_base": "EHlB6DizC2kTWdP8Vg4epINhppV89w25VwA81b3M1lts",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "",
+            "name": "Project (RAiD\\-inspired)"
+          }
+        ]
+      }
+    },
+    "dependencies": []
+  },
+  "extensions": {
+    "adc": {
+      "EHlB6DizC2kTWdP8Vg4epINhppV89w25VwA81b3M1lts": {
+        "d": "EJzEkSPiPf7nLv0ygzCc8ApHWxRlBOXeuYT7Qcnr12HA",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "ordering": {
+            "d": "EHCTW_eYVHnWJEWDKVu_ztxWzx9WsHbLbMhByqSqlnh6",
+            "capture_base": "EHlB6DizC2kTWdP8Vg4epINhppV89w25VwA81b3M1lts",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "identifier",
+              "startDate",
+              "endDate",
+              "title",
+              "description",
+              "contributor"
+            ],
+            "entry_code_ordering": {}
+          }
+        }
+      }
+    }
+  }
+}
