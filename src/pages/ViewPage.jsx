@@ -19,7 +19,7 @@ import {
 } from "../store/selectors/formSelectors";
 import { setMode } from "../store/slices/modeSlice";
 import canonicalize from "../utils/canonicalize";
-import { getContextUrl, getSchemaId } from "../utils/schemaContextMapping";
+import { getContextUrl, getSchemaId } from "../utils/schemaMapping";
 
 function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function

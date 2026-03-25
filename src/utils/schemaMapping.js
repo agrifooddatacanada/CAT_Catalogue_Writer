@@ -16,7 +16,7 @@ export const SCHEMA_ID_MAP = {
   "Dublin Core (Project-specific)":
     "EJ4icsxrpbxRHy0Eo_zHMB9_kTkrZ4hmT7r4CKLtL41_",
   DataCite: "####digest_of_oca_datacite_package####",
-  "DCAT [Demo]": "EFyyq7pbgewSwaeAZlBKl4Zk2nciNTfB2CpnEjphcnQ8",
+  "DCAT [Demo]": "EDoo6CH1T3mMPRrPFeyjDuvpb-xdapyqTvFd76OY8BT4",
   "Project (RAiD-inspired)": "EOCArfeoEEQCo2HU7zuSAlqEevTxMLgg0-qgcTsp3BIP",
 };
 
