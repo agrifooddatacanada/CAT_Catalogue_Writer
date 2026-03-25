@@ -27,22 +27,22 @@ import {
 } from "../store/slices/fieldSchemaSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { extractJsonSchemaAsync } from "../utils/extractJsonSchema";
-import { setInitialFormState } from "../store/slices/formValueSlice.js";
+import { setInitialFormState } from "../store/slices/formValueSlice";
 import { buildInstanceCountsFromValues } from "../utils/instanceCounts";
 import {
   setAllInstanceCounts,
   setInstanceCount,
 } from "../store/slices/instanceCountsSlice";
-import { serializeRegexPatterns } from "../utils/regexUtils.js";
-import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths.js";
-import { setMode } from "../store/slices/modeSlice.js";
-import { getSchemaFromId } from "../utils/schemaContextMapping.js";
+import { serializeRegexPatterns } from "../utils/regexUtils";
+import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths";
+import { setMode } from "../store/slices/modeSlice";
+import { getSchemaFromId } from "../utils/schemaMapping";
 import {
   resetUploaded,
   selectIsUploaded,
   setIsUploaded,
-} from "../store/slices/uploadFileSlice.js";
-import { selectSchemaName } from "../store/selectors/formSelectors.js";
+} from "../store/slices/uploadFileSlice";
+import { selectSchemaName } from "../store/selectors/formSelectors";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
