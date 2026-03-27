@@ -202,7 +202,8 @@ function HomePage() {
       "Dublin Core (Project-specific)": "/form-dublincore-project",
       DataCite: "/form-datacite",
       "DCAT [Demo]": "/form-dcat-demo",
-      "Project (RAiD-inspired)": "/form-project-raid-inspired",
+      "Project (Minimal)": "/form-project-minimal",
+      "RAiD (Project)": "/form-raid-project",
     };
 
     const baseRoute = routeMap[schema] || "/form";
@@ -389,9 +390,8 @@ function HomePage() {
                 </MenuItem>
                 <MenuItem value="DataCite">DataCite</MenuItem>
                 <MenuItem value="DCAT [Demo]">DCAT [Demo]</MenuItem>
-                <MenuItem value="Project (RAiD-inspired)">
-                  Project (RAiD-inspired)
-                </MenuItem>
+                <MenuItem value="Project (Minimal)">Project (Minimal)</MenuItem>
+                <MenuItem value="RAiD (Project)">RAiD (Project)</MenuItem>
               </Select>
             </FormControl>
           </Box>

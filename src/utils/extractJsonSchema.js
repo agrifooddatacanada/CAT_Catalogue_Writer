@@ -6,7 +6,8 @@ const fileMap = {
   "Dublin Core (Project-specific)": "./Dublin_Core_Project_OCA_package.json",
   DataCite: "./DataCite_OCA_package.json",
   "DCAT [Demo]": "./cataloguerecord_DCAT.top_OCA_package.json",
-  "Project (RAiD-inspired)": "./Project_OCA_package.json",
+  "Project (Minimal)": "./Project_OCA_package.json",
+  "RAiD (Project)": "./Project_OCA_package.v1.json",
 };
 
 export async function extractJsonSchemaAsync(schema) {
