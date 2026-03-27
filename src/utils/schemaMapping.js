@@ -18,7 +18,7 @@ export const SCHEMA_ID_MAP = {
   DataCite: "####digest_of_oca_datacite_package####",
   "DCAT [Demo]": "EDoo6CH1T3mMPRrPFeyjDuvpb-xdapyqTvFd76OY8BT4",
   "Project (Minimal)": "EOCArfeoEEQCo2HU7zuSAlqEevTxMLgg0-qgcTsp3BIP",
-  "RAiD (Project)": "EHyGYfN7TNAUsfG9cpvC1uqC-RfahoO6TdaYtYw1cH4R",
+  "RAiD (Project)": "EGkYs_vZ1B6Yak0Whyqf8tdxZNg_WrHB8IiwbOqQutYY",
 };
 
 export const getContextUrl = (schema) => {
