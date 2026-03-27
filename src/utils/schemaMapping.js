@@ -5,8 +5,8 @@ export const SCHEMA_CONTEXT_MAP = {
   "Dublin Core (Project-specific)": "http://purl.org/dc/elements/1.1/",
   DataCite: "https://schema.datacite.org/",
   "DCAT [Demo]": "http://purl.org/dc/terms/",
-  "Project (RAiD-inspired)":
-    "https://www.example-schema.com/project-raid-inspired",
+  "Project (Minimal)": "https://www.example-schema.com/project-raid-inspired",
+  "RAiD (Project)": "https://metadata.raid.org/en/v1.6/",
 };
 
 export const SCHEMA_ID_MAP = {
@@ -17,7 +17,8 @@ export const SCHEMA_ID_MAP = {
     "EJ4icsxrpbxRHy0Eo_zHMB9_kTkrZ4hmT7r4CKLtL41_",
   DataCite: "####digest_of_oca_datacite_package####",
   "DCAT [Demo]": "EDoo6CH1T3mMPRrPFeyjDuvpb-xdapyqTvFd76OY8BT4",
-  "Project (RAiD-inspired)": "EOCArfeoEEQCo2HU7zuSAlqEevTxMLgg0-qgcTsp3BIP",
+  "Project (Minimal)": "EOCArfeoEEQCo2HU7zuSAlqEevTxMLgg0-qgcTsp3BIP",
+  "RAiD (Project)": "EHyGYfN7TNAUsfG9cpvC1uqC-RfahoO6TdaYtYw1cH4R",
 };
 
 export const getContextUrl = (schema) => {
