@@ -1,6 +1,6 @@
 import React from "react";
 import FormInputMultiple from "./FormInputMultiple";
-import FormInputGroup from "./FormInputGroup";
+// import FormInputGroup from "./FormInputGroup";
 import FormInputSingle from "./FormInputSingle";
 import { Box, Typography } from "@mui/material";
 import FormInputMultipleChildren from "./FormInputMultipleChildren";
@@ -20,6 +20,7 @@ import { selectPages } from "../../../store/selectors/formSelectors";
 // import theme from "../../../theme";
 // import { setChildFormNavigation } from "../../../store/slices/childFormNavigationSlice";
 import { upsertChildPageMeta } from "../../../store/slices/fieldSchemaSlice";
+import FormInputChildren from "./FormInputChildren";
 
 const FieldChecker = ({ valuePath, depth = 0 }) => {
   const dispatch = useDispatch();
@@ -125,8 +126,41 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
               <span style={{ color: "red", marginLeft: 4 }}>*</span>
             )}
           </Typography>
+
+          <FormInputChildren valuePath={valuePath} />
+
+          {/* {!readOnly && (
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              sx={{
+                color: theme.primaryColor,
+                borderColor: theme.primaryColor,
+                "&:hover": {
+                  borderColor: theme.primaryColor,
+                  backgroundColor: theme.backgroundColor,
+                },
+                mt: 1,
+              }}
+              onClick={handleOpenChildPage}
+            >
+              Add {label || name}
+            </Button>
+          )} */}
+
+          {/* {!readOnly && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<AddIcon />}
+              sx={{ mt: 1 }}
+              onClick={handleOpenLinkedPage}
+            >
+              Add {label || name}
+            </Button>
+          )} */}
         </Box>
-        <FormInputGroup valuePath={valuePath} />
+        {/* <FormInputGroup valuePath={valuePath} /> */}
       </>
     );
   }
