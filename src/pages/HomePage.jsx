@@ -24,6 +24,7 @@ import {
   setDepFormatPatterns,
   setFormatPatterns,
   resetFieldSchemas,
+  setPages,
 } from "../store/slices/fieldSchemaSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { extractJsonSchemaAsync } from "../utils/extractJsonSchema";
@@ -43,6 +44,7 @@ import {
   setIsUploaded,
 } from "../store/slices/uploadFileSlice";
 import { selectSchemaName } from "../store/selectors/formSelectors";
+import { extractPages } from "../utils/extractPages";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
@@ -190,8 +192,10 @@ function HomePage() {
       extractAttributes(jsonSchema);
     // Enrich fields with paths BEFORE dispatching
     const enrichedFields = enrichFieldsWithPaths(fields);
+    const pages = extractPages(jsonSchema, enrichedFields);
 
     dispatch(setFields(enrichedFields));
+    dispatch(setPages(pages));
     dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
     dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
 
@@ -236,7 +240,10 @@ function HomePage() {
         extractAttributes(jsonSchema);
       // Enrich fields with paths BEFORE dispatching
       const enrichedFields = enrichFieldsWithPaths(fields);
+      const pages = extractPages(jsonSchema, enrichedFields);
+
       dispatch(setFields(enrichedFields));
+      dispatch(setPages(pages));
       dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
       dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
 
@@ -268,7 +275,10 @@ function HomePage() {
         extractAttributes(jsonSchema);
       // Enrich fields with paths BEFORE dispatching
       const enrichedFields = enrichFieldsWithPaths(fields);
+      const pages = extractPages(jsonSchema, enrichedFields);
+
       dispatch(setFields(enrichedFields));
+      dispatch(setPages(pages));
       dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
       dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
 

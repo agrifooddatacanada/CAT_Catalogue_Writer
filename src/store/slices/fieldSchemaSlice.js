@@ -9,6 +9,8 @@ const fieldSchema = createSlice({
     fields: {},
     formatPatterns: {},
     depFormatPatterns: {},
+    pages: [],
+    childPages: {},
   },
   reducers: {
     setSchemaName: (state, action) => {
@@ -23,11 +25,30 @@ const fieldSchema = createSlice({
     setDepFormatPatterns: (state, action) => {
       state.depFormatPatterns = action.payload;
     },
+    setPages: (state, action) => {
+      state.pages = action.payload;
+    },
+    setChildPages: (state, action) => {
+      state.childPages = action.payload || {};
+    },
+    upsertChildPageMeta: (state, action) => {
+      const { childPageIndex, parentFieldPath, parentPageIndex, label } =
+        action.payload;
+      if (childPageIndex === null || childPageIndex === undefined) return;
+
+      state.childPages[childPageIndex] = {
+        parentFieldPath,
+        parentPageIndex,
+        label,
+      };
+    },
     resetFieldSchemas: (state) => {
       state.schemaName = "";
       state.fields = {};
       state.formatPatterns = {};
       state.depFormatPatterns = {};
+      state.pages = [];
+      state.childPages = {};
     },
   },
 });
@@ -37,6 +58,9 @@ export const {
   setSchemaName,
   setDepFormatPatterns,
   setFormatPatterns,
+  setPages,
+  setChildPages,
+  upsertChildPageMeta,
   resetFieldSchemas,
 } = fieldSchema.actions;
 export default fieldSchema.reducer;

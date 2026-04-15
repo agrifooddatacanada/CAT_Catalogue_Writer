@@ -23,6 +23,7 @@ import {
 import theme from "../../../theme";
 import { removeFieldValue } from "../../../store/slices/formValueSlice";
 import { makeSelectIsPopupValid } from "../../../store/selectors/popupValidationSelectors";
+import NestedChildFormContent from "./NestedChildFormContent";
 
 const Popup = ({ nextValuePath, open, onClose }) => {
   const { t } = useTranslation(); // use translation function
@@ -83,52 +84,68 @@ const Popup = ({ nextValuePath, open, onClose }) => {
       maxWidth="md"
       fullWidth
     >
-      <DialogTitle sx={{ display: "flex", justifyContent: "space-between" }}>
-        <span>Add {field.label}</span>
-        <IconButton onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-
+      <DialogTitle sx={{ display: "none" }} />
       <DialogContent sx={{ p: 3, maxHeight: "70vh", overflow: "auto" }}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-          {field.children?.map((child, idx) => {
-            const childPath = `${nextValuePath}.${child.name}`;
-            return (
-              <FieldChecker key={childPath} valuePath={childPath} depth={1} />
-            );
-          })}
-        </Box>
+        <NestedChildFormContent
+          nextValuePath={nextValuePath}
+          isOpen={open}
+          onClose={onClose}
+        />
       </DialogContent>
-
-      <DialogActions
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 1,
-          my: 1,
-          mx: 1,
-        }}
-      >
-        <Button color="error" onClick={onClose}>
-          {t("popup.cancel")}
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleSave}
-          disabled={!isPopupValid}
-          sx={{
-            backgroundColor: theme.primaryColor,
-            "&:hover": {
-              backgroundColor: theme.primaryColor,
-            },
-          }}
-          startIcon={<SaveIcon />}
-        >
-          {t("popup.save")}
-        </Button>
-      </DialogActions>
     </Dialog>
+    // <Dialog
+    //   open={open}
+    //   onClose={onClose}
+    //   fullScreen={fullScreen}
+    //   maxWidth="md"
+    //   fullWidth
+    // >
+    //   <DialogTitle sx={{ display: "flex", justifyContent: "space-between" }}>
+    //     <span>Add {field.label}</span>
+    //     <IconButton onClick={onClose}>
+    //       <CloseIcon />
+    //     </IconButton>
+    //   </DialogTitle>
+
+    //   <DialogContent sx={{ p: 3, maxHeight: "70vh", overflow: "auto" }}>
+    //     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+    //       {field.children?.map((child, idx) => {
+    //         const childPath = `${nextValuePath}.${child.name}`;
+    //         return (
+    //           <FieldChecker key={childPath} valuePath={childPath} depth={1} />
+    //         );
+    //       })}
+    //     </Box>
+    //   </DialogContent>
+
+    //   <DialogActions
+    //     sx={{
+    //       display: "flex",
+    //       justifyContent: "flex-end",
+    //       gap: 1,
+    //       my: 1,
+    //       mx: 1,
+    //     }}
+    //   >
+    //     <Button color="error" onClick={onClose}>
+    //       {t("popup.cancel")}
+    //     </Button>
+    //     <Button
+    //       variant="contained"
+    //       onClick={handleSave}
+    //       disabled={!isPopupValid}
+    //       sx={{
+    //         backgroundColor: theme.primaryColor,
+    //         "&:hover": {
+    //           backgroundColor: theme.primaryColor,
+    //         },
+    //       }}
+    //       startIcon={<SaveIcon />}
+    //     >
+    //       {t("popup.save")}
+    //     </Button>
+    //   </DialogActions>
+    // </Dialog>
   );
 };
 
