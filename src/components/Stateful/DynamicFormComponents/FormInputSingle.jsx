@@ -12,7 +12,7 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  Link,
+  // Link,
   MenuItem,
   Select,
   TextField,
@@ -41,6 +41,7 @@ import {
   decrementInstanceCount,
 } from "../../../store/slices/instanceCountsSlice";
 import { removeFieldValue } from "../../../store/slices/formValueSlice";
+import FieldDescription from "./FieldDescription";
 
 const FormInputSingle = ({ valuePath, depth = 0 }) => {
   const { t } = useTranslation(); // use translation function
@@ -138,10 +139,10 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     ? { error: true, helperText: validationError }
     : {};
 
-  const lines = 2;
+  // const lines = 2;
 
-  const [expanded, setExpanded] = useState(false);
-  const [isClamped, setIsClamped] = useState(false);
+  // const [expanded, setExpanded] = useState(false);
+  // const [isClamped, setIsClamped] = useState(false);
   const descriptionRef = useRef(null);
 
   const handleBlur = () => {
@@ -156,15 +157,15 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
   // Function to check if text is clamped
   const checkIfClamped = useCallback(() => {
     if (descriptionRef.current && description) {
-      const element = descriptionRef.current;
-      setIsClamped(element.scrollHeight > element.clientHeight);
+      // const element = descriptionRef.current;
+      // setIsClamped(element.scrollHeight > element.clientHeight);
     }
   }, [description]);
 
   // Check on mount and when description changes
   useEffect(() => {
     checkIfClamped();
-    setExpanded(false);
+    // setExpanded(false);
   }, [description, checkIfClamped]);
 
   // Use ResizeObserver to detect when the element's size changes (including window resize)
@@ -185,30 +186,26 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
   // Check if text is clamped (overflows 2 lines)
   useEffect(() => {
     if (descriptionRef.current && description) {
-      const element = descriptionRef.current;
-      setIsClamped(element.scrollHeight > element.clientHeight);
+      // const element = descriptionRef.current;
+      // setIsClamped(element.scrollHeight > element.clientHeight);
     }
   }, [description]);
 
-  const clampSx = expanded
-    ? {}
-    : {
-        display: "-webkit-box",
-        WebkitBoxOrient: "vertical",
-        WebkitLineClamp: lines,
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-      };
+  // const clampSx = expanded
+  //   ? {}
+  //   : {
+  //       display: "-webkit-box",
+  //       WebkitBoxOrient: "vertical",
+  //       WebkitLineClamp: lines,
+  //       overflow: "hidden",
+  //       textOverflow: "ellipsis",
+  //     };
 
   return (
     <Box>
       {!multiple && (
-        <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
-          <Typography
-            variant={depth === 0 ? "h6" : "h7"}
-            component="label"
-            sx={{ display: "block" }}
-          >
+        <Box sx={readOnly ? { mt: 1 } : { mt: 3 }}>
+          <Typography variant="h6" component="label" sx={{ display: "block" }}>
             {label || name}
             {required && !readOnly && (
               <span style={{ color: "red", marginLeft: 4 }}>*</span>
@@ -217,7 +214,13 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
         </Box>
       )}
 
-      {!readOnly && (
+      {/* <FieldDescription valuePath={valuePath} /> */}
+
+      {multiple && type.includes("Text") ? null : (
+        <FieldDescription valuePath={valuePath} />
+      )}
+
+      {/* {!readOnly && (
         <Box sx={{ position: "relative", mb: 0.5 }}>
           <Typography
             ref={descriptionRef}
@@ -266,7 +269,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
             )}
           </Typography>
         </Box>
-      )}
+      )} */}
 
       {categories && categories.length > 0 ? (
         !multiple ? (
@@ -586,7 +589,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                     WebkitTextFillColor: "black", // disabled text color (adjust as needed)
                   },
                 }
-              : { mb: 1 }
+              : {}
           }
           fullWidth
           value={value}

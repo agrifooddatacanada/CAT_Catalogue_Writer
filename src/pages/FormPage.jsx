@@ -10,12 +10,14 @@ import {
   selectFields,
   selectHasFormData,
   selectSchemaName,
+  selectPages,
 } from "../store/selectors/formSelectors";
 import {
   setFields,
   setFormatPatterns,
   setDepFormatPatterns,
   setSchemaName,
+  setPages,
 } from "../store/slices/fieldSchemaSlice";
 import { extractJsonSchemaAsync } from "../utils/extractJsonSchema";
 import { extractAttributes } from "../utils/extractAttributes";
@@ -23,13 +25,29 @@ import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths";
 import { serializeRegexPatterns } from "../utils/regexUtils";
 import { Link, Typography } from "@mui/material";
 import { setMode } from "../store/slices/modeSlice";
+import FormSidebar from "../components/Stateful/FormSidebar";
+import { extractPages } from "../utils/extractPages";
+import { selectActivePage } from "../store/slices/activePageSlice";
 
 function FormPage() {
-  const { t, lang } = useTranslation(); // use translation function
+  const { t } = useTranslation(); // use translation function
 
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
+
+  const pages = useSelector(selectPages);
+  const activePage = useSelector(selectActivePage);
+
+  const childFormNavigation = useSelector((state) => state.childFormNavigation);
+
+  const activePageData = pages?.[activePage];
+  const activePageLabel = childFormNavigation?.useGeneratedPage
+    ? childFormNavigation.fallbackLabel || ""
+    : childFormNavigation?.childPageIndex === activePage &&
+        childFormNavigation?.fallbackLabel
+      ? childFormNavigation.fallbackLabel
+      : activePageData?.label || "";
 
   useEffect(() => {
     dispatch(setMode("edit"));
@@ -63,8 +81,10 @@ function FormPage() {
           depFormatPatterns,
         } = extractAttributes(jsonSchema);
         const enrichedFields = enrichFieldsWithPaths(rawFields);
+        const pages = extractPages(jsonSchema, enrichedFields);
 
         dispatch(setFields(enrichedFields));
+        dispatch(setPages(pages));
         dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
         dispatch(
           setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)),
@@ -108,13 +128,58 @@ function FormPage() {
         help_button_redirect={() => navigate("/form-help")}
       />
 
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          maxWidth: 1400,
+          margin: "0 auto",
+          px: 3,
+          py: 4,
+          gap: 8,
+        }}
+      >
+        <Box
+          component="aside"
+          sx={{
+            width: 280,
+            flexShrink: 0,
+            position: "sticky",
+            top: 24,
+          }}
+        >
+          <FormSidebar />
+        </Box>
+
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            minWidth: 0,
+          }}
+        >
+          <Box
+            sx={{
+              maxWidth: 1000,
+            }}
+          >
+            {activePageLabel && (
+              <Typography variant="h5" sx={{ mb: 2 }}>
+                {activePageLabel}
+              </Typography>
+            )}
+            <DynamicForm isEditMode={isEditMode} />
+          </Box>
+        </Box>
+      </Box>
+
       {/* <pre>{JSON.stringify(fields, null, 2)}</pre> */}
-      <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
+      {/* <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
         <DynamicForm
           language={lang}
           isEditMode={isEditMode} // TRUE when editing existing data
         />
-      </Box>
+      </Box> */}
       <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />
     </div>
   );

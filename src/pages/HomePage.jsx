@@ -24,6 +24,7 @@ import {
   setDepFormatPatterns,
   setFormatPatterns,
   resetFieldSchemas,
+  setPages,
 } from "../store/slices/fieldSchemaSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { extractJsonSchemaAsync } from "../utils/extractJsonSchema";
@@ -43,6 +44,9 @@ import {
   setIsUploaded,
 } from "../store/slices/uploadFileSlice";
 import { selectSchemaName } from "../store/selectors/formSelectors";
+import { extractPages } from "../utils/extractPages";
+import { ROUTE_MAP, SCHEMA_REGISTRY } from "../utils/schemaRegistry";
+import { escapeKey } from "../utils/pathEncoding";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
@@ -170,8 +174,11 @@ function HomePage() {
     // Object case
     for (const key in obj) {
       if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+
       const value = obj[key];
-      const newKey = parentKey ? `${parentKey}.${key}` : key;
+      const escapedKey = escapeKey(key);
+      const newKey = parentKey ? `${parentKey}.${escapedKey}` : escapedKey;
+
       if (value !== null && typeof value === "object") {
         // Then recurse into children
         flatten(value, newKey, result);
@@ -190,23 +197,27 @@ function HomePage() {
       extractAttributes(jsonSchema);
     // Enrich fields with paths BEFORE dispatching
     const enrichedFields = enrichFieldsWithPaths(fields);
+    const pages = extractPages(jsonSchema, enrichedFields);
 
     dispatch(setFields(enrichedFields));
+    dispatch(setPages(pages));
     dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
     dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
 
     // Return route WITH schema param
-    const routeMap = {
-      OpenAIRE: "/form",
-      "Dublin Core (Repository-specific)": "/form-dublincore-repository",
-      "Dublin Core (Project-specific)": "/form-dublincore-project",
-      DataCite: "/form-datacite",
-      "DCAT [Demo]": "/form-dcat-demo",
-      "Project (Minimal)": "/form-project-minimal",
-      "RAiD (Project)": "/form-raid-project",
-    };
+    // const routeMap = {
+    //   "q-002-test": "/form-q-test",
+    //   schema_catalogue_record: "/form-schema-cat-rec",
+    //   OpenAIRE: "/form",
+    //   "Dublin Core (Repository-specific)": "/form-dublincore-repository",
+    //   "Dublin Core (Project-specific)": "/form-dublincore-project",
+    //   DataCite: "/form-datacite",
+    //   "DCAT [Demo]": "/form-dcat-demo",
+    //   "Project (Minimal)": "/form-project-minimal",
+    //   "RAiD (Project)": "/form-raid-project",
+    // };
 
-    const baseRoute = routeMap[schema] || "/form";
+    const baseRoute = ROUTE_MAP[schema] || "/form";
     return `${baseRoute}?schema=${encodeURIComponent(schema)}`;
   };
 
@@ -236,7 +247,10 @@ function HomePage() {
         extractAttributes(jsonSchema);
       // Enrich fields with paths BEFORE dispatching
       const enrichedFields = enrichFieldsWithPaths(fields);
+      const pages = extractPages(jsonSchema, enrichedFields);
+
       dispatch(setFields(enrichedFields));
+      dispatch(setPages(pages));
       dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
       dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
 
@@ -268,7 +282,10 @@ function HomePage() {
         extractAttributes(jsonSchema);
       // Enrich fields with paths BEFORE dispatching
       const enrichedFields = enrichFieldsWithPaths(fields);
+      const pages = extractPages(jsonSchema, enrichedFields);
+
       dispatch(setFields(enrichedFields));
+      dispatch(setPages(pages));
       dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
       dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
 
@@ -381,6 +398,17 @@ function HomePage() {
                 <MenuItem value="" sx={{ color: "rgba(100, 100, 100, 1)" }}>
                   <em>None</em>
                 </MenuItem>
+
+                {SCHEMA_REGISTRY.map((schemaItem) => (
+                  <MenuItem key={schemaItem.name} value={schemaItem.name}>
+                    {schemaItem.name}
+                  </MenuItem>
+                ))}
+
+                {/* <MenuItem value="q-002-test">q2-002-test</MenuItem>
+                <MenuItem value="schema_catalogue_record">
+                  schema_catalogue_record
+                </MenuItem>
                 <MenuItem value="OpenAIRE">OpenAIRE</MenuItem>
                 <MenuItem value="Dublin Core (Repository-specific)">
                   Dublin Core (Repository-specific)
@@ -391,7 +419,7 @@ function HomePage() {
                 <MenuItem value="DataCite">DataCite</MenuItem>
                 <MenuItem value="DCAT [Demo]">DCAT [Demo]</MenuItem>
                 <MenuItem value="Project (Minimal)">Project (Minimal)</MenuItem>
-                <MenuItem value="RAiD (Project)">RAiD (Project)</MenuItem>
+                <MenuItem value="RAiD (Project)">RAiD (Project)</MenuItem> */}
               </Select>
             </FormControl>
           </Box>

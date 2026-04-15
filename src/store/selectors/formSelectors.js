@@ -5,6 +5,7 @@ export const selectFields = (state) => state.fieldSchema.fields;
 export const selectFormatPatterns = (state) => state.fieldSchema.formatPatterns;
 export const selectDepFormatPatterns = (state) =>
   state.fieldSchema.depFormatPatterns;
+export const selectPages = (state) => state.fieldSchema.pages;
 
 // Direct selectors (use these in components with useSelector)
 export const selectFormState = (state) => {

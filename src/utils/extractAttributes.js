@@ -60,16 +60,34 @@ function extractPlaceholdersFromFormExtension(extensions, lang) {
 }
 
 // IDENTIFY PREFERRED ATTRIBUTE ORDERING FROM EXTENSIONS
-function getAttributeOrdering(jsonData) {
-  const adcExtensions = jsonData?.extensions?.adc || [];
-  for (const ext of Object.values(adcExtensions)) {
-    const ordering = ext?.overlays?.ordering;
-    if (ordering && ordering.attribute_ordering) {
-      return ordering.attribute_ordering;
-    }
-  }
-  return [];
+// function getAttributeOrdering(jsonData) {
+//   const adcExtensions = jsonData?.extensions?.adc || [];
+//   for (const ext of Object.values(adcExtensions)) {
+//     const ordering = ext?.overlays?.ordering;
+//     if (ordering && ordering.attribute_ordering) {
+//       return ordering.attribute_ordering;
+//     }
+//   }
+//   return [];
+// }
+
+function getAttributeOrderingForCaptureBase(extensions, captureBaseDigest) {
+  return (
+    extensions?.adc?.[captureBaseDigest]?.overlays?.ordering
+      ?.attribute_ordering || []
+  );
 }
+
+// function getAttributeOrderingFromNode(node) {
+//   const adcExtensions = node?.extensions?.adc || {};
+//   for (const ext of Object.values(adcExtensions)) {
+//     const ordering = ext?.overlays?.ordering;
+//     if (ordering?.attribute_ordering?.length) {
+//       return ordering.attribute_ordering;
+//     }
+//   }
+//   return [];
+// }
 
 // REORDER THE EXTRACTED FIELDS
 function sortFieldsByOrdering(fields, ordering) {
@@ -179,6 +197,8 @@ function extractAttributesFromCaptureBase(
   cardinalities,
   placeholders,
   descriptions,
+  ordering = [],
+  extensions = {},
 ) {
   const attributes = captureBase.attributes || {};
   const fields = [];
@@ -203,6 +223,10 @@ function extractAttributesFromCaptureBase(
             dep.overlays?.conformance?.attribute_conformance || {};
           const depCardinalities =
             dep.overlays?.cardinality?.attribute_cardinality || {};
+          const depOrdering = getAttributeOrderingForCaptureBase(
+            extensions,
+            dep.capture_base?.d,
+          );
 
           // ATTACH CHILDREN
           children = extractAttributesFromCaptureBase(
@@ -216,6 +240,8 @@ function extractAttributesFromCaptureBase(
             depCardinalities,
             placeholders,
             descriptions,
+            depOrdering,
+            extensions,
           );
         }
       }
@@ -223,36 +249,40 @@ function extractAttributesFromCaptureBase(
     }
 
     // ATTACH LABELS, CATEGORIES, REQUIRED/MULTIPLE FLAGS
-    const conformanceValue = getConformanceValue(conformances, key);
-    const required = conformanceValue === "M";
-    const recommended = conformanceValue === "R";
-    const optional = conformanceValue === "O";
-    const cardinality = cardinalities[key];
-    const multiple = cardinality
-      ? cardinality.includes("n") ||
-        cardinality === "1-" ||
-        cardinality === "0-"
-      : false;
-    const categories = entryCodes[key] || null;
-    const label = labels[key] || key; // This will now use dependency-specific labels
-    const placeholder = placeholders[key] || "";
-    const description = descriptions[key] || "";
+    // const conformanceValue = getConformanceValue(conformances, key);
+    // const required = conformanceValue === "M";
+    // const recommended = conformanceValue === "R";
+    // const optional = conformanceValue === "O";
+    // const cardinality = cardinalities[key];
+    // const multiple = cardinality
+    //   ? cardinality.includes("n") ||
+    //     cardinality === "1-" ||
+    //     cardinality === "0-"
+    //   : false;
+    // const categories = entryCodes[key] || null;
+    // const label = labels[key] || key; // This will now use dependency-specific labels
+    // const placeholder = placeholders[key] || "";
+    // const description = descriptions[key] || "";
 
     fields.push({
       name: key,
-      label,
-      placeholder,
-      description,
+      label: labels[key] || key, // This will now use dependency-specific labels
+      placeholder: placeholders[key] || "",
+      description: descriptions[key] || "",
       type: fieldType,
-      required,
-      recommended,
-      optional,
-      multiple,
-      categories,
+      required: getConformanceValue(conformances, key) === "M",
+      recommended: getConformanceValue(conformances, key) === "R",
+      optional: getConformanceValue(conformances, key) === "O",
+      multiple: cardinalities[key]
+        ? cardinalities[key].includes("n") ||
+          cardinalities[key] === "1-" ||
+          cardinalities[key] === "0-"
+        : false,
+      categories: entryCodes[key] || null,
       children,
     });
   }
-  return fields;
+  return sortFieldsByOrdering(fields, ordering);
 }
 
 //
@@ -363,6 +393,10 @@ export function extractAttributes(
     jsonData?.extensions || {},
     lang,
   );
+  const ordering = getAttributeOrderingForCaptureBase(
+    jsonData?.extensions,
+    captureBase?.d,
+  );
 
   let fields = [];
 
@@ -390,6 +424,10 @@ export function extractAttributes(
             dep.overlays?.conformance?.attribute_conformance || {};
           const depCardinalities =
             dep.overlays?.cardinality?.attribute_cardinality || {};
+          const depOrdering = getAttributeOrderingForCaptureBase(
+            jsonData?.extensions,
+            dep.capture_base?.d,
+          );
 
           // Extract children from dependency's capture_base
           children = extractAttributesFromCaptureBase(
@@ -403,6 +441,8 @@ export function extractAttributes(
             depCardinalities,
             placeholders,
             descriptions,
+            depOrdering,
+            jsonData?.extensions,
           );
         } else {
           // fallabck: extract normally from bundle if key present
@@ -443,7 +483,7 @@ export function extractAttributes(
   }
 
   // GET ATTRIBUTE ORDERING FROM EXTENSIONS
-  const ordering = getAttributeOrdering(jsonData);
+  // const ordering = getAttributeOrdering(jsonData);
   // APPLY ORDERING
   fields = sortFieldsByOrdering(fields, ordering);
 

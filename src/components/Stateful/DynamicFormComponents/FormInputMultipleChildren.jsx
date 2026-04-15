@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   Box,
   Typography,
@@ -24,14 +24,22 @@ import {
 import { decrementInstanceCount } from "../../../store/slices/instanceCountsSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { removeIndices } from "../../../utils/removeIndices";
-import Popup from "./Popup";
+// import Popup from "./Popup";
 import { selectMode } from "../../../store/slices/modeSlice";
+import {
+  selectActivePage,
+  setActivePage,
+} from "../../../store/slices/activePageSlice";
+import { setCurrentPage } from "../../../store/slices/formUiSlice";
+import { selectPages } from "../../../store/selectors/formSelectors";
+import { setChildFormNavigation } from "../../../store/slices/childFormNavigationSlice";
+import { upsertChildPageMeta } from "../../../store/slices/fieldSchemaSlice";
 
 const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
   // const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false); // edit state
-  const [editingIndex, setEditingIndex] = useState(null); // which instance
-  const [addOpen, setAddOpen] = useState(false);
+  // const [editOpen, setEditOpen] = useState(false); // edit state
+  // const [editingIndex, setEditingIndex] = useState(null); // which instance
+  // const [addOpen, setAddOpen] = useState(false);
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -39,12 +47,41 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
   const readOnly = mode === "view";
   // console.log("mode:", mode, "| readOnly:", readOnly);
 
+  const pages = useSelector(selectPages);
+  const activePageIndex = useSelector(selectActivePage);
+
   const formState = useSelector(selectFormState);
   const fieldPath = removeIndices(valuePath);
   const field = useSelector(selectFieldByPath(fieldPath));
 
   const instanceCount = useSelector(selectInstanceCount(valuePath));
   const fieldValues = useSelector(selectFormValueByPrefix(valuePath));
+
+  const childFieldNames = (field.children || [])
+    .map((child) => child.name)
+    .sort();
+
+  const linkedChildPageIndex =
+    childFieldNames.length > 0
+      ? pages.findIndex((page) => {
+          const pageFieldNames = (page.items || [])
+            .flatMap((item) => {
+              if (item.type === "section") {
+                return (item.fields || []).map((f) => f.name);
+              }
+              if (item.type === "field" && item.field) {
+                return [item.field.name];
+              }
+              return [];
+            })
+            .sort();
+
+          return (
+            pageFieldNames.length === childFieldNames.length &&
+            pageFieldNames.every((name, idx) => name === childFieldNames[idx])
+          );
+        })
+      : -1;
 
   // Group flat values into instances: {0: {...}, 1: {...}, ...}
   const instances = useMemo(() => {
@@ -74,25 +111,27 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
       }));
   }, [fieldValues, valuePath]);
 
-  const getLabelFromPath = (subKey) => {
-    // 1. removeIndices(subKey)
-    const path = removeIndices(subKey); // "creator.affiliation.affiliationIdentifier.affiliationIdentifierScheme"
+  const findFieldByRelativePath = (parentField, relativePath) => {
+    if (!parentField?.children?.length) return null;
 
-    // 2. Replace every "." with ".children."
-    const traversalPath = path.replace(/\./g, ".children.");
+    for (const child of parentField.children) {
+      if (child.name === relativePath) return child;
 
-    // 3. Traverse field schema dynamically
-    let current = field;
-    const parts = traversalPath.split(".");
-
-    for (let i = 0; i < parts.length; i += 2) {
-      const childName = parts[i];
-      current = current.children?.find((c) => c.name === childName);
-      if (!current) break;
+      if (relativePath.startsWith(`${child.name}.`)) {
+        const nestedPath = relativePath.slice(child.name.length + 1);
+        const found = findFieldByRelativePath(child, nestedPath);
+        if (found) return found;
+      }
     }
 
-    // String extraction
-    const labelObj = current?.label || current?.name || path.split(".").pop();
+    return null;
+  };
+
+  const getLabelFromPath = (subKey) => {
+    const path = removeIndices(subKey);
+    const matchedField = findFieldByRelativePath(field, path);
+
+    const labelObj = matchedField?.label || matchedField?.name || path;
 
     return typeof labelObj === "string"
       ? labelObj
@@ -100,6 +139,34 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
         ? labelObj.title
         : String(labelObj) || "Unknown";
   };
+
+  // const getLabelFromPath = (subKey) => {
+  //   // 1. removeIndices(subKey)
+  //   const path = removeIndices(subKey); // "creator.affiliation.affiliationIdentifier.affiliationIdentifierScheme"
+
+  //   // 2. Replace every "." with ".children."
+  //   const traversalPath = path.replace(/\./g, ".children.");
+
+  //   // 3. Traverse field schema dynamically
+  //   let current = field;
+  //   const parts = traversalPath.split(".");
+
+  //   for (let i = 0; i < parts.length; i += 2) {
+  //     const childName = parts[i];
+  //     current = current.children?.find((c) => c.name === childName);
+  //     if (!current) break;
+  //   }
+
+  //   // String extraction
+  //   const labelObj = current?.label || current?.name || path.split(".").pop();
+
+  //   return typeof labelObj === "string"
+  //     ? labelObj
+  //     : typeof labelObj === "object" && labelObj?.title
+  //       ? labelObj.title
+  //       : String(labelObj) || "Unknown";
+  // };
+
   const getNestingDepth = (subKey) => {
     return (subKey.match(/\./g) || []).length - 1; // Count dots = nesting levels
   };
@@ -109,11 +176,63 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
 
   const { name, label } = field;
 
+  React.useEffect(() => {
+    if (linkedChildPageIndex >= 0) {
+      dispatch(
+        upsertChildPageMeta({
+          childPageIndex: linkedChildPageIndex,
+          parentFieldPath: fieldPath,
+          parentPageIndex: activePageIndex,
+          label: label || name,
+        }),
+      );
+    }
+  }, [linkedChildPageIndex, fieldPath, activePageIndex, label, name, dispatch]);
+
+  const handleAddAsPage = () => {
+    dispatch(
+      setChildFormNavigation({
+        nextValuePath: `${valuePath}[${instanceCount}]`,
+        parentPageIndex: activePageIndex,
+        childPageIndex: linkedChildPageIndex,
+        isEdit: false,
+        fallbackLabel: label || name,
+        fallbackFieldPath: fieldPath,
+        useGeneratedPage: linkedChildPageIndex < 0,
+      }),
+    );
+
+    if (linkedChildPageIndex >= 0) {
+      dispatch(setActivePage(linkedChildPageIndex));
+    }
+
+    dispatch(setCurrentPage(1));
+  };
+
   // Edit handler
   const handleEdit = (instance) => {
-    setEditingIndex(instance.reduxIndex); // Use Redux index for popup path
-    setEditOpen(true);
+    dispatch(
+      setChildFormNavigation({
+        nextValuePath: `${valuePath}[${instance.reduxIndex}]`,
+        parentPageIndex: activePageIndex,
+        childPageIndex: linkedChildPageIndex >= 0 ? linkedChildPageIndex : null,
+        isEdit: true,
+        fallbackLabel: label || name,
+        fallbackFieldPath: fieldPath,
+        useGeneratedPage: linkedChildPageIndex < 0,
+      }),
+    );
+
+    if (linkedChildPageIndex >= 0) {
+      dispatch(setActivePage(linkedChildPageIndex));
+    }
+
+    dispatch(setCurrentPage(1));
   };
+  // const handleEdit = (instance) => {
+  //   setEditingIndex(instance.reduxIndex); // Use Redux index for popup path
+  //   setEditOpen(true);
+  // };
 
   // Delete handler
   const handleDelete = (instance) => {
@@ -269,9 +388,10 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
             mt: 1,
           }}
           variant="outlined"
-          onClick={() => {
-            setAddOpen(true);
-          }}
+          onClick={handleAddAsPage}
+          // onClick={() => {
+          //   setAddOpen(true);
+          // }}
           startIcon={<AddIcon />}
         >
           {t("forminputmultiple.add")} {label || name}
@@ -295,14 +415,14 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
       )}
 
       {/* Render Popup */}
-      <Popup
+      {/* <Popup
         nextValuePath={`${valuePath}[${instanceCount}]`}
         open={addOpen}
         onClose={() => setAddOpen(false)}
-      />
+      /> */}
 
       {/* EDIT POPUP */}
-      {editingIndex !== null && (
+      {/* {editingIndex !== null && (
         <Popup
           nextValuePath={`${valuePath}[${editingIndex}]`} // Reuse existing index
           open={editOpen}
@@ -311,7 +431,7 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
             setEditingIndex(null);
           }}
         />
-      )}
+      )} */}
 
       {/* Show "no data" message in readOnly mode when empty */}
       {!readOnly ? null : !isEditMode && fieldValues.length === 0 ? (
