@@ -128,7 +128,14 @@
           "capture_base": "EIC9__U1uCn0UaREPwlM7h2gYJ4J0EW042qzpjlMVUqC",
           "type": "spec/overlays/entry_code/1.0",
           "attribute_entry_codes": {
-            "identifierType": ["ARK", "DOI", "Handle", "PURL", "URL", "URN"]
+            "identifierType": [
+              "ARK",
+              "DOI",
+              "Handle",
+              "PURL",
+              "URL",
+              "URN"
+            ]
           }
         },
         "information": [
@@ -479,7 +486,10 @@
             "capture_base": "EE5Kw0j0FpUk8E38gGSMB5doQYzvGN7IkbMlFdtXSLdH",
             "type": "spec/overlays/entry_code/1.0",
             "attribute_entry_codes": {
-              "nameIdentifierScheme": ["ISNI", "ORCID"]
+              "nameIdentifierScheme": [
+                "ISNI",
+                "ORCID"
+              ]
             }
           },
           "format": {
@@ -1371,7 +1381,11 @@
             "capture_base": "ECsiFKfAJaSLBXh79PW5hPmlj5FuP3Fm735nyA-B8YOD",
             "type": "spec/overlays/entry_code/1.0",
             "attribute_entry_codes": {
-              "titleType": ["AlternativeTitle", "Subtitle", "TranslatedTitle"]
+              "titleType": [
+                "AlternativeTitle",
+                "Subtitle",
+                "TranslatedTitle"
+              ]
             }
           },
           "information": [
@@ -1669,7 +1683,14 @@
               "geoLocation"
             ],
             "entry_code_ordering": {
-              "identifierType": ["ARK", "DOI", "Handle", "PURL", "URL", "URN"]
+              "identifierType": [
+                "ARK",
+                "DOI",
+                "Handle",
+                "PURL",
+                "URL",
+                "URN"
+              ]
             }
           }
         }

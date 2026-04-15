@@ -1,54 +1,32 @@
 {
-  "d": "EGkYs_vZ1B6Yak0Whyqf8tdxZNg_WrHB8IiwbOqQutYY",
+  "d": "EHyGYfN7TNAUsfG9cpvC1uqC-RfahoO6TdaYtYw1cH4R",
   "type": "oca_package/1.0",
   "oca_bundle": {
     "bundle": {
-      "v": "OCAS11JSON000867_",
-      "d": "EN9fsBi-FF161aBtWFVZYk5LaZe_kso9by0jL9gBkIzX",
+      "v": "OCAS11JSON0007a9_",
+      "d": "EImTpwyfpKhKYfKSJkW0WaShc3PJX5MGYmRk5tN8EQua",
       "capture_base": {
-        "d": "ECHBlVZFOfB9TkU3YN0224tZWGfOUCRQn5QjLZvT3YlI",
+        "d": "EL9yP7DC0Soa8wuODSvAyr-2iLFQe5HyCnMtQGpL4_WX",
         "type": "spec/capture_base/1.1",
         "attributes": {
           "Date": "refs:EDT0iY3OOPRdpBC5xIBjz4g_31-G5DV7HUma_nzkiEwW",
-          "contributor": [
-            "refs:EHRfZ9ZDcfkY5BabrCaDclFcRBDqkJzExf9BGE94MBgd"
-          ],
-          "description": [
-            "refs:EKyI9GBEv3QLj5K7Uo34c43m1l3HoztjcOVY4rtJ1-Jw"
-          ],
+          "contributor": "refs:EHRfZ9ZDcfkY5BabrCaDclFcRBDqkJzExf9BGE94MBgd",
+          "description": "refs:EKyI9GBEv3QLj5K7Uo34c43m1l3HoztjcOVY4rtJ1-Jw",
+          "identifier": "refs:EAWPYaNYn2dqdUwBENaOT1EaK5Ub8K-_Fb9WKnPC4xBA",
           "keywords": [
             "Text"
           ],
-          "organisation": [
-            "refs:EKwGxLzGne5R0RJ-oI1YXMs8KrtJELKaPiajozCJLcbv"
-          ],
-          "relatedProject": [
-            "refs:ENxvXCEuECkXij2wsE7HepxS6JpeNuDlgSD0Wvx37OJb"
-          ],
-          "title": [
-            "refs:EPToDcrSHqhKFxj26uFBYvJmyHF_a6Otn7TU3XUHV5In"
-          ]
+          "organisation": "refs:EKwGxLzGne5R0RJ-oI1YXMs8KrtJELKaPiajozCJLcbv",
+          "relatedProject": "refs:ENxvXCEuECkXij2wsE7HepxS6JpeNuDlgSD0Wvx37OJb",
+          "title": "refs:EPToDcrSHqhKFxj26uFBYvJmyHF_a6Otn7TU3XUHV5In"
         },
         "classification": "",
         "flagged_attributes": []
       },
       "overlays": {
-        "cardinality": {
-          "d": "ECkyXixIJxPMgPaeF3aKRi5lFOHFOjuIwty7zu9vHcVT",
-          "capture_base": "ECHBlVZFOfB9TkU3YN0224tZWGfOUCRQn5QjLZvT3YlI",
-          "type": "spec/overlays/cardinality/1.1",
-          "attribute_cardinality": {
-            "contributor": "0-",
-            "description": "0-",
-            "keywords": "0-",
-            "organisation": "0-",
-            "relatedProject": "0-",
-            "title": "0-"
-          }
-        },
         "format": {
-          "d": "EAbseGXOIt5H8hnG9njK7FVI4M94x42YLbmCyOzERl1_",
-          "capture_base": "ECHBlVZFOfB9TkU3YN0224tZWGfOUCRQn5QjLZvT3YlI",
+          "d": "EF8tmtoEga-nBC5oG9D-uB2IIc45JT7NkCUEm58CoRLn",
+          "capture_base": "EL9yP7DC0Soa8wuODSvAyr-2iLFQe5HyCnMtQGpL4_WX",
           "type": "spec/overlays/format/1.1",
           "attribute_formats": {
             "keywords": "^.{0,800}$"
@@ -56,8 +34,8 @@
         },
         "label": [
           {
-            "d": "EEUTiENlE9rFQ2WTwpkFHqAACdcTJjFbL7hK8D0KWSLA",
-            "capture_base": "ECHBlVZFOfB9TkU3YN0224tZWGfOUCRQn5QjLZvT3YlI",
+            "d": "EKFNB9mD-BsIAHyjz6jtWxy5dNw0-U3vJW8CPJA7FB82",
+            "capture_base": "EL9yP7DC0Soa8wuODSvAyr-2iLFQe5HyCnMtQGpL4_WX",
             "type": "spec/overlays/label/1.1",
             "language": "eng",
             "attribute_categories": [],
@@ -65,6 +43,7 @@
               "Date": "Start and end date of the project",
               "contributor": "Contributors to the project and associated properties",
               "description": "Description of the project and associated properties",
+              "identifier": "identifier, name and associated properties",
               "keywords": "An array of ; separated keywords describing the project",
               "organisation": "Organisations associated to the project and associated properties",
               "relatedProject": "Related projects and qualifying the relationship",
@@ -75,8 +54,8 @@
         ],
         "meta": [
           {
-            "d": "ELfYCXOmrvOODNeesLua-54Q4xY56KTzVivV5hCF3aSs",
-            "capture_base": "ECHBlVZFOfB9TkU3YN0224tZWGfOUCRQn5QjLZvT3YlI",
+            "d": "EKJ3MxvJrvTtp4k3Tf19iRF62QnUywnLmmwHVuxogGkH",
+            "capture_base": "EL9yP7DC0Soa8wuODSvAyr-2iLFQe5HyCnMtQGpL4_WX",
             "type": "spec/overlays/meta/1.1",
             "language": "eng",
             "description": "A project description schema based on RAiD metadata schema.",
@@ -355,6 +334,67 @@
               "language": "eng",
               "description": "Child schema for description",
               "name": "description"
+            }
+          ]
+        }
+      },
+      {
+        "v": "OCAS11JSON0005bc_",
+        "d": "EAWPYaNYn2dqdUwBENaOT1EaK5Ub8K-_Fb9WKnPC4xBA",
+        "capture_base": {
+          "d": "EE3LtrmDlv1_cpWlWAQ4kjNcyrExthHAl0HPFOv65jKO",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "identifier.id": "Text",
+            "identifier.schemaUri": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "format": {
+            "d": "EDNAGOQDjMjo0Ll5gD5nHnuPLX8a4_wh2s2jCL6zMdRk",
+            "capture_base": "EE3LtrmDlv1_cpWlWAQ4kjNcyrExthHAl0HPFOv65jKO",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "identifier.id": "^.{0,250}$",
+              "identifier.schemaUri": "^.{0,50}$"
+            }
+          },
+          "information": [
+            {
+              "d": "ELTbpR2Alif4IdgvCbygZ3H1cSrMFBhiAUjEyUpjGU7j",
+              "capture_base": "EE3LtrmDlv1_cpWlWAQ4kjNcyrExthHAl0HPFOv65jKO",
+              "type": "spec/overlays/information/1.1",
+              "language": "eng",
+              "attribute_information": {
+                "identifier.id": "This is not entered by the user but calculated when the record is created.",
+                "identifier.schemaUri": "This is always urn:said by definition"
+              }
+            }
+          ],
+          "label": [
+            {
+              "d": "EJDILgdhZiWGM3PGZroXVdoyTFzK0XWxJX3oAUR4jn2H",
+              "capture_base": "EE3LtrmDlv1_cpWlWAQ4kjNcyrExthHAl0HPFOv65jKO",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "identifier.id": "The SAID of the record",
+                "identifier.schemaUri": "urn:said"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "EPnVNt3x1JRyrYqTeI8s58f_CC8CIgJMhSxeBof-F3i4",
+              "capture_base": "EE3LtrmDlv1_cpWlWAQ4kjNcyrExthHAl0HPFOv65jKO",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "Child schema for identifier",
+              "name": "identifier"
             }
           ]
         }
@@ -725,14 +765,14 @@
   },
   "extensions": {
     "adc": {
-      "ECHBlVZFOfB9TkU3YN0224tZWGfOUCRQn5QjLZvT3YlI": {
-        "d": "EBVD6WZcTVhamOJeWICGXoSsIPElHdefxw8okd2M9L6s",
+      "EL9yP7DC0Soa8wuODSvAyr-2iLFQe5HyCnMtQGpL4_WX": {
+        "d": "ELB4TnuT1aiZxlji6JJOpcysJii1TTsOU9M9-8HYg6bz",
         "type": "community/adc/extension/1.0",
         "overlays": {
           "form": [
             {
-              "d": "EL8JsQv4GW3ZtT6wlT6TEGYVXsWkaFX9PkZOHs7DEE7H",
-              "capture_base": "ECHBlVZFOfB9TkU3YN0224tZWGfOUCRQn5QjLZvT3YlI",
+              "d": "EDkDjk9bBJS2nTMzNiVh3hoT6ry3PizAEee3XCLtoRIv",
+              "capture_base": "EL9yP7DC0Soa8wuODSvAyr-2iLFQe5HyCnMtQGpL4_WX",
               "type": "community/overlays/adc/form/1.0",
               "language": "eng",
               "pages": [
@@ -796,13 +836,14 @@
             }
           ],
           "ordering": {
-            "d": "EJnCEG8Z8n6MxqHs4I9RSj5qkuNwOGJLod9uEAgyXhh6",
-            "capture_base": "ECHBlVZFOfB9TkU3YN0224tZWGfOUCRQn5QjLZvT3YlI",
+            "d": "EKAUWFws5-Nu8pU9PHSWQ5yY2D5AyY8mEYznxBobAzDY",
+            "capture_base": "EL9yP7DC0Soa8wuODSvAyr-2iLFQe5HyCnMtQGpL4_WX",
             "type": "community/overlays/adc/ordering/1.0",
             "attribute_ordering": [
               "Date",
               "contributor",
               "description",
+              "identifier",
               "keywords",
               "organisation",
               "relatedProject",
@@ -1015,6 +1056,64 @@
                 "https-//vocabulary.raid.org/raid_placeholder/392"
               ]
             }
+          }
+        }
+      },
+      "EE3LtrmDlv1_cpWlWAQ4kjNcyrExthHAl0HPFOv65jKO": {
+        "d": "EK3yNcUGF3YMrmN6JSBTTfG6sxQuc1VqKTcMEwr13v1O",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "ECkC1Gt4WsP6xRuA57o2UlxBg4KHVhLZ9a6Fd-DMhvjs",
+              "capture_base": "EE3LtrmDlv1_cpWlWAQ4kjNcyrExthHAl0HPFOv65jKO",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "identifier.id",
+                    "identifier.schemaUri"
+                  ],
+                  "named_section": "899153cd-cda0-4218-aab6-6089086ae9fe"
+                }
+              ],
+              "page_order": [
+                "899153cd-cda0-4218-aab6-6089086ae9fe"
+              ],
+              "page_labels": {
+                "899153cd-cda0-4218-aab6-6089086ae9fe": "Page 1"
+              },
+              "sidebar_label": {
+                "899153cd-cda0-4218-aab6-6089086ae9fe": "Page 1"
+              },
+              "description": {
+                "899153cd-cda0-4218-aab6-6089086ae9fe": "Page 1"
+              },
+              "title": "identifier",
+              "interaction": [
+                {
+                  "arguments": {
+                    "identifier.id": {
+                      "type": "Text"
+                    },
+                    "identifier.schemaUri": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EDYLB3iDs5ChA42nnj-0a49idDIf166qEwrOZCImZqV2",
+            "capture_base": "EE3LtrmDlv1_cpWlWAQ4kjNcyrExthHAl0HPFOv65jKO",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "identifier.id",
+              "identifier.schemaUri"
+            ],
+            "entry_code_ordering": {}
           }
         }
       },

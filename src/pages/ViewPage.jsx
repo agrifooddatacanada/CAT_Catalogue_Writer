@@ -20,6 +20,7 @@ import {
 import { setMode } from "../store/slices/modeSlice";
 import canonicalize from "../utils/canonicalize";
 import { getContextUrl, getSchemaId } from "../utils/schemaMapping";
+import { unescapeKey } from "../utils/pathEncoding";
 
 function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function
@@ -92,12 +93,15 @@ function ViewPage() {
 
   function parsePath(path) {
     if (!path) return [];
+
     return path
       .split(/\.|\[/)
       .filter(Boolean)
       .map((segment) => {
         segment = segment.replace(/]$/, "");
-        return /^\d+$/.test(segment) ? parseInt(segment, 10) : segment;
+        return /^\d+$/.test(segment)
+          ? parseInt(segment, 10)
+          : unescapeKey(segment);
       });
   }
 

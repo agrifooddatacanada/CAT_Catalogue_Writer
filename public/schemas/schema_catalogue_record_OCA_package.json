@@ -1,0 +1,313 @@
+{
+  "d": "EAMDDRFBhdGg8OcfgzMFLFq5DT6LbroGkc-zM6iKnsuc",
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "bundle": {
+      "v": "OCAS11JSON0009d7_",
+      "d": "EGm4hVKV5DlfPUiePLL6Oj13JBWEowK23fURKGc5Vv5Z",
+      "capture_base": {
+        "d": "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "dcat.version": "Text",
+          "dcterms.creator": "refs:EOKENB6PIm-lJX_OQyQhXlt5M8fOfrGuokkY7pZjsJJg",
+          "dcterms.description": "Text",
+          "dcterms.identifier": "Text",
+          "dcterms.issued": "DateTime",
+          "dcterms.title": "Text",
+          "dcterms.type": "Text"
+        },
+        "classification": "",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "entry": [
+          {
+            "d": "ELKaCOSZciXVemk4Jem1j08OWgLnuQKv7lHfvgs2NBIL",
+            "capture_base": "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "dcterms.type": {
+                "schema.oca": "OCA Semantic Engine schema"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "ED7K_pRMbPZNRUV5bpiN4iMGhoCz1zqfQZ_70Os_igdW",
+          "capture_base": "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "dcterms.type": [
+              "schema.oca"
+            ]
+          }
+        },
+        "format": {
+          "d": "EHVGamI9K0iFuNiwcI7Hc_8kcKrFlvPHgw01Nk72jp8J",
+          "capture_base": "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "dcat.version": "^.{0,50}$",
+            "dcterms.description": "^.{0,800}$",
+            "dcterms.identifier": "^.{0,250}$",
+            "dcterms.issued": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "dcterms.title": "^.{0,250}$",
+            "dcterms.type": "^.{0,50}$"
+          }
+        },
+        "information": [
+          {
+            "d": "EDnH8bIK9SoXOcUGFDkbkn2qIKe3I9Cbeu0m3-9AosrW",
+            "capture_base": "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV",
+            "type": "spec/overlays/information/1.1",
+            "language": "eng",
+            "attribute_information": {
+              "dcterms.identifier": "For OCA use the SAID of the schema package."
+            }
+          }
+        ],
+        "label": [
+          {
+            "d": "EHXvdnj1QxnWjYaJ4zRiu3GzPME05X5KKnJ-Rdx2Jo02",
+            "capture_base": "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "dcat.version": "What version is the schema?",
+              "dcterms.creator": "Who created the schema?",
+              "dcterms.description": "What is a description of the schema?",
+              "dcterms.identifier": "What is the identifier of the schema?",
+              "dcterms.issued": "What date was the schema made available?",
+              "dcterms.title": "What is the title of the schema?",
+              "dcterms.type": "What is the type of schema?"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EBOxuBftruQvnPBn0X6wO-I5USyavW8K7oT_0Pk4BWrF",
+            "capture_base": "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "A DCAT mapped catalogue record schema for a dataset schema",
+            "name": "schema_catalogue_record"
+          }
+        ]
+      }
+    },
+    "dependencies": [
+      {
+        "v": "OCAS11JSON0004f4_",
+        "d": "EOKENB6PIm-lJX_OQyQhXlt5M8fOfrGuokkY7pZjsJJg",
+        "capture_base": {
+          "d": "EBgohkvLFbGzxTcVBodQuZYypE8maJFUVcBofrIttsQC",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "foaf.mbox": "Text",
+            "foaf.name": "Text",
+            "identifier": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "format": {
+            "d": "ECNbIZRbsmPzV5VabNHWj8UwGll6xe4HKsWfpDG4Qx_G",
+            "capture_base": "EBgohkvLFbGzxTcVBodQuZYypE8maJFUVcBofrIttsQC",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "foaf.mbox": "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+",
+              "foaf.name": "^.{0,250}$",
+              "identifier": "^.{0,250}$"
+            }
+          },
+          "label": [
+            {
+              "d": "ECmiue2nHIhcIP4NDyZNVKQdoaFJhQVH4XRRmxhd0MJA",
+              "capture_base": "EBgohkvLFbGzxTcVBodQuZYypE8maJFUVcBofrIttsQC",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "foaf.mbox": "What is the contributor\\'s contact email address?",
+                "foaf.name": "What is the contributor\\'s name?",
+                "identifier": "What is the contributor\\'s ORCID identifier?"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "EFKDgCR2NVAo_mB1fUS9sLwJvPNlPz6NH2pu_Z0ETl9_",
+              "capture_base": "EBgohkvLFbGzxTcVBodQuZYypE8maJFUVcBofrIttsQC",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "Child schema for dcterms.creator",
+              "name": "dcterms.creator"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "extensions": {
+    "adc": {
+      "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV": {
+        "d": "ENWd7fypQQ83ffI4qfPZLtg2v5Z7rWa4zEhqgh72MTHz",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EDMAIzNMSZMTfwHHWDetCEf4bIlnPFWqfjIB1kkThZyN",
+              "capture_base": "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "dcterms.type",
+                    "dcterms.title",
+                    "dcterms.description",
+                    "dcterms.creator",
+                    "dcterms.issued",
+                    "dcterms.identifier",
+                    "dcat.version"
+                  ],
+                  "named_section": "f09645ef-941d-4540-8d56-07e2b15ec397"
+                }
+              ],
+              "page_order": [
+                "f09645ef-941d-4540-8d56-07e2b15ec397"
+              ],
+              "page_labels": {
+                "f09645ef-941d-4540-8d56-07e2b15ec397": "Page 1"
+              },
+              "sidebar_label": {
+                "f09645ef-941d-4540-8d56-07e2b15ec397": "Page 1"
+              },
+              "description": {
+                "f09645ef-941d-4540-8d56-07e2b15ec397": "Page 1"
+              },
+              "title": "schema_catalogue_record",
+              "interaction": [
+                {
+                  "arguments": {
+                    "dcat.version": {
+                      "placeholder": "v1.1",
+                      "type": "Text"
+                    },
+                    "dcterms.creator": {
+                      "type": "Child Schema"
+                    },
+                    "dcterms.description": {
+                      "type": "Text"
+                    },
+                    "dcterms.identifier": {
+                      "type": "Text"
+                    },
+                    "dcterms.issued": {
+                      "placeholder": "YYYY-MM-DD",
+                      "type": "DateTime"
+                    },
+                    "dcterms.title": {
+                      "type": "Text"
+                    },
+                    "dcterms.type": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EPUy2n_r6qybsfV3EWj6iRZt4WCv6rLlqArs4wtg0TjM",
+            "capture_base": "EFqTlSSk1gCtzbx3oIjsB5h3cIODK4Wl4pTX0WNn6vMV",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "dcterms.type",
+              "dcterms.title",
+              "dcterms.description",
+              "dcterms.creator",
+              "dcterms.issued",
+              "dcterms.identifier",
+              "dcat.version"
+            ],
+            "entry_code_ordering": {
+              "dcterms.type": [
+                "schema.oca"
+              ]
+            }
+          }
+        }
+      },
+      "EBgohkvLFbGzxTcVBodQuZYypE8maJFUVcBofrIttsQC": {
+        "d": "EHbTCoN3xidCS3N65aY7q8ftDNOFyp_TScclk5DfhL2D",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EFKkxCngqeYfH3umSgijovZyvPAfoCWRjBwq69WXLN6b",
+              "capture_base": "EBgohkvLFbGzxTcVBodQuZYypE8maJFUVcBofrIttsQC",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "foaf.name",
+                    "foaf.mbox",
+                    "identifier"
+                  ],
+                  "named_section": "7aa10443-86e2-4c11-8a18-1e3c4d957652"
+                }
+              ],
+              "page_order": [
+                "7aa10443-86e2-4c11-8a18-1e3c4d957652"
+              ],
+              "page_labels": {
+                "7aa10443-86e2-4c11-8a18-1e3c4d957652": "Page 1"
+              },
+              "sidebar_label": {
+                "7aa10443-86e2-4c11-8a18-1e3c4d957652": "Page 1"
+              },
+              "description": {
+                "7aa10443-86e2-4c11-8a18-1e3c4d957652": "Page 1"
+              },
+              "title": "dcterms.creator",
+              "interaction": [
+                {
+                  "arguments": {
+                    "foaf.mbox": {
+                      "type": "Text"
+                    },
+                    "foaf.name": {
+                      "type": "Text"
+                    },
+                    "identifier": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EAuNUZ2hUPqV3yeiQyvPJoyLjKPWIc7owAkrtUxdrKrY",
+            "capture_base": "EBgohkvLFbGzxTcVBodQuZYypE8maJFUVcBofrIttsQC",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "foaf.name",
+              "foaf.mbox",
+              "identifier"
+            ],
+            "entry_code_ordering": {}
+          }
+        }
+      }
+    }
+  }
+}
