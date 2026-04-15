@@ -20,6 +20,7 @@ import { selectPages } from "../../../store/selectors/formSelectors";
 // import theme from "../../../theme";
 // import { setChildFormNavigation } from "../../../store/slices/childFormNavigationSlice";
 import { upsertChildPageMeta } from "../../../store/slices/fieldSchemaSlice";
+import FieldDescription from "./FieldDescription";
 import FormInputChildren from "./FormInputChildren";
 
 const FieldChecker = ({ valuePath, depth = 0 }) => {
@@ -181,6 +182,7 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
             )}
           </Typography>
         </Box>
+        <FieldDescription valuePath={valuePath} />
         <FormInputSingle valuePath={valuePath} depth={depth} />
       </>
     );
@@ -203,6 +205,7 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
             )}
           </Typography>
         </Box>
+        <FieldDescription valuePath={valuePath} />
         <FormInputMultiple valuePath={fieldPath} depth={depth} />
       </>
     );
