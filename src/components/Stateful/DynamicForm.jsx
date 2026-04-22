@@ -114,11 +114,11 @@ function DynamicForm({ isEditMode = false }) {
     childFormNavigation?.childPageIndex === activePage;
 
   // Collect all page indices registered as children (at any level)
-  const allChildPageIndices = new Set(
-    Object.entries(childPagesMeta || {}).map(([pageIndex]) =>
-      Number(pageIndex),
-    ),
-  );
+  // const allChildPageIndices = new Set(
+  //   Object.entries(childPagesMeta || {}).map(([pageIndex]) =>
+  //     Number(pageIndex),
+  //   ),
+  // );
 
   const basePageIndices = pages
     .map((_, i) => i)
@@ -134,12 +134,12 @@ function DynamicForm({ isEditMode = false }) {
 
   const isNestedChildPage = isGeneratedChildPage || isSchemaBackedChildPage;
 
-  const isLastBasePage =
-    !isCurrentPageAChildPage &&
-    pages
-      .map((_, i) => i)
-      .filter((i) => !childPagesMeta?.[i]) // only base pages
-      .at(-1) === activePage;
+  // const isLastBasePage =
+  //   !isCurrentPageAChildPage &&
+  //   pages
+  //     .map((_, i) => i)
+  //     .filter((i) => !childPagesMeta?.[i]) // only base pages
+  //     .at(-1) === activePage;
 
   const showNextButton =
     hasSchemaPages &&
