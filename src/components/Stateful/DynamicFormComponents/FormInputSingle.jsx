@@ -15,7 +15,7 @@ import {
   // Link,
   MenuItem,
   Select,
-  TextField,
+  TextareaAutosize,
   Typography,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -205,7 +205,11 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     <Box>
       {!multiple && (
         <Box sx={readOnly ? { mt: 1 } : { mt: 3 }}>
-          <Typography variant="h6" component="label" sx={{ display: "block" }}>
+          <Typography
+            variant="subtitle1"
+            component="label"
+            sx={{ display: "block", fontWeight: 600 }}
+          >
             {label || name}
             {required && !readOnly && (
               <span style={{ color: "red", marginLeft: 4 }}>*</span>
@@ -219,57 +223,6 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
       {multiple && type.includes("Text") ? null : (
         <FieldDescription valuePath={valuePath} />
       )}
-
-      {/* {!readOnly && (
-        <Box sx={{ position: "relative", mb: 0.5 }}>
-          <Typography
-            ref={descriptionRef}
-            component="div"
-            sx={{
-              color: theme.descriptionColor,
-              pr: isClamped && !expanded ? 12 : 0,
-              ...clampSx,
-            }}
-          >
-            {description}
-            {isClamped && !expanded && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  right: 0,
-                  bottom: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  pl: 2,
-                  // fade so the button blends over truncated text
-                  background: theme.linearGradient,
-                }}
-              >
-                <Link
-                  component="button"
-                  type="button"
-                  onClick={() => setExpanded((v) => !v)}
-                  underline="none"
-                >
-                  {t("forminputsingle.show_more")}
-                </Link>
-              </Box>
-            )}
-            {!isClamped && expanded && (
-              <Box>
-                <Link
-                  component="button"
-                  type="button"
-                  onClick={() => setExpanded((v) => !v)}
-                  underline="none"
-                >
-                  {t("forminputsingle.show_less")}
-                </Link>
-              </Box>
-            )}
-          </Typography>
-        </Box>
-      )} */}
 
       {categories && categories.length > 0 ? (
         !multiple ? (
@@ -288,7 +241,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               {t("no_data")} {label || name}
             </Box>
           ) : (
-            <FormControl fullWidth {...fieldErrorProps}>
+            <FormControl fullWidth size="small" {...fieldErrorProps}>
               <Select
                 disabled={readOnly}
                 sx={
@@ -384,7 +337,12 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
         ) : (
           <Box sx={{ mt: depth === 0 ? 1 : 0 }}>
             {!readOnly && (
-              <FormControl fullWidth {...fieldErrorProps} sx={{ p: 1 }}>
+              <FormControl
+                fullWidth
+                size="small"
+                {...fieldErrorProps}
+                sx={{ p: 1 }}
+              >
                 <FormGroup>
                   {categories.map((option) => {
                     const code = option.split(" (")[0];
@@ -473,27 +431,21 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
           </Box>
         ) : readOnly ? (
           // Show formatted date text in readOnly mode instead of DatePicker
-          <TextField
+          <TextareaAutosize
             disabled
-            fullWidth
             value={value}
             placeholder={placeholder || `Enter ${label}`}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "white",
-                },
-                "&:hover fieldset": {
-                  borderColor: "white",
-                },
-                "&.Mui-disabled fieldset": {
-                  borderColor: "white",
-                },
-              },
-              "& .MuiInputBase-input.Mui-disabled": {
-                WebkitTextFillColor: "black",
-                color: "black",
-              },
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: "8.5px 14px",
+              fontFamily: "inherit",
+              fontSize: "inherit",
+              resize: "none",
+              borderColor: "white",
+              borderRadius: "4px",
+              color: "black",
+              WebkitTextFillColor: "black",
             }}
           />
         ) : (
@@ -550,7 +502,9 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               }}
               onBlur={handleBlur}
               format={placeholder === "YYYY" ? "yyyy" : "MM/dd/yyyy"}
-              slotProps={{ field: { error: !!validationError } }}
+              slotProps={{
+                textField: { size: "small", error: !!validationError },
+              }}
             />
           </LocalizationProvider>
         )
@@ -569,35 +523,44 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
           {t("no_data")} {label || name}
         </Box>
       ) : (
-        <TextField
-          disabled={readOnly}
-          sx={
-            readOnly
-              ? {
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: "white", // border color always white
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "white", // prevent hover changing border color
-                    },
-                    "&.Mui-disabled fieldset": {
-                      borderColor: "white", // disabled state border color white
-                    },
-                  },
-                  "& .MuiInputBase-input.Mui-disabled": {
-                    WebkitTextFillColor: "black", // disabled text color (adjust as needed)
-                  },
-                }
-              : {}
-          }
-          fullWidth
-          value={value}
-          placeholder={placeholder || `${t("forminputsingle.enter")} ${label}`}
-          onChange={(e) => onChange(valuePath, e.target.value)}
-          onBlur={handleBlur}
-          {...textErrorProps}
-        />
+        <Box sx={{ position: "relative", width: "100%" }}>
+          <TextareaAutosize
+            disabled={readOnly}
+            minRows={1}
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: "8.5px 14px",
+              fontFamily: "inherit",
+              fontSize: "inherit",
+              resize: readOnly ? "none" : "vertical",
+              borderColor: showError
+                ? "#d32f2f"
+                : readOnly
+                  ? "white"
+                  : "rgba(0, 0, 0, 0.23)",
+              borderRadius: "4px",
+              color: readOnly ? "black" : "inherit",
+              WebkitTextFillColor: readOnly ? "black" : "inherit",
+              outline: "none",
+            }}
+            value={value}
+            placeholder={
+              placeholder || `${t("forminputsingle.enter")} ${label}`
+            }
+            onChange={(e) => onChange(valuePath, e.target.value)}
+            onBlur={handleBlur}
+          />
+          {showError && (
+            <Typography
+              variant="caption"
+              color="error"
+              sx={{ mt: 0.5, ml: 1, display: "block" }}
+            >
+              {validationError}
+            </Typography>
+          )}
+        </Box>
       )}
       {/* {validationError && !readOnly && (
         <FormHelperText error>{validationError}</FormHelperText>

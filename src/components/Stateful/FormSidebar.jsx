@@ -69,6 +69,20 @@ const hasRecommendedFields = (fields) =>
 const hasOptionalFields = (fields) =>
   Array.isArray(fields) && fields.some((f) => f.optional);
 
+const getFieldByPath = (fieldsArray, targetPath) => {
+  if (!Array.isArray(fieldsArray)) return null;
+  for (const field of fieldsArray) {
+    if (field?.path === targetPath) {
+      return field;
+    }
+    if (field?.children?.length) {
+      const found = getFieldByPath(field.children, targetPath);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 function FormSidebar() {
   // ALL hooks at the top — no exceptions
   const pages = useSelector(selectPages);
@@ -76,8 +90,9 @@ function FormSidebar() {
   const fields = useSelector(selectFields);
   const {
     viewMode,
-    // fieldsPerPage
-  } = useSelector((state) => state.formUi);
+    currentPage = 1,
+    fieldsPerPage = 6,
+  } = useSelector((state) => state.formUi || {});
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -90,11 +105,78 @@ function FormSidebar() {
 
   const hasSchemaPages = Array.isArray(pages) && pages.length > 0;
 
+  const currentPageData = pages[activePage];
+  const currentDigest = currentPageData?.captureBaseDigest;
+
+  // Build the active path indices to know which parents are "open"
+  const activePathIndices = new Set();
+  let currIndex = activePage;
+  while (currIndex !== undefined && currIndex !== null) {
+    if (activePathIndices.has(currIndex)) break;
+    activePathIndices.add(currIndex);
+    const meta = childPagesMeta?.[currIndex];
+    currIndex = meta?.parentPageIndex;
+  }
+
+  const visiblePages = [];
+  const pagesWithIndex = pages.map((page, i) => ({ ...page, index: i }));
+
+  const basePages = pagesWithIndex.filter((p) => !p.isChildPage);
+
+  // Group children by their intended parent page
+  const childrenByParent = {};
+  pagesWithIndex.forEach((p) => {
+    if (p.isChildPage) {
+      const meta = childPagesMeta?.[p.index];
+      if (meta && meta.parentPageIndex !== undefined) {
+        if (!childrenByParent[meta.parentPageIndex]) {
+          childrenByParent[meta.parentPageIndex] = [];
+        }
+        childrenByParent[meta.parentPageIndex].push(p);
+      }
+    }
+  });
+
+  // Recursively build the list so children appear right under their parents
+  const addPageAndChildren = (page) => {
+    visiblePages.push(page);
+    if (activePathIndices.has(page.index)) {
+      const children = childrenByParent[page.index] || [];
+      children.forEach((child) => addPageAndChildren(child));
+    }
+  };
+
+  basePages.forEach((basePage) => addPageAndChildren(basePage));
+
   const isGeneratedChildPage =
     childFormNavigation?.useGeneratedPage &&
     !!childFormNavigation?.fallbackLabel;
 
   const displayedFields = getDisplayedFields(fields, viewMode);
+  const totalFlatPages = Math.ceil(displayedFields.length / fieldsPerPage);
+
+  let resolvedBasePageIndex = selectedPageIndex;
+  while (
+    resolvedBasePageIndex !== undefined &&
+    resolvedBasePageIndex !== null &&
+    pages[resolvedBasePageIndex]?.isChildPage
+  ) {
+    const meta = childPagesMeta?.[resolvedBasePageIndex];
+    if (meta?.parentPageIndex !== undefined) {
+      resolvedBasePageIndex = meta.parentPageIndex;
+    } else {
+      break;
+    }
+  }
+  const currentBasePageNumber =
+    basePages.findIndex((p) => p.index === resolvedBasePageIndex) + 1;
+
+  const currentDisplayPage = hasSchemaPages
+    ? currentBasePageNumber
+    : totalFlatPages === 0
+      ? 0
+      : currentPage;
+  const totalDisplayPages = hasSchemaPages ? basePages.length : totalFlatPages;
 
   const getViewModeChipSx = (modeKey) => ({
     backgroundColor:
@@ -118,6 +200,15 @@ function FormSidebar() {
     },
   });
 
+  const showMandatory = hasMandatoryFields(fields);
+  const showRecommended = hasRecommendedFields(fields);
+  const showOptional = hasOptionalFields(fields);
+  const availableModesCount = [
+    showMandatory,
+    showRecommended,
+    showOptional,
+  ].filter(Boolean).length;
+
   return (
     <Paper elevation={2} sx={{ borderRadius: 1, overflow: "hidden" }}>
       {/* SCHEMA PAGES NAV */}
@@ -132,43 +223,46 @@ function FormSidebar() {
         <Typography variant="h6">Form Navigation</Typography>
       </Box>
 
-      <Box
-        sx={{
-          p: 2,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 1,
-          flexWrap: "wrap",
-        }}
-      >
-        {hasMandatoryFields(fields) && (
-          <Chip
-            label={t("dynamicform.mandatory")}
-            clickable
-            sx={getViewModeChipSx("mandatory")}
-            onClick={() => dispatch(setViewMode("mandatory"))}
-          />
-        )}
-        {hasRecommendedFields(fields) && (
-          <Chip
-            label={t("dynamicform.recommended")}
-            clickable
-            onClick={() => dispatch(setViewMode("recommended"))}
-            sx={getViewModeChipSx("recommended")}
-          />
-        )}
-        {hasOptionalFields(fields) && (
-          <Chip
-            label={t("dynamicform.complete")}
-            clickable
-            onClick={() => dispatch(setViewMode("complete"))}
-            sx={getViewModeChipSx("complete")}
-          />
-        )}
-      </Box>
-      <Typography variant="body2" px="5px" pb="10px" align="center">
-        Showing {displayedFields.length} of {fields.length} fields
+      {availableModesCount > 1 && (
+        <Box
+          sx={{
+            px: 2,
+            pt: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 1,
+            flexWrap: "wrap",
+          }}
+        >
+          {showMandatory && (
+            <Chip
+              label={t("dynamicform.mandatory")}
+              clickable
+              sx={getViewModeChipSx("mandatory")}
+              onClick={() => dispatch(setViewMode("mandatory"))}
+            />
+          )}
+          {showRecommended && (
+            <Chip
+              label={t("dynamicform.recommended")}
+              clickable
+              onClick={() => dispatch(setViewMode("recommended"))}
+              sx={getViewModeChipSx("recommended")}
+            />
+          )}
+          {showOptional && (
+            <Chip
+              label={t("dynamicform.complete")}
+              clickable
+              onClick={() => dispatch(setViewMode("complete"))}
+              sx={getViewModeChipSx("complete")}
+            />
+          )}
+        </Box>
+      )}
+      <Typography variant="body2" px="5px" py="10px" align="center">
+        Showing Page {currentDisplayPage} of {totalDisplayPages} Pages
       </Typography>
 
       <Divider />
@@ -193,32 +287,119 @@ function FormSidebar() {
         </List>
       ) : hasSchemaPages ? (
         <List disablePadding>
-          {pages.map((page, i) => {
+          {visiblePages.map((page) => {
+            const i = page.index;
             const childMeta = childPagesMeta?.[i]; // from fieldSchema.childPages
-            const isChildPage = !!childMeta;
+            const isChildPage = !!page.isChildPage;
+            const depth = page.depth || 0;
 
             return (
               <ListItemButton
                 key={page.id}
                 selected={selectedPageIndex === i}
                 onClick={() => {
-                  if (isChildPage) {
-                    const parentFieldPath = childMeta.parentFieldPath; // e.g. "title"
-                    const parentPageIndex = childMeta.parentPageIndex;
-                    const label = childMeta.label;
+                  const hasActiveChildPage =
+                    childFormNavigation?.childPageIndex !== undefined &&
+                    childFormNavigation?.childPageIndex !== null;
 
-                    // Use instanceCountsSlice shape: state.instanceCounts.instanceCounts
-                    const count = allInstanceCounts[parentFieldPath] || 0;
-                    const nextValuePath = `${parentFieldPath}[${count}]`;
+                  if (hasActiveChildPage) {
+                    if (selectedPageIndex === i) {
+                      return;
+                    }
+
+                    let isSuccessor = false;
+                    let curr = i;
+                    while (curr !== undefined && curr !== null) {
+                      const meta = childPagesMeta?.[curr];
+                      if (meta?.parentPageIndex === selectedPageIndex) {
+                        isSuccessor = true;
+                        break;
+                      }
+                      curr = meta?.parentPageIndex;
+                    }
+
+                    if (!isSuccessor) {
+                      const confirmDiscard = window.confirm(
+                        "All changes that you have made will get discarded. Do you want to continue?",
+                      );
+                      if (!confirmDiscard) {
+                        return;
+                      }
+                    }
+                  }
+
+                  if (isChildPage) {
+                    const parentFieldPath = childMeta?.parentFieldPath;
+                    const parentPageIndex = childMeta?.parentPageIndex;
+                    const label = childMeta?.label || page.sidebarLabel;
+
+                    let count = 0;
+                    let actualParentPath = parentFieldPath;
+
+                    if (parentFieldPath && allInstanceCounts) {
+                      if (allInstanceCounts[parentFieldPath] !== undefined) {
+                        count = allInstanceCounts[parentFieldPath];
+                      } else {
+                        let found = false;
+                        for (const key of Object.keys(allInstanceCounts)) {
+                          const schemaKey = key.replace(/\[\d+\]/g, "");
+                          if (schemaKey === parentFieldPath) {
+                            count = allInstanceCounts[key];
+                            actualParentPath = key;
+                            found = true;
+                            break;
+                          }
+                        }
+                        if (!found && parentFieldPath) {
+                          const segments = parentFieldPath.split(".");
+                          let currentSchemaPath = "";
+                          let constructedPath = "";
+
+                          segments.forEach((seg, index) => {
+                            currentSchemaPath = currentSchemaPath
+                              ? `${currentSchemaPath}.${seg}`
+                              : seg;
+                            const f = getFieldByPath(fields, currentSchemaPath);
+                            const isSegMultiple =
+                              f?.multiple === true || f?.multiple === "true";
+
+                            constructedPath = constructedPath
+                              ? `${constructedPath}.${seg}`
+                              : seg;
+
+                            if (isSegMultiple && index < segments.length - 1) {
+                              constructedPath += "[0]";
+                            }
+                          });
+                          actualParentPath = constructedPath;
+                        }
+                      }
+                    }
+
+                    const parentField = getFieldByPath(fields, parentFieldPath);
+                    const isMultiple =
+                      parentField?.multiple === true ||
+                      parentField?.multiple === "true";
+
+                    let nextValuePath;
+                    let isEdit = false;
+
+                    if (!isMultiple) {
+                      nextValuePath = actualParentPath;
+                      isEdit = true;
+                    } else {
+                      nextValuePath = `${actualParentPath}[${count}]`;
+                      isEdit = false;
+                    }
 
                     dispatch(
                       setChildFormNavigation({
                         nextValuePath,
                         parentPageIndex,
                         childPageIndex: i,
-                        isEdit: false, // behaves like ADD
+                        isEdit,
                         fallbackLabel: label,
-                        fallbackFieldPath: parentFieldPath,
+                        fallbackFieldPath: actualParentPath,
                         useGeneratedPage: false,
                       }),
                     );
@@ -230,6 +411,7 @@ function FormSidebar() {
                   }
                 }}
                 sx={{
+                  pl: 2 + (page.depth || 0) * 2,
                   "&.Mui-selected": {
                     backgroundColor: theme.secondaryColor,
                     color: theme.primaryColor,
@@ -245,67 +427,6 @@ function FormSidebar() {
           })}
         </List>
       ) : null}
-      {/* {hasSchemaPages && (
-        <>
-          <Box
-            sx={{
-              px: 2,
-              py: 1.5,
-              backgroundColor: theme.secondaryColor,
-              color: theme.primaryColor,
-            }}
-          >
-            <Typography variant="subtitle1">Schema Pages</Typography>
-          </Box>
-
-          <List disablePadding>
-            {pages.map((page, i) => (
-              <ListItemButton
-                key={page.id}
-                selected={activePage === i}
-                onClick={() => dispatch(setActivePage(i))}
-                sx={{
-                  "&.Mui-selected": {
-                    backgroundColor: theme.secondaryColor,
-                    color: theme.primaryColor,
-                  },
-                  "&.Mui-selected:hover": {
-                    backgroundColor: theme.secondaryColor,
-                  },
-                }}
-              >
-                <ListItemText primary={page.sidebarLabel} />
-              </ListItemButton>
-            ))}
-          </List>
-        </>
-      )} */}
-
-      {/* <Divider /> */}
-
-      {/* <List>
-        {pageItems.map((item) => (
-          <ListItemButton
-            key={item.pageNumber}
-            selected={currentPage === item.pageNumber}
-            onClick={() => dispatch(setCurrentPage(item.pageNumber))}
-            sx={{
-              "&.Mui-selected": {
-                backgroundColor: theme.secondaryColor,
-                color: theme.primaryColor,
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: theme.secondaryColor,
-              },
-            }}
-          >
-            <ListItemText
-              primary={`${t("dynamicform.page")} ${item.pageNumber}`}
-              secondary={`${item.label} • ${item.count} ${t("dynamicform.fields")}`}
-            />
-          </ListItemButton>
-        ))}
-      </List> */}
     </Paper>
   );
 }

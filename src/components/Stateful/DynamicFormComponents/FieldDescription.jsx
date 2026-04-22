@@ -79,6 +79,7 @@ const FieldDescription = ({ valuePath }) => {
             ref={descriptionRef}
             component="div"
             sx={{
+              fontSize: 13,
               color: theme.descriptionColor,
               pr: isClamped && !expanded ? 12 : 0,
               ...clampSx,
