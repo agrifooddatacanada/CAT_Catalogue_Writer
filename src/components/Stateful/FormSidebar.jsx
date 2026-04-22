@@ -147,14 +147,6 @@ function FormSidebar() {
 
   basePages.forEach((basePage) => addPageAndChildren(basePage));
 
-  console.log("=== SIDEBAR DEBUG ===");
-  console.log("activePage:", activePage);
-  console.log("activePathIndices:", [...activePathIndices]);
-  console.log(
-    "visiblePages:",
-    visiblePages.map((p) => p.id),
-  );
-
   const isGeneratedChildPage =
     childFormNavigation?.useGeneratedPage &&
     !!childFormNavigation?.fallbackLabel;
@@ -183,6 +175,15 @@ function FormSidebar() {
     },
   });
 
+  const showMandatory = hasMandatoryFields(fields);
+  const showRecommended = hasRecommendedFields(fields);
+  const showOptional = hasOptionalFields(fields);
+  const availableModesCount = [
+    showMandatory,
+    showRecommended,
+    showOptional,
+  ].filter(Boolean).length;
+
   return (
     <Paper elevation={2} sx={{ borderRadius: 1, overflow: "hidden" }}>
       {/* SCHEMA PAGES NAV */}
@@ -197,43 +198,45 @@ function FormSidebar() {
         <Typography variant="h6">Form Navigation</Typography>
       </Box>
 
-      <Box
-        sx={{
-          p: 2,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 1,
-          flexWrap: "wrap",
-        }}
-      >
-        {hasMandatoryFields(fields) && (
-          <Chip
-            label={t("dynamicform.mandatory")}
-            clickable
-            sx={getViewModeChipSx("mandatory")}
-            onClick={() => dispatch(setViewMode("mandatory"))}
-          />
-        )}
-        {hasRecommendedFields(fields) && (
-          <Chip
-            label={t("dynamicform.recommended")}
-            clickable
-            onClick={() => dispatch(setViewMode("recommended"))}
-            sx={getViewModeChipSx("recommended")}
-          />
-        )}
-        {hasOptionalFields(fields) && (
-          <Chip
-            label={t("dynamicform.complete")}
-            clickable
-            onClick={() => dispatch(setViewMode("complete"))}
-            sx={getViewModeChipSx("complete")}
-          />
-        )}
-      </Box>
-      <Typography variant="body2" px="5px" pb="10px" align="center">
-        Showing {displayedFields.length} of {fields.length} fields
+      {availableModesCount > 1 && (
+        <Box
+          sx={{
+            px: 2,
+            pt: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 1,
+            flexWrap: "wrap",
+          }}
+        >
+          {showMandatory && (
+            <Chip
+              label={t("dynamicform.mandatory")}
+              clickable
+              sx={getViewModeChipSx("mandatory")}
+              onClick={() => dispatch(setViewMode("mandatory"))}
+            />
+          )}
+          {showRecommended && (
+            <Chip
+              label={t("dynamicform.recommended")}
+              clickable
+              onClick={() => dispatch(setViewMode("recommended"))}
+              sx={getViewModeChipSx("recommended")}
+            />
+          )}
+          {showOptional && (
+            <Chip
+              label={t("dynamicform.complete")}
+              clickable
+              onClick={() => dispatch(setViewMode("complete"))}
+              sx={getViewModeChipSx("complete")}
+            />
+          )}
+        </Box>
+      )}
+      <Typography variant="body2" px="5px" py="10px" align="center">
       </Typography>
 
       <Divider />
@@ -398,67 +401,6 @@ function FormSidebar() {
           })}
         </List>
       ) : null}
-      {/* {hasSchemaPages && (
-        <>
-          <Box
-            sx={{
-              px: 2,
-              py: 1.5,
-              backgroundColor: theme.secondaryColor,
-              color: theme.primaryColor,
-            }}
-          >
-            <Typography variant="subtitle1">Schema Pages</Typography>
-          </Box>
-
-          <List disablePadding>
-            {pages.map((page, i) => (
-              <ListItemButton
-                key={page.id}
-                selected={activePage === i}
-                onClick={() => dispatch(setActivePage(i))}
-                sx={{
-                  "&.Mui-selected": {
-                    backgroundColor: theme.secondaryColor,
-                    color: theme.primaryColor,
-                  },
-                  "&.Mui-selected:hover": {
-                    backgroundColor: theme.secondaryColor,
-                  },
-                }}
-              >
-                <ListItemText primary={page.sidebarLabel} />
-              </ListItemButton>
-            ))}
-          </List>
-        </>
-      )} */}
-
-      {/* <Divider /> */}
-
-      {/* <List>
-        {pageItems.map((item) => (
-          <ListItemButton
-            key={item.pageNumber}
-            selected={currentPage === item.pageNumber}
-            onClick={() => dispatch(setCurrentPage(item.pageNumber))}
-            sx={{
-              "&.Mui-selected": {
-                backgroundColor: theme.secondaryColor,
-                color: theme.primaryColor,
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: theme.secondaryColor,
-              },
-            }}
-          >
-            <ListItemText
-              primary={`${t("dynamicform.page")} ${item.pageNumber}`}
-              secondary={`${item.label} • ${item.count} ${t("dynamicform.fields")}`}
-            />
-          </ListItemButton>
-        ))}
-      </List> */}
     </Paper>
   );
 }
