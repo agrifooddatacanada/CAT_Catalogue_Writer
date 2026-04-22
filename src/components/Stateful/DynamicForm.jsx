@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
-import { Box, Button, Pagination, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Box, Button, Pagination, Typography, Fab } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 import theme from "../../theme";
 import canonicalize from "../../utils/canonicalize";
@@ -66,6 +67,27 @@ const getValueByPath = (obj, path) => {
 function DynamicForm({ isEditMode = false }) {
   const { t } = useTranslation(); // use translation function
   const navigate = useNavigate();
+
+  const [showTopBtn, setShowTopBtn] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowTopBtn(true);
+      } else {
+        setShowTopBtn(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const goToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
   const dispatch = useDispatch();
   const formState = useSelector(selectAllFormValues);
   const fields = useSelector(selectFields);
@@ -157,6 +179,13 @@ function DynamicForm({ isEditMode = false }) {
     viewMode = "mandatory",
     fieldsPerPage = 6,
   } = useSelector((state) => state.formUi || {});
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [activePage, currentPage]);
 
   // Helper functions
   const hasMandatoryFields = (fieldList) => {
@@ -373,6 +402,8 @@ function DynamicForm({ isEditMode = false }) {
                 nextValuePath={session.path}
                 isOpen={true}
                 isEdit={session.isEdit}
+                pageIndex={session.pageIndex}
+                isGenerated={session.isGenerated}
                 onClose={() => {
                   if (!isLast) return;
 
@@ -574,12 +605,6 @@ function DynamicForm({ isEditMode = false }) {
                         key={item.id}
                         sx={{
                           mt: 4,
-                          pb: 2,
-                          // border: 1,
-                          // // borderStyle: "groove",
-                          // borderInlineWidth: 20,
-                          // borderBlockColor: "grey",
-                          // borderStyle: "none",
                           mb: 2,
                           p: 3,
                           border: "1px solid",
@@ -721,7 +746,7 @@ function DynamicForm({ isEditMode = false }) {
                     type="submit"
                     disabled={!rootIsValid}
                     sx={{
-                      mt: 2,
+                      mt: 3,
                       backgroundColor: theme.primaryColor,
                       "&:hover": {
                         backgroundColor: theme.primaryColor,
@@ -808,6 +833,26 @@ function DynamicForm({ isEditMode = false }) {
         </Typography>
         <pre>{JSON.stringify(fields, null, 2)}</pre>
       </Box> */}
+
+      {showTopBtn && (
+        <Fab
+          color="primary"
+          size="medium"
+          onClick={goToTop}
+          sx={{
+            position: "fixed",
+            bottom: 32,
+            right: 32,
+            zIndex: 1000,
+            backgroundColor: theme.primaryColor,
+            "&:hover": {
+              backgroundColor: theme.secondaryColor,
+            },
+          }}
+        >
+          <KeyboardArrowUpIcon sx={{ color: theme.backgroundColor }} />
+        </Fab>
+      )}
     </>
   );
 }
