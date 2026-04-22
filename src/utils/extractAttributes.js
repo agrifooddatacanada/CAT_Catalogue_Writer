@@ -201,6 +201,7 @@ function extractAttributesFromCaptureBase(
   extensions = {},
 ) {
   const attributes = captureBase.attributes || {};
+  const currentDigest = captureBase.d;
   const fields = [];
 
   for (const [key, value] of Object.entries(attributes)) {
@@ -248,22 +249,6 @@ function extractAttributesFromCaptureBase(
       fieldType = "object";
     }
 
-    // ATTACH LABELS, CATEGORIES, REQUIRED/MULTIPLE FLAGS
-    // const conformanceValue = getConformanceValue(conformances, key);
-    // const required = conformanceValue === "M";
-    // const recommended = conformanceValue === "R";
-    // const optional = conformanceValue === "O";
-    // const cardinality = cardinalities[key];
-    // const multiple = cardinality
-    //   ? cardinality.includes("n") ||
-    //     cardinality === "1-" ||
-    //     cardinality === "0-"
-    //   : false;
-    // const categories = entryCodes[key] || null;
-    // const label = labels[key] || key; // This will now use dependency-specific labels
-    // const placeholder = placeholders[key] || "";
-    // const description = descriptions[key] || "";
-
     fields.push({
       name: key,
       label: labels[key] || key, // This will now use dependency-specific labels
@@ -279,6 +264,7 @@ function extractAttributesFromCaptureBase(
           cardinalities[key] === "0-"
         : false,
       categories: entryCodes[key] || null,
+      captureBase: currentDigest,
       children,
     });
   }
@@ -377,6 +363,7 @@ export function extractAttributes(
   // READ `capture_base` FROM THE BUNDLE
   const captureBase = bundle[baseKey];
   if (!captureBase) return [];
+  const currentDigest = captureBase.d || captureBase["d"];
 
   // GET CARDINALITIES, CONFORMANCES, LABELS, ENTRY CODES
   const cardinalities =
@@ -478,6 +465,7 @@ export function extractAttributes(
       optional,
       multiple,
       categories,
+      captureBase: currentDigest,
       children,
     });
   }

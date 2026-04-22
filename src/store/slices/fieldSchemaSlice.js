@@ -36,10 +36,11 @@ const fieldSchema = createSlice({
         action.payload;
       if (childPageIndex === null || childPageIndex === undefined) return;
 
+      const existing = state.childPages[childPageIndex];
       state.childPages[childPageIndex] = {
-        parentFieldPath,
-        parentPageIndex,
-        label,
+        parentFieldPath: parentFieldPath || existing?.parentFieldPath,
+        parentPageIndex: existing?.parentPageIndex !== undefined ? existing.parentPageIndex : parentPageIndex,
+        label: label || existing?.label,
       };
     },
     resetFieldSchemas: (state) => {

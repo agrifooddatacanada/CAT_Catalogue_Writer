@@ -192,6 +192,7 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
   const handleAddAsPage = () => {
     dispatch(
       setChildFormNavigation({
+        push: true,
         nextValuePath: `${valuePath}[${instanceCount}]`,
         parentPageIndex: activePageIndex,
         childPageIndex: linkedChildPageIndex,
@@ -213,6 +214,7 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
   const handleEdit = (instance) => {
     dispatch(
       setChildFormNavigation({
+        push: true,
         nextValuePath: `${valuePath}[${instance.reduxIndex}]`,
         parentPageIndex: activePageIndex,
         childPageIndex: linkedChildPageIndex >= 0 ? linkedChildPageIndex : null,

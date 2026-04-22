@@ -69,6 +69,20 @@ const hasRecommendedFields = (fields) =>
 const hasOptionalFields = (fields) =>
   Array.isArray(fields) && fields.some((f) => f.optional);
 
+const getFieldByPath = (fieldsArray, targetPath) => {
+  if (!Array.isArray(fieldsArray)) return null;
+  for (const field of fieldsArray) {
+    if (field?.path === targetPath) {
+      return field;
+    }
+    if (field?.children?.length) {
+      const found = getFieldByPath(field.children, targetPath);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 function FormSidebar() {
   // ALL hooks at the top — no exceptions
   const pages = useSelector(selectPages);
@@ -89,6 +103,57 @@ function FormSidebar() {
   const selectedPageIndex = childFormNavigation?.childPageIndex ?? activePage;
 
   const hasSchemaPages = Array.isArray(pages) && pages.length > 0;
+
+  const currentPageData = pages[activePage];
+  const currentDigest = currentPageData?.captureBaseDigest;
+
+  // Build the active path indices to know which parents are "open"
+  const activePathIndices = new Set();
+  let currIndex = activePage;
+  while (currIndex !== undefined && currIndex !== null) {
+    if (activePathIndices.has(currIndex)) break;
+    activePathIndices.add(currIndex);
+    const meta = childPagesMeta?.[currIndex];
+    currIndex = meta?.parentPageIndex;
+  }
+
+  const visiblePages = [];
+  const pagesWithIndex = pages.map((page, i) => ({ ...page, index: i }));
+
+  const basePages = pagesWithIndex.filter((p) => !p.isChildPage);
+
+  // Group children by their intended parent page
+  const childrenByParent = {};
+  pagesWithIndex.forEach((p) => {
+    if (p.isChildPage) {
+      const meta = childPagesMeta?.[p.index];
+      if (meta && meta.parentPageIndex !== undefined) {
+        if (!childrenByParent[meta.parentPageIndex]) {
+          childrenByParent[meta.parentPageIndex] = [];
+        }
+        childrenByParent[meta.parentPageIndex].push(p);
+      }
+    }
+  });
+
+  // Recursively build the list so children appear right under their parents
+  const addPageAndChildren = (page) => {
+    visiblePages.push(page);
+    if (activePathIndices.has(page.index)) {
+      const children = childrenByParent[page.index] || [];
+      children.forEach((child) => addPageAndChildren(child));
+    }
+  };
+
+  basePages.forEach((basePage) => addPageAndChildren(basePage));
+
+  console.log("=== SIDEBAR DEBUG ===");
+  console.log("activePage:", activePage);
+  console.log("activePathIndices:", [...activePathIndices]);
+  console.log(
+    "visiblePages:",
+    visiblePages.map((p) => p.id),
+  );
 
   const isGeneratedChildPage =
     childFormNavigation?.useGeneratedPage &&
@@ -193,32 +258,119 @@ function FormSidebar() {
         </List>
       ) : hasSchemaPages ? (
         <List disablePadding>
-          {pages.map((page, i) => {
+          {visiblePages.map((page) => {
+            const i = page.index;
             const childMeta = childPagesMeta?.[i]; // from fieldSchema.childPages
-            const isChildPage = !!childMeta;
+            const isChildPage = !!page.isChildPage;
+            const depth = page.depth || 0;
 
             return (
               <ListItemButton
                 key={page.id}
                 selected={selectedPageIndex === i}
                 onClick={() => {
-                  if (isChildPage) {
-                    const parentFieldPath = childMeta.parentFieldPath; // e.g. "title"
-                    const parentPageIndex = childMeta.parentPageIndex;
-                    const label = childMeta.label;
+                  const hasActiveChildPage =
+                    childFormNavigation?.childPageIndex !== undefined &&
+                    childFormNavigation?.childPageIndex !== null;
 
-                    // Use instanceCountsSlice shape: state.instanceCounts.instanceCounts
-                    const count = allInstanceCounts[parentFieldPath] || 0;
-                    const nextValuePath = `${parentFieldPath}[${count}]`;
+                  if (hasActiveChildPage) {
+                    if (selectedPageIndex === i) {
+                      return;
+                    }
+
+                    let isSuccessor = false;
+                    let curr = i;
+                    while (curr !== undefined && curr !== null) {
+                      const meta = childPagesMeta?.[curr];
+                      if (meta?.parentPageIndex === selectedPageIndex) {
+                        isSuccessor = true;
+                        break;
+                      }
+                      curr = meta?.parentPageIndex;
+                    }
+
+                    if (!isSuccessor) {
+                      const confirmDiscard = window.confirm(
+                        "All changes that you have made will get discarded. Do you want to continue?",
+                      );
+                      if (!confirmDiscard) {
+                        return;
+                      }
+                    }
+                  }
+
+                  if (isChildPage) {
+                    const parentFieldPath = childMeta?.parentFieldPath;
+                    const parentPageIndex = childMeta?.parentPageIndex;
+                    const label = childMeta?.label || page.sidebarLabel;
+
+                    let count = 0;
+                    let actualParentPath = parentFieldPath;
+
+                    if (parentFieldPath && allInstanceCounts) {
+                      if (allInstanceCounts[parentFieldPath] !== undefined) {
+                        count = allInstanceCounts[parentFieldPath];
+                      } else {
+                        let found = false;
+                        for (const key of Object.keys(allInstanceCounts)) {
+                          const schemaKey = key.replace(/\[\d+\]/g, "");
+                          if (schemaKey === parentFieldPath) {
+                            count = allInstanceCounts[key];
+                            actualParentPath = key;
+                            found = true;
+                            break;
+                          }
+                        }
+                        if (!found && parentFieldPath) {
+                          const segments = parentFieldPath.split(".");
+                          let currentSchemaPath = "";
+                          let constructedPath = "";
+
+                          segments.forEach((seg, index) => {
+                            currentSchemaPath = currentSchemaPath
+                              ? `${currentSchemaPath}.${seg}`
+                              : seg;
+                            const f = getFieldByPath(fields, currentSchemaPath);
+                            const isSegMultiple =
+                              f?.multiple === true || f?.multiple === "true";
+
+                            constructedPath = constructedPath
+                              ? `${constructedPath}.${seg}`
+                              : seg;
+
+                            if (isSegMultiple && index < segments.length - 1) {
+                              constructedPath += "[0]";
+                            }
+                          });
+                          actualParentPath = constructedPath;
+                        }
+                      }
+                    }
+
+                    const parentField = getFieldByPath(fields, parentFieldPath);
+                    const isMultiple =
+                      parentField?.multiple === true ||
+                      parentField?.multiple === "true";
+
+                    let nextValuePath;
+                    let isEdit = false;
+
+                    if (!isMultiple) {
+                      nextValuePath = actualParentPath;
+                      isEdit = true;
+                    } else {
+                      nextValuePath = `${actualParentPath}[${count}]`;
+                      isEdit = false;
+                    }
 
                     dispatch(
                       setChildFormNavigation({
                         nextValuePath,
                         parentPageIndex,
                         childPageIndex: i,
-                        isEdit: false, // behaves like ADD
+                        isEdit,
                         fallbackLabel: label,
-                        fallbackFieldPath: parentFieldPath,
+                        fallbackFieldPath: actualParentPath,
                         useGeneratedPage: false,
                       }),
                     );
@@ -230,6 +382,7 @@ function FormSidebar() {
                   }
                 }}
                 sx={{
+                  pl: 2 + (page.depth || 0) * 2,
                   "&.Mui-selected": {
                     backgroundColor: theme.secondaryColor,
                     color: theme.primaryColor,

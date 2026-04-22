@@ -21,7 +21,10 @@ import { setViewMode, setCurrentPage } from "../../store/slices/formUiSlice";
 import { selectActivePage } from "../../store/slices/activePageSlice";
 import { selectPages } from "../../store/selectors/formSelectors";
 import NestedChildFormContent from "./DynamicFormComponents/NestedChildFormContent";
-import { clearChildFormNavigation } from "../../store/slices/childFormNavigationSlice";
+import {
+  clearChildFormNavigation,
+  setChildFormNavigation,
+} from "../../store/slices/childFormNavigationSlice";
 import { setActivePage } from "../../store/slices/activePageSlice";
 
 const filterMandatoryFields = (fields) => {
@@ -44,6 +47,21 @@ const filterRecommendedFields = (fields) => {
     }));
 };
 
+const getValueByPath = (obj, path) => {
+  if (!obj || !path) return undefined;
+  try {
+    const parts = path.replace(/\[(\w+)\]/g, ".$1").split(".");
+    let current = obj;
+    for (let part of parts) {
+      if (current === null || current === undefined) return undefined;
+      current = current[part];
+    }
+    return current;
+  } catch (e) {
+    return undefined;
+  }
+};
+
 // COMPONENT STATE
 function DynamicForm({ isEditMode = false }) {
   const { t } = useTranslation(); // use translation function
@@ -56,6 +74,8 @@ function DynamicForm({ isEditMode = false }) {
   const activePage = useSelector(selectActivePage);
 
   const childFormNavigation = useSelector((state) => state.childFormNavigation);
+
+  const childPagesMeta = useSelector((state) => state.fieldSchema.childPages);
 
   const hasActiveChildSession = !!childFormNavigation?.nextValuePath;
 
@@ -71,18 +91,66 @@ function DynamicForm({ isEditMode = false }) {
     childFormNavigation?.childPageIndex !== null &&
     childFormNavigation?.childPageIndex === activePage;
 
+  // Collect all page indices registered as children (at any level)
+  const allChildPageIndices = new Set(
+    Object.entries(childPagesMeta || {}).map(([pageIndex]) =>
+      Number(pageIndex),
+    ),
+  );
+
+  const basePageIndices = pages
+    .map((_, i) => i)
+    .filter((i) => !pages[i]?.isChildPage);
+
+  // console.log("childPagesMeta:", childPagesMeta);
+  // console.log("allChildPageIndices:", [...allChildPageIndices]);
+  // console.log("basePageIndices:", basePageIndices);
+
+  const isCurrentPageAChildPage = !!pages[activePage]?.isChildPage;
+
+  const currentBasePagePosition = basePageIndices.indexOf(activePage);
+
   const isNestedChildPage = isGeneratedChildPage || isSchemaBackedChildPage;
 
-  const sourceFields = hasSchemaPages
-    ? (activePageData?.items || []).flatMap((item) =>
-        item.type === "section" ? item.fields : [item.field],
-      )
-    : fields;
+  const isLastBasePage =
+    !isCurrentPageAChildPage &&
+    pages
+      .map((_, i) => i)
+      .filter((i) => !childPagesMeta?.[i]) // only base pages
+      .at(-1) === activePage;
+
+  const showNextButton =
+    hasSchemaPages &&
+    !isNestedChildPage &&
+    !isCurrentPageAChildPage &&
+    currentBasePagePosition < basePageIndices.length - 1;
+
+  const showBackButton =
+    hasSchemaPages &&
+    !isNestedChildPage &&
+    !isCurrentPageAChildPage &&
+    currentBasePagePosition > 0;
 
   const rootIsValid = useSelector(selectIsRootFormValid);
 
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
+
+  const getActiveItems = () => {
+    if (!hasSchemaPages) return [];
+    if (readOnly) {
+      return basePageIndices.flatMap((idx) => pages[idx]?.items || []);
+    }
+    return activePageData?.items || [];
+  };
+
+  const activeItems = getActiveItems();
+
+  const sourceFields = hasSchemaPages
+    ? activeItems.flatMap((item) =>
+        item.type === "section" ? item.fields : [item.field],
+      )
+    : fields;
 
   const {
     currentPage = 1,
@@ -153,7 +221,7 @@ function DynamicForm({ isEditMode = false }) {
   };
 
   const displayedItems = hasSchemaPages
-    ? (activePageData?.items || [])
+    ? activeItems
         .map((item) => {
           if (item.type === "field") {
             const filtered = filterFieldsByViewMode([item.field]);
@@ -182,7 +250,9 @@ function DynamicForm({ isEditMode = false }) {
     ? Math.ceil(displayedFields.length / fieldsPerPage)
     : 0;
   const currentPageFields = Array.isArray(displayedFields)
-    ? displayedFields.slice(startIndex, endIndex)
+    ? readOnly
+      ? displayedFields
+      : displayedFields.slice(startIndex, endIndex)
     : [];
 
   // Reset to first page when switching between Mandatory/Complete view
@@ -248,30 +318,106 @@ function DynamicForm({ isEditMode = false }) {
   };
 
   if (isNestedChildPage) {
+    const activeChildSessions = [];
+
+    if (isGeneratedChildPage) {
+      activeChildSessions.push({
+        isGenerated: true,
+        path: childFormNavigation.nextValuePath,
+        isEdit: childFormNavigation.isEdit,
+      });
+    } else {
+      let currIdx = childFormNavigation.childPageIndex;
+      let currPath = childFormNavigation.nextValuePath || "";
+
+      while (currIdx !== null && currIdx !== undefined) {
+        const meta = childPagesMeta?.[currIdx];
+        if (!meta) break; // Base page reached
+
+        const val = getValueByPath(formState, currPath);
+        const derivedIsEdit = val !== undefined && val !== null;
+
+        // Prepend so the deepest child is at the end of the array
+        activeChildSessions.unshift({
+          pageIndex: currIdx,
+          path: currPath,
+          parentPageIndex: meta.parentPageIndex,
+          meta: meta,
+          isEdit: derivedIsEdit,
+        });
+
+        currIdx = meta.parentPageIndex;
+        const lastDotIndex = currPath.lastIndexOf(".");
+        currPath =
+          lastDotIndex !== -1 ? currPath.substring(0, lastDotIndex) : currPath;
+      }
+
+      // Override the deepest active descendant with the exact navigated state
+      if (activeChildSessions.length > 0) {
+        activeChildSessions[activeChildSessions.length - 1].isEdit =
+          childFormNavigation.isEdit;
+      }
+    }
+
     return (
       <>
-        {/* {!readOnly && (
-          <Typography
-            sx={{ mb: "15px", fontSize: "13px", fontStyle: "italic" }}
-          >
-            {t("dynamicform.all_fields")}
-            <span style={{ color: "red" }}>*</span>
-            {t("dynamicform.are_mandatory")}
-          </Typography>
-        )} */}
+        {activeChildSessions.map((session, index) => {
+          const isLast = index === activeChildSessions.length - 1;
+          const key = session.isGenerated
+            ? `gen-${session.path}`
+            : `schema-${session.pageIndex}-${session.path}`;
 
-        <NestedChildFormContent
-          nextValuePath={childFormNavigation.nextValuePath}
-          isOpen={true}
-          isEdit={childFormNavigation.isEdit}
-          onClose={() => {
-            if (childFormNavigation.parentPageIndex !== null) {
-              dispatch(setActivePage(childFormNavigation.parentPageIndex));
-            }
-            dispatch(setCurrentPage(1));
-            dispatch(clearChildFormNavigation());
-          }}
-        />
+          return (
+            <Box key={key} sx={{ display: isLast ? "block" : "none" }}>
+              <NestedChildFormContent
+                nextValuePath={session.path}
+                isOpen={true}
+                isEdit={session.isEdit}
+                onClose={() => {
+                  if (!isLast) return;
+
+                  const parentIdx = childFormNavigation.parentPageIndex;
+                  if (parentIdx !== null && parentIdx !== undefined) {
+                    dispatch(setActivePage(parentIdx));
+
+                    const parentMeta = childPagesMeta?.[parentIdx];
+                    if (parentMeta) {
+                      const currentPath =
+                        childFormNavigation.nextValuePath || "";
+                      const lastDotIndex = currentPath.lastIndexOf(".");
+                      const parentPath =
+                        lastDotIndex !== -1
+                          ? currentPath.substring(0, lastDotIndex)
+                          : currentPath;
+
+                      const parentVal = getValueByPath(formState, parentPath);
+                      const isParentEdit =
+                        parentVal !== undefined && parentVal !== null;
+
+                      dispatch(
+                        setChildFormNavigation({
+                          nextValuePath: parentPath,
+                          parentPageIndex: parentMeta.parentPageIndex,
+                          childPageIndex: parentIdx,
+                          isEdit: isParentEdit,
+                          fallbackLabel:
+                            parentMeta.label || pages[parentIdx]?.sidebarLabel,
+                          fallbackFieldPath: parentPath,
+                          useGeneratedPage: false,
+                        }),
+                      );
+                    } else {
+                      dispatch(clearChildFormNavigation());
+                    }
+                  } else {
+                    dispatch(clearChildFormNavigation());
+                  }
+                  dispatch(setCurrentPage(1));
+                }}
+              />
+            </Box>
+          );
+        })}
       </>
     );
   }
@@ -486,7 +632,7 @@ function DynamicForm({ isEditMode = false }) {
             )} */}
 
             {/* PAGE INDICATOR */}
-            {!hasSchemaPages && (
+            {!hasSchemaPages && !readOnly && (
               <Box sx={{ mt: 3, textAlign: "center" }}>
                 <Typography variant="body2" color="textSecondary">
                   {t("dynamicform.page")} {currentPage} {t("dynamicform.of")}{" "}
@@ -499,7 +645,7 @@ function DynamicForm({ isEditMode = false }) {
             )}
 
             {/*PAGINATION CONTROLS */}
-            {!hasSchemaPages && totalPages > 1 && (
+            {!hasSchemaPages && totalPages > 1 && !readOnly && (
               <Box
                 sx={{
                   mt: 2,
@@ -562,24 +708,73 @@ function DynamicForm({ isEditMode = false }) {
 
             {!readOnly && (
               <>
-                <Button
-                  variant="contained"
-                  type="submit"
-                  disabled={!rootIsValid}
-                  sx={{
-                    mt: 2,
-                    backgroundColor: theme.primaryColor,
-                    "&:hover": {
+                {!showNextButton && (
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    disabled={!rootIsValid}
+                    sx={{
+                      mt: 2,
                       backgroundColor: theme.primaryColor,
-                    },
-                  }}
-                  startIcon={isEditMode && <SaveIcon />}
-                  endIcon={!isEditMode && <SendIcon />}
-                >
-                  {isEditMode
-                    ? t("dynamicform.save_changes")
-                    : t("dynamicform.review")}
-                </Button>
+                      "&:hover": {
+                        backgroundColor: theme.primaryColor,
+                      },
+                    }}
+                    startIcon={isEditMode && <SaveIcon />}
+                    endIcon={!isEditMode && <SendIcon />}
+                  >
+                    {isEditMode
+                      ? t("dynamicform.save_changes")
+                      : t("dynamicform.review")}
+                  </Button>
+                )}
+
+                {showNextButton && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      const nextBaseIndex =
+                        basePageIndices[currentBasePagePosition + 1];
+                      dispatch(setActivePage(nextBaseIndex));
+                      dispatch(setCurrentPage(1));
+                    }}
+                    sx={{
+                      mt: 3,
+                      color: theme.primaryColor,
+                      borderColor: theme.primaryColor,
+                      "&:hover": {
+                        borderColor: theme.primaryColor,
+                        backgroundColor: theme.backgroundColor,
+                      },
+                    }}
+                  >
+                    Next
+                  </Button>
+                )}
+
+                {showBackButton && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      const prevBaseIndex =
+                        basePageIndices[currentBasePagePosition - 1];
+                      dispatch(setActivePage(prevBaseIndex));
+                      dispatch(setCurrentPage(1));
+                    }}
+                    sx={{
+                      mt: 3,
+                      ml: 2,
+                      color: theme.primaryColor,
+                      borderColor: theme.primaryColor,
+                      "&:hover": {
+                        borderColor: theme.primaryColor,
+                        backgroundColor: theme.backgroundColor,
+                      },
+                    }}
+                  >
+                    Back
+                  </Button>
+                )}
               </>
             )}
           </form>

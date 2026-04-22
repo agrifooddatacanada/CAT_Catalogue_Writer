@@ -11,7 +11,7 @@ import {
   selectFormState,
 } from "../../../store/selectors/formSelectors";
 import theme from "../../../theme";
-import { removeFieldValue } from "../../../store/slices/formValueSlice";
+import { removeFieldValue, setFieldValue } from "../../../store/slices/formValueSlice";
 import { makeSelectIsPopupValid } from "../../../store/selectors/popupValidationSelectors";
 
 const NestedChildFormContent = ({
@@ -31,34 +31,57 @@ const NestedChildFormContent = ({
     useMemo(() => makeSelectIsPopupValid(nextValuePath), [nextValuePath]),
   );
 
-  const prevFieldValuesRef = useRef();
+  const latestFieldValuesRef = useRef(fieldValues);
+  const isSavedRef = useRef(false);
 
   useEffect(() => {
-    if (isEdit) return;
+    latestFieldValuesRef.current = fieldValues;
+  }, [fieldValues]);
 
+  useEffect(() => {
     // Snapshot on mount
-    prevFieldValuesRef.current = { ...fieldValues };
+    const initialFieldValues = { ...latestFieldValuesRef.current };
+    isSavedRef.current = false;
 
     // Cleanup on unmount
     return () => {
-      if (!prevFieldValuesRef.current) return;
+      if (isSavedRef.current) return;
 
-      const newKeys = Object.keys(fieldValues || {}).filter(
-        (key) =>
-          key.startsWith(nextValuePath) &&
-          !Object.prototype.hasOwnProperty.call(
-            prevFieldValuesRef.current,
-            key,
-          ),
+      const currentValues = latestFieldValuesRef.current;
+      if (!currentValues) return;
+
+      // Find all keys that were present when the form was opened and belong to this child
+      const initialKeysForPath = Object.keys(initialFieldValues).filter((key) =>
+        key.startsWith(nextValuePath),
       );
 
-      newKeys.forEach((key) => dispatch(removeFieldValue(key)));
-      prevFieldValuesRef.current = undefined;
+      // Find all keys that are currently present and belong to this child
+      const currentKeysForPath = Object.keys(currentValues).filter((key) =>
+        key.startsWith(nextValuePath),
+      );
+
+      // Remove any newly added keys that didn't exist initially
+      currentKeysForPath.forEach((key) => {
+        if (!Object.prototype.hasOwnProperty.call(initialFieldValues, key)) {
+          dispatch(removeFieldValue(key));
+        }
+      });
+
+      // Restore the values of keys that existed initially
+      initialKeysForPath.forEach((key) => {
+        if (currentValues[key] !== initialFieldValues[key]) {
+          dispatch(
+            setFieldValue({ path: key, value: initialFieldValues[key] }),
+          );
+        }
+      });
     };
-  }, [isEdit, fieldValues, nextValuePath, dispatch]);
+  }, [nextValuePath, dispatch]);
 
   const handleSave = () => {
     if (!isPopupValid) return;
+
+    isSavedRef.current = true;
 
     const prefixPath = nextValuePath.substring(
       0,

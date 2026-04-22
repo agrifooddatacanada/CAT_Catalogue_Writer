@@ -160,6 +160,7 @@ const FormInputChildren = ({ valuePath }) => {
   const handleOpenChildPage = () => {
     dispatch(
       setChildFormNavigation({
+        push: true,
         nextValuePath: valuePath,
         parentPageIndex: activePageIndex,
         childPageIndex: linkedChildPageIndex >= 0 ? linkedChildPageIndex : null,
