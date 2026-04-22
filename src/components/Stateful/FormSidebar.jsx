@@ -90,8 +90,9 @@ function FormSidebar() {
   const fields = useSelector(selectFields);
   const {
     viewMode,
-    // fieldsPerPage
-  } = useSelector((state) => state.formUi);
+    currentPage = 1,
+    fieldsPerPage = 6,
+  } = useSelector((state) => state.formUi || {});
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -152,6 +153,30 @@ function FormSidebar() {
     !!childFormNavigation?.fallbackLabel;
 
   const displayedFields = getDisplayedFields(fields, viewMode);
+  const totalFlatPages = Math.ceil(displayedFields.length / fieldsPerPage);
+
+  let resolvedBasePageIndex = selectedPageIndex;
+  while (
+    resolvedBasePageIndex !== undefined &&
+    resolvedBasePageIndex !== null &&
+    pages[resolvedBasePageIndex]?.isChildPage
+  ) {
+    const meta = childPagesMeta?.[resolvedBasePageIndex];
+    if (meta?.parentPageIndex !== undefined) {
+      resolvedBasePageIndex = meta.parentPageIndex;
+    } else {
+      break;
+    }
+  }
+  const currentBasePageNumber =
+    basePages.findIndex((p) => p.index === resolvedBasePageIndex) + 1;
+
+  const currentDisplayPage = hasSchemaPages
+    ? currentBasePageNumber
+    : totalFlatPages === 0
+      ? 0
+      : currentPage;
+  const totalDisplayPages = hasSchemaPages ? basePages.length : totalFlatPages;
 
   const getViewModeChipSx = (modeKey) => ({
     backgroundColor:
@@ -237,6 +262,7 @@ function FormSidebar() {
         </Box>
       )}
       <Typography variant="body2" px="5px" py="10px" align="center">
+        Showing Page {currentDisplayPage} of {totalDisplayPages} Pages
       </Typography>
 
       <Divider />
