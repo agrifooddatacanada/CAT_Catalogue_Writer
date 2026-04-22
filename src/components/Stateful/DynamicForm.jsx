@@ -580,6 +580,13 @@ function DynamicForm({ isEditMode = false }) {
                           // borderInlineWidth: 20,
                           // borderBlockColor: "grey",
                           // borderStyle: "none",
+                          mb: 2,
+                          p: 3,
+                          border: "1px solid",
+                          borderColor: "divider",
+                          borderRadius: 2,
+                          backgroundColor: "background.paper",
+                          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
                         }}
                       >
                         <Typography variant="h6" sx={{ mb: 0.5 }}>
