@@ -200,9 +200,9 @@ const FormInputChildren = ({ valuePath }) => {
           }}
         >
           <CardContent sx={{ display: "flex", flexDirection: "column", pb: 0 }}>
-            <Typography variant="h6" gutterBottom>
+            {/* <Typography variant="h6" gutterBottom>
               {label || name}
-            </Typography>
+            </Typography> */}
 
             {Object.entries(flattenedData).map(([subKey, value]) => {
               const depth = getNestingDepth(subKey);

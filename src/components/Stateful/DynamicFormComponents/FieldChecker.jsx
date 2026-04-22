@@ -103,7 +103,11 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
     return (
       <>
         <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
-          <Typography variant="h6" component="label" sx={{ display: "block" }}>
+          <Typography
+            variant="subtitle1"
+            component="label"
+            sx={{ display: "block", fontWeight: 600 }}
+          >
             {label || name}
             {required && !readOnly && (
               <span style={{ color: "red", marginLeft: 4 }}>*</span>
@@ -121,7 +125,11 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
     return (
       <>
         <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
-          <Typography variant="h6" component="label" sx={{ display: "block" }}>
+          <Typography
+            variant="subtitle1"
+            component="label"
+            sx={{ display: "block", fontWeight: 600 }}
+          >
             {label || name}
             {required && !readOnly && (
               <span style={{ color: "red", marginLeft: 4 }}>*</span>
@@ -172,9 +180,9 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
       <>
         <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
           <Typography
-            variant={depth === 0 ? "h6" : "h7"}
+            variant="subtitle1"
             component="label"
-            sx={{ display: "block" }}
+            sx={{ display: "block", fontWeight: 600 }}
           >
             {label || name}
             {required && !readOnly && (
@@ -195,9 +203,9 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
       <>
         <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
           <Typography
-            variant={depth === 0 ? "h6" : "h7"}
+            variant="subtitle1"
             component="label"
-            sx={{ display: "block" }}
+            sx={{ display: "block", fontWeight: 600 }}
           >
             {label || name}
             {required && !readOnly && (
