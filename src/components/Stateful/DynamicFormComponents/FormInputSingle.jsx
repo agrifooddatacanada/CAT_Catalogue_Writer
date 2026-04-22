@@ -135,9 +135,9 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
   //   : {};
 
   const fieldErrorProps = showError ? { error: true } : {};
-  const textErrorProps = showError
-    ? { error: true, helperText: validationError }
-    : {};
+  // const textErrorProps = showError
+  //   ? { error: true, helperText: validationError }
+  //   : {};
 
   // const lines = 2;
 

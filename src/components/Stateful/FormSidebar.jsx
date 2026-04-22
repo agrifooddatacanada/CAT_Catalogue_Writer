@@ -105,8 +105,8 @@ function FormSidebar() {
 
   const hasSchemaPages = Array.isArray(pages) && pages.length > 0;
 
-  const currentPageData = pages[activePage];
-  const currentDigest = currentPageData?.captureBaseDigest;
+  // const currentPageData = pages[activePage];
+  // const currentDigest = currentPageData?.captureBaseDigest;
 
   // Build the active path indices to know which parents are "open"
   const activePathIndices = new Set();
@@ -291,7 +291,7 @@ function FormSidebar() {
             const i = page.index;
             const childMeta = childPagesMeta?.[i]; // from fieldSchema.childPages
             const isChildPage = !!page.isChildPage;
-            const depth = page.depth || 0;
+            // const depth = page.depth || 0;
 
             return (
               <ListItemButton
