@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   CardActions,
+  Chip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useSelector, useDispatch } from "react-redux";
@@ -204,27 +205,65 @@ const FormInputChildren = ({ valuePath }) => {
               {label || name}
             </Typography> */}
 
-            {Object.entries(flattenedData).map(([subKey, value]) => {
-              const depth = getNestingDepth(subKey);
-              return (
-                <Box key={subKey} sx={{ mt: depth > 0 ? 0.5 : 2.5 }}>
-                  <Typography variant="subtitle2" sx={{ pl: depth * 2 }}>
-                    {getLabelFromPath(subKey)}:
+            {(() => {
+              const grouped = {};
+              Object.entries(flattenedData).forEach(([subKey, value]) => {
+                if (value === null || value === undefined || value === "") return;
+
+                const pathWithoutIndex = subKey.replace(/\[\d+\]/g, "");
+                const matchedField = findFieldByRelativePath(field, removeIndices(subKey));
+                
+                const isMultiplePrimitive = matchedField?.multiple && !(matchedField?.children?.length > 0);
+
+                if (isMultiplePrimitive) {
+                  if (!grouped[pathWithoutIndex]) {
+                    grouped[pathWithoutIndex] = {
+                      isPrimitiveArray: true,
+                      label: getLabelFromPath(subKey),
+                      depth: getNestingDepth(subKey),
+                      values: [],
+                      subKey: pathWithoutIndex
+                    };
+                  }
+                  grouped[pathWithoutIndex].values.push(value);
+                } else {
+                  grouped[subKey] = {
+                    isPrimitiveArray: false,
+                    label: getLabelFromPath(subKey),
+                    depth: getNestingDepth(subKey),
+                    value,
+                    subKey
+                  };
+                }
+              });
+
+              return Object.values(grouped).map((item) => (
+                <Box key={item.subKey} sx={{ mt: item.depth > 0 ? 0.5 : 2.5 }}>
+                  <Typography variant="subtitle2" sx={{ pl: item.depth * 2 }}>
+                    {item.label}:
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      overflowWrap: "anywhere",
-                      wordWrap: "break-word",
-                      pl: depth * 2,
-                    }}
-                    color="text.secondary"
-                  >
-                    {value || "—"}
-                  </Typography>
+                  {item.isPrimitiveArray ? (
+                    <Box sx={{ mt: 0.5, pl: item.depth * 2, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {item.values.map((val, idx) => (
+                        <Chip key={`${val}-${idx}`} label={val} size="small" />
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        overflowWrap: "anywhere",
+                        wordWrap: "break-word",
+                        pl: item.depth * 2,
+                      }}
+                      color="text.secondary"
+                    >
+                      {item.value || "—"}
+                    </Typography>
+                  )}
                 </Box>
-              );
-            })}
+              ));
+            })()}
           </CardContent>
 
           {!readOnly && (
