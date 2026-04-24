@@ -1,0 +1,1399 @@
+{
+  "d": "EA5-t0oGau19k-wmR4-WsxD44ed6-WpUQUC26ztoTta3",
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "bundle": {
+      "v": "OCAS11JSON001edc_",
+      "d": "EAOGcci_LtXHbPx4xJOs48jXJ22LiWzsQygZfhSBCzDZ",
+      "capture_base": {
+        "d": "EJwl5iPj0JbsxskXBhORuqCay7A_pFyH7Qlcln2Ey4EK",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "Funder": "Text",
+          "Funding_status": "Text",
+          "contributor": "refs:EPKFziiXafSW5j2xwFw4AyHgeosg9_6DEmZzKAZs7Qek",
+          "data_access_collaborators": "Text",
+          "data_collection": "Text",
+          "data_sharing_awareness": "Text",
+          "data_sharing_form": "Text",
+          "data_sharing_license": "Text",
+          "documentation_collection": "Text",
+          "documentation_data": "Text",
+          "ethical": "Boolean",
+          "file_formats": "Text",
+          "grant_number_url": "Text",
+          "identifier": "Text",
+          "long_term_deposition": "Text",
+          "manage_IP_issues": "Text",
+          "metadata_standards": "Text",
+          "plan_collaborators": "refs:EDlm_NKeP5wEnSVsH17Pe9ZwTto0AE0WsTEMdTMIpHac",
+          "plan_visibility": "Text",
+          "preservation_ready": "Text",
+          "project_abstract": "Text",
+          "project_end": "DateTime",
+          "project_start": "DateTime",
+          "project_title": "Text",
+          "research_domain": "Text",
+          "research_outputs": "refs:EI3CBnYixUrCDShqJtqA_sZqC1ACOeC0KYE9fOFLulr-",
+          "resources_for_dmp": "Text",
+          "responsibilities": "Text",
+          "responsibilities_change_management": "Text",
+          "secondary_use_sensitive_data": "Text",
+          "secure_sensitive_data": "Text",
+          "storage_how": "Text",
+          "storage_requirements": "Text",
+          "version_convention": "Text"
+        },
+        "classification": "",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "entry": [
+          {
+            "d": "EK7SUihISGp8eIEr3MDfM1Jz4qKag9oUcczE1UiqjTOq",
+            "capture_base": "EJwl5iPj0JbsxskXBhORuqCay7A_pFyH7Qlcln2Ey4EK",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "Funding_status": {
+                "denied": "denied",
+                "funded": "funded",
+                "planned": "planned"
+              },
+              "plan_visibility": {
+                "Organization": "Organization- anyone at my organization can view",
+                "Public": "Public- anyone can view or download from the Public DMPs page",
+                "private": "Private- visible to me\\, specified collaborators and administrators at my organization"
+              },
+              "research_domain": {
+                "Agriculture Sciences": "Agriculture Sciences",
+                "Agriculture biotechnology": "Agriculture biotechnology",
+                "Agriculture\\, forestry\\, and fisheries": "Agriculture\\, forestry\\, and fisheries",
+                "Animal and dairy science": "Animal and dariy science"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "EIznbB4Z1Yr0gs2olAh4Ohy_Y65Nd1vmIqpK_kqXSIhD",
+          "capture_base": "EJwl5iPj0JbsxskXBhORuqCay7A_pFyH7Qlcln2Ey4EK",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "Funding_status": [
+              "denied",
+              "funded",
+              "planned"
+            ],
+            "plan_visibility": [
+              "Organization",
+              "Public",
+              "private"
+            ],
+            "research_domain": [
+              "Agriculture Sciences",
+              "Agriculture biotechnology",
+              "Agriculture\\, forestry\\, and fisheries",
+              "Animal and dairy science"
+            ]
+          }
+        },
+        "format": {
+          "d": "EPX6EJCtVfXK6_cjDxttzi4rkt2ron4Z1-Ct8Fyldtut",
+          "capture_base": "EJwl5iPj0JbsxskXBhORuqCay7A_pFyH7Qlcln2Ey4EK",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "Funder": "^.{0,250}$",
+            "Funding_status": "^.{0,50}$",
+            "data_access_collaborators": "^.{0,4000}$",
+            "data_collection": "^.{0,4000}$",
+            "data_sharing_awareness": "^.{0,4000}$",
+            "data_sharing_form": "^.{0,4000}$",
+            "data_sharing_license": "^.{0,4000}$",
+            "documentation_collection": "^.{0,4000}$",
+            "documentation_data": "^.{0,4000}$",
+            "file_formats": "^.{0,4000}$",
+            "grant_number_url": "^.{0,250}$",
+            "identifier": "^.{0,250}$",
+            "long_term_deposition": "^.{0,4000}$",
+            "manage_IP_issues": "^.{0,4000}$",
+            "metadata_standards": "^.{0,4000}$",
+            "plan_visibility": "^.{0,50}$",
+            "preservation_ready": "^.{0,4000}$",
+            "project_abstract": "^.{0,4000}$",
+            "project_end": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "project_start": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "project_title": "^.{0,250}$",
+            "research_domain": "^.{0,250}$",
+            "resources_for_dmp": "^.{0,4000}$",
+            "responsibilities": "^.{0,4000}$",
+            "responsibilities_change_management": "^.{0,4000}$",
+            "secondary_use_sensitive_data": "^.{0,4000}$",
+            "secure_sensitive_data": "^.{0,4000}$",
+            "storage_how": "^.{0,4000}$",
+            "storage_requirements": "^.{0,4000}$",
+            "version_convention": "^.{0,4000}$"
+          }
+        },
+        "label": [
+          {
+            "d": "EMRMfMEPC-QRq1VykZaCFPrWyTaiagv8GDBVSZbpkGsk",
+            "capture_base": "EJwl5iPj0JbsxskXBhORuqCay7A_pFyH7Qlcln2Ey4EK",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "Funder": "Funder",
+              "Funding_status": "Funding status",
+              "contributor": "Please list the project’s Principal Investigator(s) and those responsible for data management.",
+              "data_access_collaborators": "How will the research team and other collaborators access, modify, and contribute data throughout the project?",
+              "data_collection": "What types of data will you collect, create, link to, acquire and/or record?",
+              "data_sharing_awareness": "What steps will be taken to help the research community know that your data exists?",
+              "data_sharing_form": "What data will you be sharing and in what form? (e.g. raw, processed, analyzed, final).",
+              "data_sharing_license": "Have you considered what type of end-user license to include with your data?",
+              "documentation_collection": "How will you make sure that documentation is created or captured consistently throughout your project?",
+              "documentation_data": "What documentation will be needed for the data to be read and interpreted correctly in the future?",
+              "ethical": "Research outputs may have ethical concerns",
+              "file_formats": "What file formats will your data be collected in? Will these formats allow for data re-use, sharing and long-term access to the data?",
+              "grant_number_url": "Grant number/url",
+              "identifier": "Identifier",
+              "long_term_deposition": "Where will you deposit your data for long-term preservation and access at the end of your research project?",
+              "manage_IP_issues": "How will you manage legal, ethical, and intellectual property issues?",
+              "metadata_standards": "If you are using a metadata standard and/or tools to document and describe your data, please list here.",
+              "plan_collaborators": "Invite specific people to read, edit, or administer your plan. Invitees will receive an email notification that they have access to this plan.",
+              "plan_visibility": "Public or organizational visibility is intended for finished plans.",
+              "preservation_ready": "Indicate how you will ensure your data is preservation ready. Consider preservation-friendly file formats, ensuring file integrity, anonymization and de-identification, inclusion of supporting documentation.",
+              "project_abstract": "Project abstract",
+              "project_end": "Project End",
+              "project_start": "Project start",
+              "project_title": "Project title",
+              "research_domain": "Research Domain",
+              "research_outputs": "Please list your anticipated research output(s).",
+              "resources_for_dmp": "What resources will you require to implement your data management plan? What do you estimate the overall cost for data management to be?",
+              "responsibilities": "Identify who will be responsible for managing this project's data during and after the project and the major data management tasks for which they will be responsible.",
+              "responsibilities_change_management": "How will responsibilities for managing data activities be handled if substantive changes happen in the personnel overseeing the project's data, including a change of Principal Investigator?",
+              "secondary_use_sensitive_data": "If applicable, what strategies will you undertake to address secondary uses of sensitive data?",
+              "secure_sensitive_data": "If your research project includes sensitive data, how will you ensure that it is securely managed and accessible only to approved members of the project?",
+              "storage_how": "How and where will your data be stored and backed up during your research project?",
+              "storage_requirements": "What are the anticipated storage requirements for your project, in terms of storage space (in megabytes, gigabytes, terabytes, etc.) and the length of time you will be storing it?",
+              "version_convention": "What conventions and procedures will you use to structure, name and version-control your files to help you and others better understand how your data are organized?"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EOrIxAqBHjB2vvP1zjFF-Tb__PQ2N-J2mlHms14WsykF",
+            "capture_base": "EJwl5iPj0JbsxskXBhORuqCay7A_pFyH7Qlcln2Ey4EK",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "Generic DMP from DMP Assistant",
+            "name": "Basic DMP"
+          }
+        ]
+      }
+    },
+    "dependencies": [
+      {
+        "v": "OCAS11JSON000816_",
+        "d": "EPKFziiXafSW5j2xwFw4AyHgeosg9_6DEmZzKAZs7Qek",
+        "capture_base": {
+          "d": "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "Affiliation": "Text",
+            "Email": "Text",
+            "Name": "Text",
+            "ORCID": "Text",
+            "Roles": [
+              "Text"
+            ]
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "cardinality": {
+            "d": "EOxOGWv6pmNKDy8sd_qQRRvtk60EMoD46725AXu8E-EO",
+            "capture_base": "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-",
+            "type": "spec/overlays/cardinality/1.1",
+            "attribute_cardinality": {
+              "Roles": "0-"
+            }
+          },
+          "entry": [
+            {
+              "d": "EFqIiQY89jz5zR5PTEhXSgdTPihrFjOuhX2BcqWhJGPx",
+              "capture_base": "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-",
+              "type": "spec/overlays/entry/1.1",
+              "language": "eng",
+              "attribute_entries": {
+                "Roles": {
+                  "Data Manager": "Data Manager",
+                  "Other": "Other",
+                  "Principal Investigator": "Principal Investigator",
+                  "Project Administrator": "Project Administrator"
+                }
+              }
+            }
+          ],
+          "entry_code": {
+            "d": "EDkLohQg01uTwpge71xjuK0_OD0skL8FiD6zryQFzCfz",
+            "capture_base": "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-",
+            "type": "spec/overlays/entry_code/1.1",
+            "attribute_entry_codes": {
+              "Roles": [
+                "Data Manager",
+                "Other",
+                "Principal Investigator",
+                "Project Administrator"
+              ]
+            }
+          },
+          "format": {
+            "d": "ECWAPVn_Vcr8_MAh3_6IslXhb9lhjNJCCkIAHY1t2cZX",
+            "capture_base": "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "Affiliation": "^.{0,250}$",
+              "Email": "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+",
+              "Name": "^.{0,250}$",
+              "ORCID": "^.{0,250}$",
+              "Roles": "^.{0,50}$"
+            }
+          },
+          "label": [
+            {
+              "d": "EHa5XKYGZQm0IHg23rsqW-mjimFJ_FbefTr0ACeGq9Q1",
+              "capture_base": "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "Affiliation": "Affiliation",
+                "Email": "Email",
+                "Name": "Name",
+                "ORCID": "ORCID",
+                "Roles": "Roles"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "ECL-aITpGXDao36KxeX5CizEK5d5WZp3xe2T5R8qM54I",
+              "capture_base": "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "",
+              "name": "EI2JobZdOqOgw5yPNRlsIRT7_afh9SiUKkqhEnmRDtzt"
+            }
+          ]
+        }
+      },
+      {
+        "v": "OCAS11JSON000641_",
+        "d": "EDlm_NKeP5wEnSVsH17Pe9ZwTto0AE0WsTEMdTMIpHac",
+        "capture_base": {
+          "d": "EGAGI7DmLLRxDXgIYzd6H6TdoiniLTBF4rJyEHQtpQlm",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "Permissions": "Text",
+            "email": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "entry": [
+            {
+              "d": "EG3CUaXuRph2U_j88jSbKquPLfSDVXvupd2et9Fk9m8S",
+              "capture_base": "EGAGI7DmLLRxDXgIYzd6H6TdoiniLTBF4rJyEHQtpQlm",
+              "type": "spec/overlays/entry/1.1",
+              "language": "eng",
+              "attribute_entries": {
+                "Permissions": {
+                  "Co-owner": "Co-owner",
+                  "Editor": "Editor",
+                  "Read only": "Read only"
+                }
+              }
+            }
+          ],
+          "entry_code": {
+            "d": "EG-UG0QAfauQo418-qYPIa2Gn8Pw8fHoXVA6nBp1x0hc",
+            "capture_base": "EGAGI7DmLLRxDXgIYzd6H6TdoiniLTBF4rJyEHQtpQlm",
+            "type": "spec/overlays/entry_code/1.1",
+            "attribute_entry_codes": {
+              "Permissions": [
+                "Co-owner",
+                "Editor",
+                "Read only"
+              ]
+            }
+          },
+          "format": {
+            "d": "EF1yogQEvKjzbWBOMfC3c0Vms3B2pH0WNK00TzNNOgzI",
+            "capture_base": "EGAGI7DmLLRxDXgIYzd6H6TdoiniLTBF4rJyEHQtpQlm",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "Permissions": "^.{0,50}$",
+              "email": "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+"
+            }
+          },
+          "label": [
+            {
+              "d": "EHVwX1Fgfgd4R7hAGN2ON9mOt0Zz40vTxc7ZzRhZmXPr",
+              "capture_base": "EGAGI7DmLLRxDXgIYzd6H6TdoiniLTBF4rJyEHQtpQlm",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "Permissions": "Permissions",
+                "email": "Email"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "ELDwGLune0NSmvXiJw866kwtRNQHGo_pq8npMFx3yO4H",
+              "capture_base": "EGAGI7DmLLRxDXgIYzd6H6TdoiniLTBF4rJyEHQtpQlm",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "",
+              "name": "EGvtjZi2gxa2xYd0GV2HjL5f9D2UMAyk7NzeT6SU9RRC"
+            }
+          ]
+        }
+      },
+      {
+        "v": "OCAS11JSON000de2_",
+        "d": "EI3CBnYixUrCDShqJtqA_sZqC1ACOeC0KYE9fOFLulr-",
+        "capture_base": {
+          "d": "EB4dCuVZ1JP_IGKChBsZbEa9FAayUNCDaeCCGpFLZMqY",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "Abbreviation": "Text",
+            "Anticipated_release_date": "DateTime",
+            "Description": "Text",
+            "Initial_access_level": "Text",
+            "Initial_license": "Text",
+            "Intended_repositories": "refs:EKuApz3ya-ubH2qsUHIpfmVGPbZ1ImgKYuSE-pWHeVLy",
+            "Metadata_standards": "refs:EGtv7zvrU0dw-WKUAj01pxwgtY48LNLlboeLwo9IF5Hm",
+            "Output_if_other": "Text",
+            "PII": "Boolean",
+            "Sensitive": "Boolean",
+            "Title": "Text",
+            "Type": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "entry": [
+            {
+              "d": "ELlxiIx5aQ7SdfejYwyaKlhKwL6tCX1LwkLaWWxB6v2j",
+              "capture_base": "EB4dCuVZ1JP_IGKChBsZbEa9FAayUNCDaeCCGpFLZMqY",
+              "type": "spec/overlays/entry/1.1",
+              "language": "eng",
+              "attribute_entries": {
+                "Initial_access_level": {
+                  "Closed": "Closed",
+                  "Embargoed": "Embargoed",
+                  "Open": "Open",
+                  "Restricted": "Restricted"
+                },
+                "Initial_license": {
+                  "CC BY": "Attribution",
+                  "CC BY-NC": "Attribution-NonCommercial",
+                  "CC BY-NC-ND": "Attribution-NonCommercial-NoDerivs",
+                  "CC BY-NC-SA": "Attribution-NonCommercial-ShareAlike",
+                  "CC BY-ND": "Attribution-NoDerivs",
+                  "CC BY-SA": "Attribution-ShareAlike",
+                  "CC0": "Public Domain Dedication",
+                  "PDM": "Public Domain Mark"
+                },
+                "Type": {
+                  "Audiovisual": "Audiovisual",
+                  "Collection": "Collection",
+                  "DataPaper": "Data Paper",
+                  "Dataset": "Dataset",
+                  "Event": "Event",
+                  "Image": "Image",
+                  "InteractiveResource": "Interactive resource",
+                  "ModelRepresentation": "Model representation",
+                  "Other": "Other",
+                  "PhysicalObject": "Physical object",
+                  "Service": "Service",
+                  "Software": "Software",
+                  "Sound": "Sound",
+                  "Text": "Text",
+                  "Workflow": "Workflow"
+                }
+              }
+            }
+          ],
+          "entry_code": {
+            "d": "EJWgr35AIWMZiU_rcD8A5pUo_YdCfGzATplpDx5-KVSk",
+            "capture_base": "EB4dCuVZ1JP_IGKChBsZbEa9FAayUNCDaeCCGpFLZMqY",
+            "type": "spec/overlays/entry_code/1.1",
+            "attribute_entry_codes": {
+              "Initial_access_level": [
+                "Closed",
+                "Embargoed",
+                "Open",
+                "Restricted"
+              ],
+              "Initial_license": [
+                "CC BY",
+                "CC BY-NC",
+                "CC BY-NC-ND",
+                "CC BY-NC-SA",
+                "CC BY-ND",
+                "CC BY-SA",
+                "CC0",
+                "PDM"
+              ],
+              "Type": [
+                "Audiovisual",
+                "Collection",
+                "DataPaper",
+                "Dataset",
+                "Event",
+                "Image",
+                "InteractiveResource",
+                "ModelRepresentation",
+                "Other",
+                "PhysicalObject",
+                "Service",
+                "Software",
+                "Sound",
+                "Text",
+                "Workflow"
+              ]
+            }
+          },
+          "format": {
+            "d": "EHYVuLRqBYUZTkMED3CnX2vuWt9US1MUiR5EVRglcJtw",
+            "capture_base": "EB4dCuVZ1JP_IGKChBsZbEa9FAayUNCDaeCCGpFLZMqY",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "Abbreviation": "^.{0,50}$",
+              "Anticipated_release_date": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+              "Description": "^.{0,4000}$",
+              "Initial_access_level": "^.{0,50}$",
+              "Initial_license": "^.{0,250}$",
+              "Output_if_other": "^.{0,50}$",
+              "Title": "^.{0,800}$",
+              "Type": "^.{0,50}$"
+            }
+          },
+          "label": [
+            {
+              "d": "EPHxb2pssGj85BLKkunYc6LkbgGKCR27rR5EgbmI8X4O",
+              "capture_base": "EB4dCuVZ1JP_IGKChBsZbEa9FAayUNCDaeCCGpFLZMqY",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "Abbreviation": "Abbreviation",
+                "Anticipated_release_date": "Anticipated release date",
+                "Description": "Description",
+                "Initial_access_level": "Initial access level",
+                "Initial_license": "Initial license",
+                "Intended_repositories": "Intended Repositories",
+                "Metadata_standards": "Metadata Standards",
+                "Output_if_other": "If you select Type \\\"other\\\" please describe the output type.",
+                "PII": "May contain personally identifiable information?",
+                "Sensitive": "May contain sensitive data?",
+                "Title": "Title",
+                "Type": "Type"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "EBl94Aaq7CmUyzaZsGF1nOW9siu5DhD3FXeh6Wo0qQ_H",
+              "capture_base": "EB4dCuVZ1JP_IGKChBsZbEa9FAayUNCDaeCCGpFLZMqY",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "",
+              "name": "EAfyO5BkEGfNtnzQ5xB5CREEfasIfMy8dkUyroQKoR8z"
+            }
+          ]
+        }
+      },
+      {
+        "v": "OCAS11JSON00040b_",
+        "d": "EGtv7zvrU0dw-WKUAj01pxwgtY48LNLlboeLwo9IF5Hm",
+        "capture_base": {
+          "d": "EK4oAdPs1q3LtWnykVey-DsgNYfjsSS-Rtu3YXuWJPMl",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "Metadata_standard": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "format": {
+            "d": "EAY-dpn959KAPjKX0SpFf6C1EAOF9BoSUc7-E3IJIcsR",
+            "capture_base": "EK4oAdPs1q3LtWnykVey-DsgNYfjsSS-Rtu3YXuWJPMl",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "Metadata_standard": "^.{0,250}$"
+            }
+          },
+          "label": [
+            {
+              "d": "EAtay5NUVbzBRFolGFEEd1ihnCF_VM5RcGl1i06ntW9b",
+              "capture_base": "EK4oAdPs1q3LtWnykVey-DsgNYfjsSS-Rtu3YXuWJPMl",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "Metadata_standard": "Name of the metadata standard"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "EFHwLbh2BvPsVLgK7_AAjnj2cPiKDezCGFc2sNFL93JH",
+              "capture_base": "EK4oAdPs1q3LtWnykVey-DsgNYfjsSS-Rtu3YXuWJPMl",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "Child schema for Metadata_standards",
+              "name": "Metadata_standards"
+            }
+          ]
+        }
+      },
+      {
+        "v": "OCAS11JSON000419_",
+        "d": "EKuApz3ya-ubH2qsUHIpfmVGPbZ1ImgKYuSE-pWHeVLy",
+        "capture_base": {
+          "d": "EJuUC0KKVOryufE7zYX2NCx5TnCO3fvGPBIB2o2go_Ht",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "Intended_repository": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "format": {
+            "d": "EPGW765ZQipd2ZaQ03j-BCWD-cplW0Q9FzNuEOEH8ZWG",
+            "capture_base": "EJuUC0KKVOryufE7zYX2NCx5TnCO3fvGPBIB2o2go_Ht",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "Intended_repository": "^.{0,250}$"
+            }
+          },
+          "label": [
+            {
+              "d": "EBC44ntFNKAiIYT6i_lvLuymcFjxWNx9G9Fo7WIKfIkL",
+              "capture_base": "EJuUC0KKVOryufE7zYX2NCx5TnCO3fvGPBIB2o2go_Ht",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "Intended_repository": "Name of the intended repository"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "EDmCdFJygYC2jy6DKE16VOAFQ4b-2QBGLvv_dW210BUQ",
+              "capture_base": "EJuUC0KKVOryufE7zYX2NCx5TnCO3fvGPBIB2o2go_Ht",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "Child schema for Intended_repositories",
+              "name": "Intended_repositories"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "extensions": {
+    "adc": {
+      "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-": {
+        "d": "ECYolpsvY1n6cvQrakhDNU_El0lq9xcYpDJ-kNfA3EE7",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EMBpz9BTL4WVevbjj7SFNLDHyjwOReOJOacyugkGHZIq",
+              "capture_base": "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "Name",
+                    "Email",
+                    "ORCID",
+                    "Affiliation",
+                    "Roles"
+                  ],
+                  "named_section": "b16e2c2b-44fb-4cc8-ace8-440a9532d01b"
+                }
+              ],
+              "page_order": [
+                "b16e2c2b-44fb-4cc8-ace8-440a9532d01b"
+              ],
+              "page_labels": {
+                "b16e2c2b-44fb-4cc8-ace8-440a9532d01b": "New Contributor"
+              },
+              "sidebar_label": {
+                "b16e2c2b-44fb-4cc8-ace8-440a9532d01b": "Contributor"
+              },
+              "description": {
+                "b16e2c2b-44fb-4cc8-ace8-440a9532d01b": "Define the project contributors",
+                "Roles": "Select each role that applies to the contributor."
+              },
+              "title": "EI2JobZdOqOgw5yPNRlsIRT7_afh9SiUKkqhEnmRDtzt",
+              "interaction": [
+                {
+                  "arguments": {
+                    "Affiliation": {
+                      "placeholder": "University of Guelph",
+                      "type": "Text"
+                    },
+                    "Email": {
+                      "type": "Text"
+                    },
+                    "Name": {
+                      "type": "Text"
+                    },
+                    "ORCID": {
+                      "type": "Text"
+                    },
+                    "Roles": {
+                      "description": "Select each role that applies to the contributor.",
+                      "input_type": "checkbox-multi",
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EDa5jKGzduMvfcct3aodJpwUQ6UTzx_RJma7K-fjA4no",
+            "capture_base": "EJbKwZjh6SgOqb1y75azF9BXjrX1xm15Yxgvju4Kv98-",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "Affiliation",
+              "Email",
+              "Name",
+              "ORCID",
+              "Roles"
+            ],
+            "entry_code_ordering": {
+              "Roles": [
+                "Data Manager",
+                "Other",
+                "Principal Investigator",
+                "Project Administrator"
+              ]
+            }
+          }
+        }
+      },
+      "EGAGI7DmLLRxDXgIYzd6H6TdoiniLTBF4rJyEHQtpQlm": {
+        "d": "EC-tovpPCamjdnb2lhT3QX0MV9BFM5r7ReXziORksZm1",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EIw8a8P9k3uwNAIcUJ7gIYXmCatrZW16d_Fmt4GC2whp",
+              "capture_base": "EGAGI7DmLLRxDXgIYzd6H6TdoiniLTBF4rJyEHQtpQlm",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "email",
+                    "Permissions"
+                  ],
+                  "named_section": "cecb0b45-b92f-4a15-a25a-f90bcf843cc5"
+                }
+              ],
+              "page_order": [
+                "cecb0b45-b92f-4a15-a25a-f90bcf843cc5"
+              ],
+              "page_labels": {
+                "cecb0b45-b92f-4a15-a25a-f90bcf843cc5": "Manager Collaborators"
+              },
+              "sidebar_label": {
+                "cecb0b45-b92f-4a15-a25a-f90bcf843cc5": "Collaborators"
+              },
+              "description": {
+                "cecb0b45-b92f-4a15-a25a-f90bcf843cc5": "List specific people to read, edit, or administer your plan."
+              },
+              "title": "EGvtjZi2gxa2xYd0GV2HjL5f9D2UMAyk7NzeT6SU9RRC",
+              "interaction": [
+                {
+                  "arguments": {
+                    "Permissions": {
+                      "type": "Text"
+                    },
+                    "email": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "ECsotWOA499gcPHxWjBBZtgd3YVvdMTX8TqyHksnIenn",
+            "capture_base": "EGAGI7DmLLRxDXgIYzd6H6TdoiniLTBF4rJyEHQtpQlm",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "Permissions",
+              "email"
+            ],
+            "entry_code_ordering": {
+              "Permissions": [
+                "Co-owner",
+                "Editor",
+                "Read only"
+              ]
+            }
+          }
+        }
+      },
+      "EB4dCuVZ1JP_IGKChBsZbEa9FAayUNCDaeCCGpFLZMqY": {
+        "d": "EGV-ROZ-aa_v1qaXaSb8b3cIt_bG7s48KDly2oS1xnXd",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EPCP2k0fXFehW2CuaJyk00i5jfwZXDWgelyeIhaLzXqb",
+              "capture_base": "EB4dCuVZ1JP_IGKChBsZbEa9FAayUNCDaeCCGpFLZMqY",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    {
+                      "attribute_order": [
+                        "Type",
+                        "Output_if_other",
+                        "Title",
+                        "Abbreviation",
+                        "Description",
+                        "Sensitive",
+                        "PII"
+                      ],
+                      "named_section": "31ea02d5-7530-432f-863f-838a109c6ec0"
+                    },
+                    {
+                      "attribute_order": [
+                        "Intended_repositories"
+                      ],
+                      "named_section": "749579f4-aaf2-40fe-bd02-82a32a5f5fa2"
+                    },
+                    {
+                      "attribute_order": [
+                        "Metadata_standards"
+                      ],
+                      "named_section": "bfc92154-a922-47c6-b0e7-c18148d6058b"
+                    },
+                    {
+                      "attribute_order": [
+                        "Anticipated_release_date",
+                        "Initial_access_level",
+                        "Initial_license"
+                      ],
+                      "named_section": "c5b66576-c986-4adc-aa71-7603f31ec499"
+                    }
+                  ],
+                  "named_section": "5cf8be82-7988-4cc4-8374-d7bb0f6ff32e"
+                }
+              ],
+              "page_order": [
+                "5cf8be82-7988-4cc4-8374-d7bb0f6ff32e"
+              ],
+              "page_labels": {
+                "5cf8be82-7988-4cc4-8374-d7bb0f6ff32e": "Research Outputs",
+                "31ea02d5-7530-432f-863f-838a109c6ec0": "New research output",
+                "749579f4-aaf2-40fe-bd02-82a32a5f5fa2": "Intended repositories",
+                "bfc92154-a922-47c6-b0e7-c18148d6058b": "Metadata standards",
+                "c5b66576-c986-4adc-aa71-7603f31ec499": "Release conditions"
+              },
+              "sidebar_label": {
+                "5cf8be82-7988-4cc4-8374-d7bb0f6ff32e": "Research Outputs"
+              },
+              "description": {
+                "5cf8be82-7988-4cc4-8374-d7bb0f6ff32e": "Page 1",
+                "31ea02d5-7530-432f-863f-838a109c6ec0": "Section 1",
+                "749579f4-aaf2-40fe-bd02-82a32a5f5fa2": "Section 2",
+                "bfc92154-a922-47c6-b0e7-c18148d6058b": "Section 3",
+                "c5b66576-c986-4adc-aa71-7603f31ec499": "Section 4"
+              },
+              "title": "EAfyO5BkEGfNtnzQ5xB5CREEfasIfMy8dkUyroQKoR8z",
+              "interaction": [
+                {
+                  "arguments": {
+                    "Abbreviation": {
+                      "type": "Text"
+                    },
+                    "Anticipated_release_date": {
+                      "placeholder": "YYYY-MM-DD",
+                      "type": "DateTime"
+                    },
+                    "Description": {
+                      "type": "Text"
+                    },
+                    "Initial_access_level": {
+                      "type": "Text"
+                    },
+                    "Initial_license": {
+                      "type": "Text"
+                    },
+                    "Intended_repositories": {
+                      "type": "reference"
+                    },
+                    "Metadata_standards": {
+                      "type": "reference"
+                    },
+                    "Output_if_other": {
+                      "type": "Text"
+                    },
+                    "PII": {
+                      "options": [
+                        "True",
+                        "False"
+                      ],
+                      "type": "Boolean"
+                    },
+                    "Sensitive": {
+                      "options": [
+                        "True",
+                        "False"
+                      ],
+                      "type": "Boolean"
+                    },
+                    "Title": {
+                      "type": "Text"
+                    },
+                    "Type": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "ECYsAOY8iwGkYTMfWZ1ADoLluQVTuYEtTxlsJBPSatAC",
+            "capture_base": "EB4dCuVZ1JP_IGKChBsZbEa9FAayUNCDaeCCGpFLZMqY",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "Abbreviation",
+              "Anticipated_release_date",
+              "Description",
+              "Initial_access_level",
+              "Initial_license",
+              "Intended_repositories",
+              "Metadata_standards",
+              "Output_if_other",
+              "PII",
+              "Sensitive",
+              "Title",
+              "Type"
+            ],
+            "entry_code_ordering": {
+              "Initial_access_level": [
+                "Closed",
+                "Embargoed",
+                "Open",
+                "Restricted"
+              ],
+              "Initial_license": [
+                "CC BY",
+                "CC BY-NC",
+                "CC BY-NC-ND",
+                "CC BY-NC-SA",
+                "CC BY-ND",
+                "CC BY-SA",
+                "CC0",
+                "PDM"
+              ],
+              "Type": [
+                "Audiovisual",
+                "Collection",
+                "DataPaper",
+                "Dataset",
+                "Event",
+                "Image",
+                "InteractiveResource",
+                "ModelRepresentation",
+                "Other",
+                "PhysicalObject",
+                "Service",
+                "Software",
+                "Sound",
+                "Text",
+                "Workflow"
+              ]
+            }
+          }
+        }
+      },
+      "EK4oAdPs1q3LtWnykVey-DsgNYfjsSS-Rtu3YXuWJPMl": {
+        "d": "ENLLX2Ke-nvxXvapkPAlKGdnDYVUEJM8c0PXg_IOczzL",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "ENgz4pLXTebyFb_6Yb9Za_rbqxe_FqUrHjvM1B9ShAOl",
+              "capture_base": "EK4oAdPs1q3LtWnykVey-DsgNYfjsSS-Rtu3YXuWJPMl",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "Metadata_standard"
+                  ],
+                  "named_section": "3f0390a4-e4af-4c31-b13c-64774712423f"
+                }
+              ],
+              "page_order": [
+                "3f0390a4-e4af-4c31-b13c-64774712423f"
+              ],
+              "page_labels": {
+                "3f0390a4-e4af-4c31-b13c-64774712423f": "Metadata standard"
+              },
+              "sidebar_label": {
+                "3f0390a4-e4af-4c31-b13c-64774712423f": "Metadata"
+              },
+              "description": {
+                "3f0390a4-e4af-4c31-b13c-64774712423f": "e.g. DataCite, Dublin, etc."
+              },
+              "title": "Metadata_standards",
+              "interaction": [
+                {
+                  "arguments": {
+                    "Metadata_standard": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EIyXX_m6fqRVC59JuQx_zjrk437UOqp1Fv7Z9MoCzia-",
+            "capture_base": "EK4oAdPs1q3LtWnykVey-DsgNYfjsSS-Rtu3YXuWJPMl",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "Metadata_standard"
+            ],
+            "entry_code_ordering": {}
+          }
+        }
+      },
+      "EJuUC0KKVOryufE7zYX2NCx5TnCO3fvGPBIB2o2go_Ht": {
+        "d": "EDrhBdWeYlMqjrHLNWkatGTBXs_69ppMEjCyTL4CtmNz",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EE-MzBF1gjzJVeBJEApb8Ip3fsrI2YZBdXFxbI2azS7I",
+              "capture_base": "EJuUC0KKVOryufE7zYX2NCx5TnCO3fvGPBIB2o2go_Ht",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "Intended_repository"
+                  ],
+                  "named_section": "b9ab3501-16a5-4a27-863b-f30d19d772c0"
+                }
+              ],
+              "page_order": [
+                "b9ab3501-16a5-4a27-863b-f30d19d772c0"
+              ],
+              "page_labels": {
+                "b9ab3501-16a5-4a27-863b-f30d19d772c0": "Intended Repository"
+              },
+              "sidebar_label": {
+                "b9ab3501-16a5-4a27-863b-f30d19d772c0": "Repositories"
+              },
+              "description": {
+                "b9ab3501-16a5-4a27-863b-f30d19d772c0": "Page 1"
+              },
+              "title": "Intended_repositories",
+              "interaction": [
+                {
+                  "arguments": {
+                    "Intended_repository": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EBO9mo8VcL1SchQp5mjP3rf6VNrhCAk6qIyvSpV2IA7i",
+            "capture_base": "EJuUC0KKVOryufE7zYX2NCx5TnCO3fvGPBIB2o2go_Ht",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "Intended_repository"
+            ],
+            "entry_code_ordering": {}
+          }
+        }
+      },
+      "EJwl5iPj0JbsxskXBhORuqCay7A_pFyH7Qlcln2Ey4EK": {
+        "d": "EKv2p3psj2vyaelYftbPN2ZDrh9L85jh_08xaIsyERaI",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EHUiD2n9qX6MQ3sWsVkDmfzzbrngrxFAhOIZ_14BRfos",
+              "capture_base": "EJwl5iPj0JbsxskXBhORuqCay7A_pFyH7Qlcln2Ey4EK",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "project_title",
+                    "project_abstract",
+                    "research_domain",
+                    "project_start",
+                    "project_end",
+                    "identifier",
+                    "ethical",
+                    "Funder",
+                    "Funding_status",
+                    "grant_number_url"
+                  ],
+                  "named_section": "2aa430b7-a6f1-4d32-85ff-07d4d088036b"
+                },
+                {
+                  "attribute_order": [
+                    "contributor"
+                  ],
+                  "named_section": "32bdcd74-4c14-48f0-a80e-820105ccb868"
+                },
+                {
+                  "attribute_order": [
+                    {
+                      "attribute_order": [
+                        "data_collection",
+                        "file_formats",
+                        "version_convention"
+                      ],
+                      "named_section": "85be33c3-216e-4d46-a77c-c2877263a52c"
+                    },
+                    {
+                      "attribute_order": [
+                        "documentation_data",
+                        "documentation_collection",
+                        "metadata_standards"
+                      ],
+                      "named_section": "0cfbe59e-395b-4040-a89b-a60b390b5a29"
+                    },
+                    {
+                      "attribute_order": [
+                        "storage_requirements",
+                        "storage_how",
+                        "data_access_collaborators"
+                      ],
+                      "named_section": "2e936ebb-323a-497c-a1b0-9226174c178e"
+                    },
+                    {
+                      "attribute_order": [
+                        "long_term_deposition",
+                        "preservation_ready"
+                      ],
+                      "named_section": "b23b9455-d5bc-49ab-9a04-9fe4cd0fb085"
+                    },
+                    {
+                      "attribute_order": [
+                        "data_sharing_form",
+                        "data_sharing_license",
+                        "data_sharing_awareness"
+                      ],
+                      "named_section": "b0551cea-48ba-43aa-9295-24e0483b0695"
+                    },
+                    {
+                      "attribute_order": [
+                        "responsibilities",
+                        "responsibilities_change_management",
+                        "resources_for_dmp"
+                      ],
+                      "named_section": "2bdf3e29-74fe-4f15-9b37-389718fb2944"
+                    },
+                    {
+                      "attribute_order": [
+                        "secure_sensitive_data",
+                        "secondary_use_sensitive_data",
+                        "manage_IP_issues"
+                      ],
+                      "named_section": "1dccda96-2ec8-4aa5-aadc-eeefae283cab"
+                    }
+                  ],
+                  "named_section": "9107232b-bca8-4168-a689-1c8bc0d6dd86"
+                },
+                {
+                  "attribute_order": [
+                    "research_outputs"
+                  ],
+                  "named_section": "afc95e29-9124-42a3-ac2c-1205f16d8259"
+                },
+                {
+                  "attribute_order": [
+                    {
+                      "attribute_order": [
+                        "plan_visibility"
+                      ],
+                      "named_section": "862f9e51-b8b7-40c1-9158-8248957f371c"
+                    },
+                    {
+                      "attribute_order": [
+                        "plan_collaborators"
+                      ],
+                      "named_section": "e7e586b5-7629-41e6-ab69-04517004b51c"
+                    }
+                  ],
+                  "named_section": "dca28425-eec8-4ae0-a7f4-c919bec8dc02"
+                }
+              ],
+              "page_order": [
+                "2aa430b7-a6f1-4d32-85ff-07d4d088036b",
+                "32bdcd74-4c14-48f0-a80e-820105ccb868",
+                "9107232b-bca8-4168-a689-1c8bc0d6dd86",
+                "afc95e29-9124-42a3-ac2c-1205f16d8259",
+                "dca28425-eec8-4ae0-a7f4-c919bec8dc02"
+              ],
+              "page_labels": {
+                "2aa430b7-a6f1-4d32-85ff-07d4d088036b": "Project Details",
+                "32bdcd74-4c14-48f0-a80e-820105ccb868": "Contributors",
+                "9107232b-bca8-4168-a689-1c8bc0d6dd86": "Write Plan",
+                "85be33c3-216e-4d46-a77c-c2877263a52c": "Data Collection",
+                "0cfbe59e-395b-4040-a89b-a60b390b5a29": "Documentation and Metadata",
+                "2e936ebb-323a-497c-a1b0-9226174c178e": "Storage and Backup",
+                "b23b9455-d5bc-49ab-9a04-9fe4cd0fb085": "Preservation",
+                "b0551cea-48ba-43aa-9295-24e0483b0695": "Sharing and Reuse",
+                "2bdf3e29-74fe-4f15-9b37-389718fb2944": "Responsibilities and Resources",
+                "1dccda96-2ec8-4aa5-aadc-eeefae283cab": "Ethical and Legal Compliance",
+                "afc95e29-9124-42a3-ac2c-1205f16d8259": "Research Outputs",
+                "dca28425-eec8-4ae0-a7f4-c919bec8dc02": "Share",
+                "862f9e51-b8b7-40c1-9158-8248957f371c": "Set plan visibility",
+                "e7e586b5-7629-41e6-ab69-04517004b51c": "Manage Collaborators"
+              },
+              "sidebar_label": {
+                "2aa430b7-a6f1-4d32-85ff-07d4d088036b": "Project Details",
+                "32bdcd74-4c14-48f0-a80e-820105ccb868": "Contributors",
+                "9107232b-bca8-4168-a689-1c8bc0d6dd86": "Write Plan",
+                "afc95e29-9124-42a3-ac2c-1205f16d8259": "Research Outputs",
+                "dca28425-eec8-4ae0-a7f4-c919bec8dc02": "Share"
+              },
+              "description": {
+                "2aa430b7-a6f1-4d32-85ff-07d4d088036b": "Please list project details",
+                "32bdcd74-4c14-48f0-a80e-820105ccb868": "Please list the project’s Principal Investigator(s) and those responsible for data management. ",
+                "9107232b-bca8-4168-a689-1c8bc0d6dd86": "Page 3",
+                "85be33c3-216e-4d46-a77c-c2877263a52c": "This section addresses data collection issues such as data types, file formats, naming conventions, and data organization – factors that will improve the usability of your data and contribute to the success of your project. ",
+                "0cfbe59e-395b-4040-a89b-a60b390b5a29": "Because data are rarely self-explanatory, all research data should be accompanied by metadata (information that describes the data according to community best practices).  Metadata standards vary across disciplines, but generally state who created th",
+                "2e936ebb-323a-497c-a1b0-9226174c178e": "Planning how research data will be stored and backed up throughout and beyond a research project is critical in ensuring data security and integrity. Appropriate storage and backup not only helps protect research data from catastrophic losses (due to",
+                "b23b9455-d5bc-49ab-9a04-9fe4cd0fb085": "Data preservation will depend on potential reuse value, whether there are obligations to either retain or destroy data, and the resources required to properly curate the data and ensure that it remains usable in the future. In some circumstances, it ",
+                "b0551cea-48ba-43aa-9295-24e0483b0695": "Most Canadian research funding agencies now have policies requiring research data to be shared upon publication of the research results or within a reasonable period of time. While data sharing contributes to the visibility and impact of research, it",
+                "2bdf3e29-74fe-4f15-9b37-389718fb2944": "Data management focuses on the 'what' and 'how' of operationally supporting data across the research lifecycle.  Data stewardship focuses on 'who' is responsible for ensuring that data management happens. A large project, for example, will involve mu",
+                "1dccda96-2ec8-4aa5-aadc-eeefae283cab": "Researchers and their teams need to be aware of the policies and processes, both ethical and legal, to which their research data management must comply. Protection of respondent privacy is of paramount importance and informs many data management prac",
+                "afc95e29-9124-42a3-ac2c-1205f16d8259": "Please list your anticipated research output(s). ",
+                "dca28425-eec8-4ae0-a7f4-c919bec8dc02": "Share your data management plan",
+                "862f9e51-b8b7-40c1-9158-8248957f371c": "Section 1",
+                "e7e586b5-7629-41e6-ab69-04517004b51c": "Invite specific people to read, edit, or administer your plan. Invitees will receive an email notification that they have access to this plan."
+              },
+              "title": "Basic DMP",
+              "interaction": [
+                {
+                  "arguments": {
+                    "Funder": {
+                      "type": "Text"
+                    },
+                    "Funding_status": {
+                      "type": "Text"
+                    },
+                    "contributor": {
+                      "type": "reference"
+                    },
+                    "data_access_collaborators": {
+                      "type": "Text"
+                    },
+                    "data_collection": {
+                      "type": "Text"
+                    },
+                    "data_sharing_awareness": {
+                      "type": "Text"
+                    },
+                    "data_sharing_form": {
+                      "type": "Text"
+                    },
+                    "data_sharing_license": {
+                      "type": "Text"
+                    },
+                    "documentation_collection": {
+                      "type": "Text"
+                    },
+                    "documentation_data": {
+                      "type": "Text"
+                    },
+                    "ethical": {
+                      "options": [
+                        "True",
+                        "False"
+                      ],
+                      "type": "Boolean"
+                    },
+                    "file_formats": {
+                      "type": "Text"
+                    },
+                    "grant_number_url": {
+                      "type": "Text"
+                    },
+                    "identifier": {
+                      "type": "Text"
+                    },
+                    "long_term_deposition": {
+                      "type": "Text"
+                    },
+                    "manage_IP_issues": {
+                      "type": "Text"
+                    },
+                    "metadata_standards": {
+                      "type": "Text"
+                    },
+                    "plan_collaborators": {
+                      "type": "reference"
+                    },
+                    "plan_visibility": {
+                      "type": "Text"
+                    },
+                    "preservation_ready": {
+                      "type": "Text"
+                    },
+                    "project_abstract": {
+                      "type": "Text"
+                    },
+                    "project_end": {
+                      "placeholder": "YYYY-MM-DD",
+                      "type": "DateTime"
+                    },
+                    "project_start": {
+                      "placeholder": "YYYY-MM-DD",
+                      "type": "DateTime"
+                    },
+                    "project_title": {
+                      "type": "Text"
+                    },
+                    "research_domain": {
+                      "input_type": "dropdown-single",
+                      "type": "Text"
+                    },
+                    "research_outputs": {
+                      "type": "reference"
+                    },
+                    "resources_for_dmp": {
+                      "type": "Text"
+                    },
+                    "responsibilities": {
+                      "type": "Text"
+                    },
+                    "responsibilities_change_management": {
+                      "type": "Text"
+                    },
+                    "secondary_use_sensitive_data": {
+                      "type": "Text"
+                    },
+                    "secure_sensitive_data": {
+                      "type": "Text"
+                    },
+                    "storage_how": {
+                      "type": "Text"
+                    },
+                    "storage_requirements": {
+                      "type": "Text"
+                    },
+                    "version_convention": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EGQBy_iroYvanx7Ig095Zp9gws6tlBRj0wl6n1Zn5OvV",
+            "capture_base": "EJwl5iPj0JbsxskXBhORuqCay7A_pFyH7Qlcln2Ey4EK",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "Funder",
+              "Funding_status",
+              "contributor",
+              "data_access_collaborators",
+              "data_collection",
+              "data_sharing_awareness",
+              "data_sharing_form",
+              "data_sharing_license",
+              "documentation_collection",
+              "documentation_data",
+              "ethical",
+              "file_formats",
+              "grant_number_url",
+              "identifier",
+              "long_term_deposition",
+              "manage_IP_issues",
+              "metadata_standards",
+              "plan_collaborators",
+              "plan_visibility",
+              "preservation_ready",
+              "project_abstract",
+              "project_end",
+              "project_start",
+              "project_title",
+              "research_domain",
+              "research_outputs",
+              "resources_for_dmp",
+              "responsibilities",
+              "responsibilities_change_management",
+              "secondary_use_sensitive_data",
+              "secure_sensitive_data",
+              "storage_how",
+              "storage_requirements",
+              "version_convention"
+            ],
+            "entry_code_ordering": {
+              "Funding_status": [
+                "denied",
+                "funded",
+                "planned"
+              ],
+              "plan_visibility": [
+                "Organization",
+                "Public",
+                "private"
+              ],
+              "research_domain": [
+                "Agriculture Sciences",
+                "Agriculture biotechnology",
+                "Agriculture, forestry, and fisheries",
+                "Animal and dairy science"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
