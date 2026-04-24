@@ -137,6 +137,50 @@ function FormSidebar() {
     }
   });
 
+  Object.keys(childrenByParent).forEach((parentIndexStr) => {
+    const parentIndex = parseInt(parentIndexStr, 10);
+    const parentPage = pages[parentIndex];
+    if (parentPage && parentPage.items) {
+      const extractPaths = (fieldsArray) => {
+        let paths = [];
+        fieldsArray.forEach((f) => {
+          if (f?.path) paths.push(f.path);
+          if (f?.children && Array.isArray(f.children)) {
+            paths = paths.concat(extractPaths(f.children));
+          }
+        });
+        return paths;
+      };
+
+      const orderedPaths = [];
+      parentPage.items.forEach((item) => {
+        if (item.type === "field" && item.field) {
+          orderedPaths.push(...extractPaths([item.field]));
+        } else if (item.type === "section" && item.fields) {
+          orderedPaths.push(...extractPaths(item.fields));
+        }
+      });
+
+      childrenByParent[parentIndex].sort((a, b) => {
+        const metaA = childPagesMeta?.[a.index];
+        const metaB = childPagesMeta?.[b.index];
+        const pathA = metaA?.parentFieldPath;
+        const pathB = metaB?.parentFieldPath;
+
+        let idxA = orderedPaths.indexOf(pathA);
+        let idxB = orderedPaths.indexOf(pathB);
+
+        if (idxA === -1) idxA = Infinity;
+        if (idxB === -1) idxB = Infinity;
+
+        if (idxA !== idxB) {
+          return idxA - idxB;
+        }
+        return a.index - b.index;
+      });
+    }
+  });
+
   // Recursively build the list so children appear right under their parents
   const addPageAndChildren = (page) => {
     visiblePages.push(page);
