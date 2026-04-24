@@ -127,48 +127,71 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
     return null;
   };
 
-  const getLabelFromPath = (subKey) => {
-    const path = removeIndices(subKey);
-    const matchedField = findFieldByRelativePath(field, path);
+  const orderedPaths = useMemo(() => {
+    const paths = [];
+    const traverse = (node, prefix = "") => {
+      const currentPath = prefix ? `${prefix}.${node.name}` : node.name;
+      paths.push(currentPath);
+      if (node.children) {
+        node.children.forEach((child) => traverse(child, currentPath));
+      }
+    };
 
-    const labelObj = matchedField?.label || matchedField?.name || path;
+    if (linkedChildPageIndex >= 0 && pages[linkedChildPageIndex]) {
+      const page = pages[linkedChildPageIndex];
+      const traverseItem = (item) => {
+        if (item.type === "section") {
+          (item.fields || []).forEach((f) => traverse(f));
+        } else if (item.type === "field" && item.field) {
+          traverse(item.field);
+        }
+      };
+      (page.items || []).forEach(traverseItem);
+    } else if (field?.children) {
+      field.children.forEach((child) => traverse(child));
+    }
+    return paths;
+  }, [field, linkedChildPageIndex, pages]);
 
-    return typeof labelObj === "string"
-      ? labelObj
-      : typeof labelObj === "object" && labelObj?.title
-        ? labelObj.title
-        : String(labelObj) || "Unknown";
+  const parseKey = (key) => {
+    const parts = key.split(".");
+    let currentPath = "";
+    return parts.map((part) => {
+      const match = part.match(/^([^[]+)(?:\[(\d+)\])?$/);
+      const name = match ? match[1] : part;
+      const index =
+        match && match[2] !== undefined ? parseInt(match[2], 10) : -1;
+
+      currentPath = currentPath ? `${currentPath}.${name}` : name;
+
+      return { name, index, fullPath: currentPath };
+    });
   };
 
-  // const getLabelFromPath = (subKey) => {
-  //   // 1. removeIndices(subKey)
-  //   const path = removeIndices(subKey); // "creator.affiliation.affiliationIdentifier.affiliationIdentifierScheme"
+  const compareKeys = (keyA, keyB) => {
+    const partsA = parseKey(keyA);
+    const partsB = parseKey(keyB);
 
-  //   // 2. Replace every "." with ".children."
-  //   const traversalPath = path.replace(/\./g, ".children.");
+    const minLength = Math.min(partsA.length, partsB.length);
+    for (let i = 0; i < minLength; i++) {
+      const pA = partsA[i];
+      const pB = partsB[i];
 
-  //   // 3. Traverse field schema dynamically
-  //   let current = field;
-  //   const parts = traversalPath.split(".");
+      if (pA.name !== pB.name) {
+        const orderA = orderedPaths.indexOf(pA.fullPath);
+        const orderB = orderedPaths.indexOf(pB.fullPath);
+        const oA = orderA === -1 ? Number.MAX_SAFE_INTEGER : orderA;
+        const oB = orderB === -1 ? Number.MAX_SAFE_INTEGER : orderB;
+        if (oA !== oB) return oA - oB;
+        return pA.name.localeCompare(pB.name);
+      }
 
-  //   for (let i = 0; i < parts.length; i += 2) {
-  //     const childName = parts[i];
-  //     current = current.children?.find((c) => c.name === childName);
-  //     if (!current) break;
-  //   }
+      if (pA.index !== pB.index) {
+        return pA.index - pB.index;
+      }
+    }
 
-  //   // String extraction
-  //   const labelObj = current?.label || current?.name || path.split(".").pop();
-
-  //   return typeof labelObj === "string"
-  //     ? labelObj
-  //     : typeof labelObj === "object" && labelObj?.title
-  //       ? labelObj.title
-  //       : String(labelObj) || "Unknown";
-  // };
-
-  const getNestingDepth = (subKey) => {
-    return (subKey.match(/\./g) || []).length - 1; // Count dots = nesting levels
+    return partsA.length - partsB.length;
   };
 
   // Show Add button only if not in readOnly mode
@@ -338,30 +361,126 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
                 <Typography variant="h6" gutterBottom>
                   {field.label} #{instance.visualIndex + 1}
                 </Typography>
-                {Object.entries(instance.data).map(([subKey, value]) => {
-                  const depth = getNestingDepth(subKey);
-                  return (
-                    <Box
-                      key={subKey}
-                      sx={{ mt: depth > 0 ? 0.5 : 2.5, flexGrow: 1 }}
-                    >
-                      <Typography variant="subtitle2" sx={{ pl: depth * 2 }}>
-                        {getLabelFromPath(subKey)}:
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          overflowWrap: "anywhere", // modern, allows break anywhere
-                          wordWrap: "break-word", // legacy alias, still useful
-                          pl: depth * 2,
-                        }}
-                        color="text.secondary"
-                      >
-                        {value || "—"}
-                      </Typography>
-                    </Box>
+                {(() => {
+                  const sortedEntries = Object.entries(instance.data).sort(
+                    ([keyA], [keyB]) => compareKeys(keyA, keyB)
                   );
-                })}
+
+                  const nodes = [];
+                  let previousParts = [];
+
+                  sortedEntries.forEach(([subKey, value]) => {
+                    const parts = parseKey(subKey);
+
+                    let divergenceIndex = 0;
+                    while (
+                      divergenceIndex < parts.length &&
+                      divergenceIndex < previousParts.length &&
+                      parts[divergenceIndex].name ===
+                        previousParts[divergenceIndex].name &&
+                      parts[divergenceIndex].index ===
+                        previousParts[divergenceIndex].index
+                    ) {
+                      divergenceIndex++;
+                    }
+
+                    for (let i = divergenceIndex; i < parts.length - 1; i++) {
+                      const part = parts[i];
+                      const matchedField = findFieldByRelativePath(
+                        field,
+                        part.fullPath
+                      );
+                      const labelObj =
+                        matchedField?.label || matchedField?.name || part.name;
+                      const labelStr =
+                        typeof labelObj === "string"
+                          ? labelObj
+                          : typeof labelObj === "object" && labelObj?.title
+                            ? labelObj.title
+                            : String(labelObj) || "Unknown";
+
+                      const label =
+                        labelStr +
+                        (part.index !== -1 ? ` #${part.index + 1}` : "");
+
+                      nodes.push({
+                        type: "header",
+                        key: part.fullPath + (part.index !== -1 ? `[${part.index}]` : ""),
+                        label,
+                        depth: i,
+                      });
+                    }
+
+                    const lastPart = parts[parts.length - 1];
+                    const matchedField = findFieldByRelativePath(
+                      field,
+                      lastPart.fullPath
+                    );
+                    const labelObj =
+                      matchedField?.label || matchedField?.name || lastPart.name;
+                    const labelStr =
+                      typeof labelObj === "string"
+                        ? labelObj
+                        : typeof labelObj === "object" && labelObj?.title
+                          ? labelObj.title
+                          : String(labelObj) || "Unknown";
+
+                    const leafLabel =
+                      labelStr +
+                      (lastPart.index !== -1 ? ` #${lastPart.index + 1}` : "");
+
+                    nodes.push({
+                      type: "value",
+                      key: subKey,
+                      label: leafLabel,
+                      value,
+                      depth: parts.length - 1,
+                    });
+
+                    previousParts = parts;
+                  });
+
+                  return nodes.map((node) => {
+                    const depth = node.depth;
+                    return (
+                      <Box
+                        key={node.key}
+                        sx={{
+                          mt: depth > 0 ? 0.5 : 2.5,
+                          flexGrow: 1,
+                          pl: depth > 0 ? 1.5 : 0,
+                          ml: depth > 0 ? depth * 1.5 : 0,
+                          borderLeft:
+                            depth > 0
+                              ? `2px solid ${theme.palette?.divider || "rgba(0, 0, 0, 0.12)"}`
+                              : "none",
+                        }}
+                      >
+                        {node.type === "header" ? (
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                            {node.label}
+                          </Typography>
+                        ) : (
+                          <>
+                            <Typography variant="subtitle2">
+                              {node.label}:
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                overflowWrap: "anywhere",
+                                wordWrap: "break-word",
+                              }}
+                              color="text.secondary"
+                            >
+                              {node.value || "—"}
+                            </Typography>
+                          </>
+                        )}
+                      </Box>
+                    );
+                  });
+                })()}
               </CardContent>
 
               {!readOnly && (

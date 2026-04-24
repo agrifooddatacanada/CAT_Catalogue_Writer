@@ -98,7 +98,11 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
   }, [linkedChildPageIndex, fieldPath, activePage, label, name, dispatch]);
 
   // multiple + has children → composite multiple
-  if (multiple && children && children.length > 0) {
+  if (
+    // multiple &&
+    children &&
+    children.length > 0
+  ) {
     // console.log("Came to FIMC for:", name, "at", fieldPath, "|", valuePath);
     return (
       <>
@@ -137,37 +141,6 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
           </Typography>
 
           <FormInputChildren valuePath={valuePath} />
-
-          {/* {!readOnly && (
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon />}
-              sx={{
-                color: theme.primaryColor,
-                borderColor: theme.primaryColor,
-                "&:hover": {
-                  borderColor: theme.primaryColor,
-                  backgroundColor: theme.backgroundColor,
-                },
-                mt: 1,
-              }}
-              onClick={handleOpenChildPage}
-            >
-              Add {label || name}
-            </Button>
-          )} */}
-
-          {/* {!readOnly && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<AddIcon />}
-              sx={{ mt: 1 }}
-              onClick={handleOpenLinkedPage}
-            >
-              Add {label || name}
-            </Button>
-          )} */}
         </Box>
         {/* <FormInputGroup valuePath={valuePath} /> */}
       </>
