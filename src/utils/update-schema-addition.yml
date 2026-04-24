@@ -1,0 +1,26 @@
+name: Update schema-addition branch
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  merge-develop-to-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all history and branches
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge develop into schema-addition
+        run: |
+          git checkout schema-addition
+          git merge origin/develop --no-edit
+          git push origin schema-addition
