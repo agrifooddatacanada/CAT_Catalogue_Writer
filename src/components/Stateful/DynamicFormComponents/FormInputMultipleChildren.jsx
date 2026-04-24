@@ -171,6 +171,73 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
     return (subKey.match(/\./g) || []).length; // Count dots = nesting levels
   };
 
+  const orderedPaths = useMemo(() => {
+    const paths = [];
+    const traverse = (node, prefix = "") => {
+      const currentPath = prefix ? `${prefix}.${node.name}` : node.name;
+      paths.push(currentPath);
+      if (node.children) {
+        node.children.forEach((child) => traverse(child, currentPath));
+      }
+    };
+
+    if (linkedChildPageIndex >= 0 && pages[linkedChildPageIndex]) {
+      const page = pages[linkedChildPageIndex];
+      const traverseItem = (item) => {
+        if (item.type === "section") {
+          (item.fields || []).forEach((f) => traverse(f));
+        } else if (item.type === "field" && item.field) {
+          traverse(item.field);
+        }
+      };
+      (page.items || []).forEach(traverseItem);
+    } else if (field?.children) {
+      field.children.forEach((child) => traverse(child));
+    }
+    return paths;
+  }, [field, linkedChildPageIndex, pages]);
+
+  const parseKey = (key) => {
+    const parts = key.split(".");
+    let currentPath = "";
+    return parts.map((part) => {
+      const match = part.match(/^([^[]+)(?:\[(\d+)\])?$/);
+      const name = match ? match[1] : part;
+      const index =
+        match && match[2] !== undefined ? parseInt(match[2], 10) : -1;
+
+      currentPath = currentPath ? `${currentPath}.${name}` : name;
+
+      return { name, index, fullPath: currentPath };
+    });
+  };
+
+  const compareKeys = (keyA, keyB) => {
+    const partsA = parseKey(keyA);
+    const partsB = parseKey(keyB);
+
+    const minLength = Math.min(partsA.length, partsB.length);
+    for (let i = 0; i < minLength; i++) {
+      const pA = partsA[i];
+      const pB = partsB[i];
+
+      if (pA.name !== pB.name) {
+        const orderA = orderedPaths.indexOf(pA.fullPath);
+        const orderB = orderedPaths.indexOf(pB.fullPath);
+        const oA = orderA === -1 ? Number.MAX_SAFE_INTEGER : orderA;
+        const oB = orderB === -1 ? Number.MAX_SAFE_INTEGER : orderB;
+        if (oA !== oB) return oA - oB;
+        return pA.name.localeCompare(pB.name);
+      }
+
+      if (pA.index !== pB.index) {
+        return pA.index - pB.index;
+      }
+    }
+
+    return partsA.length - partsB.length;
+  };
+
   // Show Add button only if not in readOnly mode
   const shouldShowAddButton = !readOnly;
 
@@ -338,7 +405,9 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
                 <Typography variant="h6" gutterBottom>
                   {field.label} #{instance.visualIndex + 1}
                 </Typography>
-                {Object.entries(instance.data).map(([subKey, value]) => {
+                {Object.entries(instance.data)
+                  .sort(([keyA], [keyB]) => compareKeys(keyA, keyB))
+                  .map(([subKey, value]) => {
                   const depth = getNestingDepth(subKey);
                   return (
                     <Box
