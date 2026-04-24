@@ -2,6 +2,7 @@ import { SCHEMA_ID_MAP, ID_TO_SCHEMA_MAP } from "./schemaRegistry";
 
 // Schema Context Map
 export const SCHEMA_CONTEXT_MAP = {
+  "Basic DMP": "https://w3id.org/dcso/ns/core#",
   "cataloguerecord_DCAT.top": "http://purl.org/dc/terms/",
   "Data Request Schema": "test",
   DataCite: "https://schema.datacite.org/",
