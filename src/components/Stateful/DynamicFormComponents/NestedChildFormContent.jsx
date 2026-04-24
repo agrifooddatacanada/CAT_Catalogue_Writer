@@ -10,6 +10,8 @@ import {
   selectFieldByPath,
   selectFormState,
   selectPages,
+  selectFormatPatterns,
+  selectDepFormatPatterns,
 } from "../../../store/selectors/formSelectors";
 import theme from "../../../theme";
 import {
@@ -17,6 +19,22 @@ import {
   setFieldValue,
 } from "../../../store/slices/formValueSlice";
 import { makeSelectIsPopupValid } from "../../../store/selectors/popupValidationSelectors";
+import { getValidationError } from "../../../utils/validationUtils";
+import { selectMode } from "../../../store/slices/modeSlice";
+
+const getFieldByPath = (fieldsArray, targetPath) => {
+  if (!Array.isArray(fieldsArray)) return null;
+  for (const f of fieldsArray) {
+    if (f?.path === targetPath) {
+      return f;
+    }
+    if (f?.children?.length) {
+      const found = getFieldByPath(f.children, targetPath);
+      if (found) return found;
+    }
+  }
+  return null;
+};
 
 const filterMandatoryFields = (fields) => {
   if (!Array.isArray(fields)) return [];
@@ -59,6 +77,51 @@ const NestedChildFormContent = ({
   const isPopupValid = useSelector(
     useMemo(() => makeSelectIsPopupValid(nextValuePath), [nextValuePath]),
   );
+
+  const formatPatterns = useSelector(selectFormatPatterns);
+  const depFormatPatterns = useSelector(selectDepFormatPatterns);
+  const mode = useSelector(selectMode);
+  const readOnly = mode === "view";
+
+  const isFormatValid = useMemo(() => {
+    if (!fieldValues || !field) return true;
+    const keys = Object.keys(fieldValues).filter((k) =>
+      k.startsWith(nextValuePath),
+    );
+    for (const key of keys) {
+      const value = fieldValues[key];
+      if (value === undefined || value === null || value === "") continue;
+
+      const fPath = removeIndices(key);
+      const fieldDef = getFieldByPath([field], fPath);
+
+      if (fieldDef) {
+        const error = getValidationError({
+          field: fieldDef,
+          fieldPath: fPath,
+          value: fieldDef.multiple
+            ? Array.isArray(value)
+              ? value
+              : [value]
+            : value,
+          readOnly,
+          formatPatterns,
+          depFormatPatterns,
+        });
+        if (error) return false;
+      }
+    }
+    return true;
+  }, [
+    fieldValues,
+    nextValuePath,
+    field,
+    readOnly,
+    formatPatterns,
+    depFormatPatterns,
+  ]);
+
+  const canSave = isPopupValid && isFormatValid;
 
   const latestFieldValuesRef = useRef(fieldValues);
   const isSavedRef = useRef(false);
@@ -108,7 +171,7 @@ const NestedChildFormContent = ({
   }, [nextValuePath, dispatch]);
 
   const handleSave = () => {
-    if (!isPopupValid) return;
+    if (!canSave) return;
 
     isSavedRef.current = true;
 
@@ -140,7 +203,8 @@ const NestedChildFormContent = ({
     }
   };
 
-  const isSchemaBacked = !isGenerated && pageIndex !== undefined && pages?.[pageIndex];
+  const isSchemaBacked =
+    !isGenerated && pageIndex !== undefined && pages?.[pageIndex];
   const page = isSchemaBacked ? pages[pageIndex] : null;
 
   const renderContent = () => {
@@ -263,7 +327,7 @@ const NestedChildFormContent = ({
         <Button
           variant="contained"
           onClick={handleSave}
-          disabled={!isPopupValid}
+          disabled={!canSave}
           sx={{
             backgroundColor: theme.primaryColor,
             "&:hover": {
