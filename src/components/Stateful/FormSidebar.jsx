@@ -15,6 +15,7 @@ import {
   selectAllInstanceCounts,
   selectFields,
   selectPages,
+  selectSchemaName,
 } from "../../store/selectors/formSelectors";
 import { setViewMode } from "../../store/slices/formUiSlice";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
@@ -88,6 +89,7 @@ function FormSidebar() {
   const pages = useSelector(selectPages);
   const activePage = useSelector(selectActivePage);
   const fields = useSelector(selectFields);
+  const schemaName = useSelector(selectSchemaName);
   const {
     viewMode,
     currentPage = 1,
@@ -264,7 +266,7 @@ function FormSidebar() {
           color: theme.backgroundColor,
         }}
       >
-        <Typography variant="h6">Form Navigation</Typography>
+        <Typography variant="h6">{schemaName || "Form Navigation"}</Typography>
       </Box>
 
       {availableModesCount > 1 && (
