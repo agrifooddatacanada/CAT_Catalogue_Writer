@@ -7,6 +7,7 @@ import {
   CardContent,
   CardActions,
   Grid,
+  Chip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
@@ -425,17 +426,39 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
                           ? labelObj.title
                           : String(labelObj) || "Unknown";
 
-                    const leafLabel =
-                      labelStr +
-                      (lastPart.index !== -1 ? ` #${lastPart.index + 1}` : "");
+                    // Check if it's a multiple/array field (like checkboxes)
+                    const isMultiplePrimitive = matchedField?.multiple && !(matchedField?.children?.length > 0);
 
-                    nodes.push({
-                      type: "value",
-                      key: subKey,
-                      label: leafLabel,
-                      value,
-                      depth: parts.length - 1,
-                    });
+                    if (isMultiplePrimitive && lastPart.index !== -1) {
+                      const existingNodeIndex = nodes.findIndex(
+                        (n) => n.type === "valueArray" && n.fullPath === lastPart.fullPath
+                      );
+
+                      if (existingNodeIndex !== -1) {
+                        nodes[existingNodeIndex].values.push(value);
+                      } else {
+                        nodes.push({
+                          type: "valueArray",
+                          fullPath: lastPart.fullPath,
+                          key: lastPart.fullPath,
+                          label: labelStr,
+                          values: [value],
+                          depth: parts.length - 1,
+                        });
+                      }
+                    } else {
+                      const leafLabel =
+                        labelStr +
+                        (lastPart.index !== -1 ? ` #${lastPart.index + 1}` : "");
+
+                      nodes.push({
+                        type: "value",
+                        key: subKey,
+                        label: leafLabel,
+                        value,
+                        depth: parts.length - 1,
+                      });
+                    }
 
                     previousParts = parts;
                   });
@@ -460,6 +483,17 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
                           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                             {node.label}
                           </Typography>
+                        ) : node.type === "valueArray" ? (
+                          <>
+                            <Typography variant="subtitle2">
+                              {node.label}:
+                            </Typography>
+                            <Box sx={{ mt: 0.5, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                              {node.values.map((val, idx) => (
+                                <Chip key={`${val}-${idx}`} label={val} size="small" />
+                              ))}
+                            </Box>
+                          </>
                         ) : (
                           <>
                             <Typography variant="subtitle2">

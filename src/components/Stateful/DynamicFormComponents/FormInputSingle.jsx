@@ -61,13 +61,13 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     categories,
   } = field;
 
-  const instanceCount = useSelector(selectInstanceCount(fieldPath)) || 0;
-  const fieldValues = useSelector(selectFormValueByPrefix(fieldPath));
+  const instanceCount = useSelector(selectInstanceCount(valuePath)) || 0;
+  const fieldValues = useSelector(selectFormValueByPrefix(valuePath));
 
   // Compute existing values (same exact logic)
   const existingValues = Array.from({ length: instanceCount }).map(
     (_, index) => {
-      const key = `${fieldPath}[${index}]`;
+      const key = `${valuePath}[${index}]`;
       return fieldValues[key];
     },
   );
@@ -76,8 +76,8 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     (indexToDelete) => {
       // EXACT SAME LOGIC as FormInputMultiple
       for (let i = indexToDelete + 1; i < instanceCount; i++) {
-        const fromKey = `${fieldPath}[${i}]`;
-        const toKey = `${fieldPath}[${i - 1}]`;
+        const fromKey = `${valuePath}[${i}]`;
+        const toKey = `${valuePath}[${i - 1}]`;
         const fromValue = fieldValues[fromKey];
         if (fromValue !== undefined && fromValue !== null && fromValue !== "") {
           dispatch(setFieldValue({ path: toKey, value: fromValue }));
@@ -86,12 +86,12 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
         }
       }
       if (instanceCount > 0) {
-        const lastKey = `${fieldPath}[${instanceCount - 1}]`;
+        const lastKey = `${valuePath}[${instanceCount - 1}]`;
         dispatch(removeFieldValue(lastKey));
       }
-      dispatch(decrementInstanceCount(fieldPath));
+      dispatch(decrementInstanceCount(valuePath));
     },
-    [dispatch, fieldPath, fieldValues, instanceCount],
+    [dispatch, valuePath, fieldValues, instanceCount],
   );
 
   // const value = useSelector(selectFieldValue(valuePath)) || "";
@@ -366,7 +366,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                                 dispatch(
                                   setFieldValue({ path: newPath, value: code }),
                                 );
-                                dispatch(incrementInstanceCount(fieldPath));
+                                dispatch(incrementInstanceCount(valuePath));
                               } else {
                                 // REMOVE: find & delete instance with this code
                                 const indexToDelete =
