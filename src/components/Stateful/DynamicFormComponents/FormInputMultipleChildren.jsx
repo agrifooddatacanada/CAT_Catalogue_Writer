@@ -168,7 +168,7 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
   // };
 
   const getNestingDepth = (subKey) => {
-    return (subKey.match(/\./g) || []).length - 1; // Count dots = nesting levels
+    return (subKey.match(/\./g) || []).length; // Count dots = nesting levels
   };
 
   // Show Add button only if not in readOnly mode
@@ -343,9 +343,18 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
                   return (
                     <Box
                       key={subKey}
-                      sx={{ mt: depth > 0 ? 0.5 : 2.5, flexGrow: 1 }}
+                      sx={{
+                        mt: depth > 0 ? 0.5 : 2.5,
+                        flexGrow: 1,
+                        pl: depth > 0 ? 1.5 : 0,
+                        ml: depth > 0 ? depth * 1.5 : 0,
+                        borderLeft:
+                          depth > 0
+                            ? `2px solid ${theme.palette?.divider || "rgba(0, 0, 0, 0.12)"}`
+                            : "none",
+                      }}
                     >
-                      <Typography variant="subtitle2" sx={{ pl: depth * 2 }}>
+                      <Typography variant="subtitle2">
                         {getLabelFromPath(subKey)}:
                       </Typography>
                       <Typography
@@ -353,7 +362,6 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
                         sx={{
                           overflowWrap: "anywhere", // modern, allows break anywhere
                           wordWrap: "break-word", // legacy alias, still useful
-                          pl: depth * 2,
                         }}
                         color="text.secondary"
                       >
