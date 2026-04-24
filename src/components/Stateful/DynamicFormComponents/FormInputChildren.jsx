@@ -208,6 +208,8 @@ const FormInputChildren = ({ valuePath }) => {
             {(() => {
               const grouped = {};
               Object.entries(flattenedData).forEach(([subKey, value]) => {
+                if (value === null || value === undefined || value === "") return;
+
                 const pathWithoutIndex = subKey.replace(/\[\d+\]/g, "");
                 const matchedField = findFieldByRelativePath(field, removeIndices(subKey));
                 

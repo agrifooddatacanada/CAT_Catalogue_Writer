@@ -371,6 +371,8 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
                   let previousParts = [];
 
                   sortedEntries.forEach(([subKey, value]) => {
+                    if (value === null || value === undefined || value === "") return;
+
                     const parts = parseKey(subKey);
 
                     let divergenceIndex = 0;
