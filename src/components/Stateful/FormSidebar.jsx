@@ -15,6 +15,7 @@ import {
   selectAllInstanceCounts,
   selectFields,
   selectPages,
+  selectSchemaName,
 } from "../../store/selectors/formSelectors";
 import { setViewMode } from "../../store/slices/formUiSlice";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
@@ -88,6 +89,7 @@ function FormSidebar() {
   const pages = useSelector(selectPages);
   const activePage = useSelector(selectActivePage);
   const fields = useSelector(selectFields);
+  const schemaName = useSelector(selectSchemaName);
   const {
     viewMode,
     currentPage = 1,
@@ -134,6 +136,50 @@ function FormSidebar() {
         }
         childrenByParent[meta.parentPageIndex].push(p);
       }
+    }
+  });
+
+  Object.keys(childrenByParent).forEach((parentIndexStr) => {
+    const parentIndex = parseInt(parentIndexStr, 10);
+    const parentPage = pages[parentIndex];
+    if (parentPage && parentPage.items) {
+      const extractPaths = (fieldsArray) => {
+        let paths = [];
+        fieldsArray.forEach((f) => {
+          if (f?.path) paths.push(f.path);
+          if (f?.children && Array.isArray(f.children)) {
+            paths = paths.concat(extractPaths(f.children));
+          }
+        });
+        return paths;
+      };
+
+      const orderedPaths = [];
+      parentPage.items.forEach((item) => {
+        if (item.type === "field" && item.field) {
+          orderedPaths.push(...extractPaths([item.field]));
+        } else if (item.type === "section" && item.fields) {
+          orderedPaths.push(...extractPaths(item.fields));
+        }
+      });
+
+      childrenByParent[parentIndex].sort((a, b) => {
+        const metaA = childPagesMeta?.[a.index];
+        const metaB = childPagesMeta?.[b.index];
+        const pathA = metaA?.parentFieldPath;
+        const pathB = metaB?.parentFieldPath;
+
+        let idxA = orderedPaths.indexOf(pathA);
+        let idxB = orderedPaths.indexOf(pathB);
+
+        if (idxA === -1) idxA = Infinity;
+        if (idxB === -1) idxB = Infinity;
+
+        if (idxA !== idxB) {
+          return idxA - idxB;
+        }
+        return a.index - b.index;
+      });
     }
   });
 
@@ -220,7 +266,7 @@ function FormSidebar() {
           color: theme.backgroundColor,
         }}
       >
-        <Typography variant="h6">Form Navigation</Typography>
+        <Typography variant="h6">{schemaName || "Form Navigation"}</Typography>
       </Box>
 
       {availableModesCount > 1 && (
