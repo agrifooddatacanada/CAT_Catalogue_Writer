@@ -197,6 +197,7 @@ function extractAttributesFromCaptureBase(
   cardinalities,
   placeholders,
   descriptions,
+  optionsMap,
   ordering = [],
   extensions = {},
 ) {
@@ -241,6 +242,7 @@ function extractAttributesFromCaptureBase(
             depCardinalities,
             placeholders,
             descriptions,
+            optionsMap,
             depOrdering,
             extensions,
           );
@@ -255,6 +257,7 @@ function extractAttributesFromCaptureBase(
       placeholder: placeholders[key] || "",
       description: descriptions[key] || "",
       type: fieldType,
+      options: optionsMap[key] || null,
       required: getConformanceValue(conformances, key) === "M",
       recommended: getConformanceValue(conformances, key) === "R",
       optional: getConformanceValue(conformances, key) === "O",
@@ -269,6 +272,39 @@ function extractAttributesFromCaptureBase(
     });
   }
   return sortFieldsByOrdering(fields, ordering);
+}
+
+//
+function extractOptionsFromFormExtension(extensions, lang) {
+  const optionsMap = {};
+
+  // extensions.adc is an object keyed by IDs
+  const adcExtensions = extensions?.adc || {};
+
+  for (const key in adcExtensions) {
+    const overlays = adcExtensions[key]?.overlays;
+    if (!overlays?.form) continue;
+
+    const forms = overlays.form;
+    for (const form of forms) {
+      // Match only the form corresponding to the specified language
+      if (form.language !== lang) continue;
+      if (!form.interaction) continue;
+
+      for (const interactionKey of form.interaction) {
+        if (!interactionKey.arguments) continue;
+
+        const args = interactionKey.arguments || {};
+        for (const [attrName, argDef] of Object.entries(args)) {
+          const options = argDef.options;
+          if (Array.isArray(options)) {
+            optionsMap[attrName] = options;
+          }
+        }
+      }
+    }
+  }
+  return optionsMap;
 }
 
 //
@@ -380,6 +416,10 @@ export function extractAttributes(
     jsonData?.extensions || {},
     lang,
   );
+  const optionsMap = extractOptionsFromFormExtension(
+    jsonData?.extensions || {},
+    lang,
+  );
   const ordering = getAttributeOrderingForCaptureBase(
     jsonData?.extensions,
     captureBase?.d,
@@ -428,6 +468,7 @@ export function extractAttributes(
             depCardinalities,
             placeholders,
             descriptions,
+            optionsMap,
             depOrdering,
             jsonData?.extensions,
           );
@@ -460,6 +501,7 @@ export function extractAttributes(
       placeholder,
       description,
       type: fieldType,
+      options: optionsMap[key] || null,
       required,
       recommended,
       optional,
