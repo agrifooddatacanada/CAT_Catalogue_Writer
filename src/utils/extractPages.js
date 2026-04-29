@@ -121,9 +121,6 @@ export function extractPages(jsonData, fields, lang = "eng") {
 
   buildParentMapFromFields(fields);
 
-  // Log to verify
-  console.log("parentDigestMap:", parentDigestMap);
-
   // Compute depth recursively
   const depthCache = {};
   const getDepth = (digest) => {

@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import {
   Box,
+  Button,
   Checkbox,
   Chip,
   FormControl,
@@ -14,6 +15,8 @@ import {
   FormGroup,
   // Link,
   MenuItem,
+  Radio,
+  RadioGroup,
   Select,
   TextareaAutosize,
   Typography,
@@ -56,6 +59,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     placeholder,
     description,
     type,
+    options,
     required,
     multiple,
     categories,
@@ -413,6 +417,80 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               </Box>
             )}
           </Box>
+        )
+      ) : type === "Boolean" || type.includes("Boolean") ? (
+        readOnly && (!value || value.length === 0) ? (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              pl: 1.5,
+              py: 1.5,
+              fontStyle: "italic",
+              color: theme.descriptionColor,
+            }}
+          >
+            {t("no_data")} {label || name}
+          </Box>
+        ) : (
+          <FormControl component="fieldset" {...fieldErrorProps} sx={{ mt: depth === 0 ? 1 : 0, p: 1, width: "100%" }}>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <RadioGroup
+                row
+                value={
+                  typeof value === "boolean"
+                    ? value
+                      ? (options ? options[0] : "True")
+                      : (options ? options[1] : "False")
+                    : value || ""
+                }
+                onChange={(e) => {
+                  let val = e.target.value;
+                  const optTrue = options ? options[0] : "True";
+                  const optFalse = options ? options[1] : "False";
+                  if (val === optTrue) val = true;
+                  else if (val === optFalse) val = false;
+                  onChange(valuePath, val);
+                }}
+                onBlur={handleBlur}
+              >
+                {(options || ["True", "False"]).map((opt) => (
+                  <FormControlLabel
+                    key={opt}
+                    value={opt}
+                    control={<Radio disabled={readOnly} size="small" />}
+                    label={opt}
+                    sx={{
+                      m: 0,
+                      mr: 2,
+                      "& .MuiFormControlLabel-label": readOnly
+                        ? { color: "black" }
+                        : { color: "inherit" },
+                    }}
+                  />
+                ))}
+              </RadioGroup>
+              {!readOnly && value !== "" && value !== null && value !== undefined && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => onChange(valuePath, "")}
+                  sx={{ ml: 5, textTransform: "none", color: "error.main", borderColor: "error.main"}}
+                >
+                  {t("Clear Response") || "Clear Response"}
+                </Button>
+              )}
+            </Box>
+            {showError && (
+              <Typography
+                variant="caption"
+                color="error"
+                sx={{ mt: 0.5, ml: 1 }}
+              >
+                {validationError}
+              </Typography>
+            )}
+          </FormControl>
         )
       ) : type.includes("DateTime") ? (
         readOnly &&
