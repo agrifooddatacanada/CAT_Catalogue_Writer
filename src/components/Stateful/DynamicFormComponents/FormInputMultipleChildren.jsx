@@ -36,7 +36,7 @@ import { selectPages } from "../../../store/selectors/formSelectors";
 import { setChildFormNavigation } from "../../../store/slices/childFormNavigationSlice";
 import { upsertChildPageMeta } from "../../../store/slices/fieldSchemaSlice";
 
-const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
+const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPageIndex }) => {
   // const [addDialogOpen, setAddDialogOpen] = useState(false);
   // const [editOpen, setEditOpen] = useState(false); // edit state
   // const [editingIndex, setEditingIndex] = useState(null); // which instance
@@ -50,6 +50,7 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
 
   const pages = useSelector(selectPages);
   const activePageIndex = useSelector(selectActivePage);
+  const resolvedParentPageIndex = parentPageIndex !== undefined ? parentPageIndex : activePageIndex;
 
   const formState = useSelector(selectFormState);
   const fieldPath = removeIndices(valuePath);
@@ -206,19 +207,19 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
         upsertChildPageMeta({
           childPageIndex: linkedChildPageIndex,
           parentFieldPath: fieldPath,
-          parentPageIndex: activePageIndex,
+          parentPageIndex: resolvedParentPageIndex,
           label: label || name,
         }),
       );
     }
-  }, [linkedChildPageIndex, fieldPath, activePageIndex, label, name, dispatch]);
+  }, [linkedChildPageIndex, fieldPath, resolvedParentPageIndex, label, name, dispatch]);
 
   const handleAddAsPage = () => {
     dispatch(
       setChildFormNavigation({
         push: true,
         nextValuePath: `${valuePath}[${instanceCount}]`,
-        parentPageIndex: activePageIndex,
+        parentPageIndex: resolvedParentPageIndex,
         childPageIndex: linkedChildPageIndex,
         isEdit: false,
         fallbackLabel: label || name,
@@ -240,7 +241,7 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode }) => {
       setChildFormNavigation({
         push: true,
         nextValuePath: `${valuePath}[${instance.reduxIndex}]`,
-        parentPageIndex: activePageIndex,
+        parentPageIndex: resolvedParentPageIndex,
         childPageIndex: linkedChildPageIndex >= 0 ? linkedChildPageIndex : null,
         isEdit: true,
         fallbackLabel: label || name,

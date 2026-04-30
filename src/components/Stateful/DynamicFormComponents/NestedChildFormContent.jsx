@@ -268,8 +268,8 @@ const NestedChildFormContent = ({
                         key={`${item.id}-${f.name}-${fieldIndex}`}
                         valuePath={childPath}
                         depth={1}
-                      />
-                    );
+                        parentPageIndex={pageIndex}
+                      />                    );
                   })}
                 </Box>
               );
@@ -282,6 +282,7 @@ const NestedChildFormContent = ({
                   key={`field-${item.field.name}-${index}`}
                   valuePath={childPath}
                   depth={1}
+                  parentPageIndex={pageIndex}
                 />
               );
             }
@@ -299,7 +300,7 @@ const NestedChildFormContent = ({
         {displayedFields.map((child) => {
           const childPath = `${nextValuePath}.${child.name}`;
           return (
-            <FieldChecker key={childPath} valuePath={childPath} depth={1} />
+            <FieldChecker key={childPath} valuePath={childPath} depth={1} parentPageIndex={pageIndex} />
           );
         })}
       </Box>
