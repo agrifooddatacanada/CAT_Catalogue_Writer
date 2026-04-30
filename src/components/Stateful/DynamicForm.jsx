@@ -161,16 +161,20 @@ function DynamicForm({ isEditMode = false }) {
   const getActiveItems = () => {
     if (!hasSchemaPages) return [];
     if (readOnly) {
-      return basePageIndices.flatMap((idx) => pages[idx]?.items || []);
+      return basePageIndices.flatMap((idx) =>
+        (pages[idx]?.items || []).map(item => ({ ...item, _sourcePageIndex: idx }))
+      );
     }
-    return activePageData?.items || [];
+    return (activePageData?.items || []).map(item => ({ ...item, _sourcePageIndex: activePage }));
   };
 
   const activeItems = getActiveItems();
 
   const sourceFields = hasSchemaPages
     ? activeItems.flatMap((item) =>
-        item.type === "section" ? item.fields : [item.field],
+        item.type === "section"
+          ? (item.fields || []).map(f => ({ ...f, _sourcePageIndex: item._sourcePageIndex }))
+          : [{ ...item.field, _sourcePageIndex: item._sourcePageIndex }]
       )
     : fields;
 
@@ -255,14 +259,14 @@ function DynamicForm({ isEditMode = false }) {
           if (item.type === "field") {
             const filtered = filterFieldsByViewMode([item.field]);
             return filtered.length > 0
-              ? { type: "field", field: filtered[0] }
+              ? { type: "field", field: filtered[0], _sourcePageIndex: item._sourcePageIndex }
               : null;
           }
 
           if (item.type === "section") {
             const filteredFields = filterFieldsByViewMode(item.fields || []);
             return filteredFields.length > 0
-              ? { ...item, fields: filteredFields }
+              ? { ...item, fields: filteredFields, _sourcePageIndex: item._sourcePageIndex }
               : null;
           }
 
@@ -341,9 +345,9 @@ function DynamicForm({ isEditMode = false }) {
 
   // RECURSIVE RENDERER (INDIVIDUAL INPUTS)
   const renderInput = (field, depth = 0, key) => {
-    const { path } = field;
+    const { path, _sourcePageIndex } = field;
 
-    return <FieldChecker key={key} valuePath={path} depth={depth} />;
+    return <FieldChecker key={key} valuePath={path} depth={depth} parentPageIndex={_sourcePageIndex} />;
   };
 
   if (isNestedChildPage) {
@@ -629,7 +633,7 @@ function DynamicForm({ isEditMode = false }) {
 
                         {item.fields.map((field, fieldIndex) =>
                           renderInput(
-                            { ...field },
+                            { ...field, _sourcePageIndex: item._sourcePageIndex },
                             0,
                             `${item.id}-${field.name}-${fieldIndex}`,
                           ),
@@ -640,7 +644,7 @@ function DynamicForm({ isEditMode = false }) {
 
                   if (item.type === "field") {
                     return renderInput(
-                      { ...item.field },
+                      { ...item.field, _sourcePageIndex: item._sourcePageIndex },
                       0,
                       `field-${item.field.name}-${index}`,
                     );

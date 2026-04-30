@@ -29,7 +29,7 @@ import { setCurrentPage } from "../../../store/slices/formUiSlice";
 import { setChildFormNavigation } from "../../../store/slices/childFormNavigationSlice";
 import { upsertChildPageMeta } from "../../../store/slices/fieldSchemaSlice";
 
-const FormInputChildren = ({ valuePath }) => {
+const FormInputChildren = ({ valuePath, parentPageIndex }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -38,6 +38,7 @@ const FormInputChildren = ({ valuePath }) => {
 
   const pages = useSelector(selectPages);
   const activePageIndex = useSelector(selectActivePage);
+  const resolvedParentPageIndex = parentPageIndex !== undefined ? parentPageIndex : activePageIndex;
 
   const formState = useSelector(selectFormState);
   const fieldPath = removeIndices(valuePath);
@@ -78,12 +79,12 @@ const FormInputChildren = ({ valuePath }) => {
         upsertChildPageMeta({
           childPageIndex: linkedChildPageIndex,
           parentFieldPath: fieldPath,
-          parentPageIndex: activePageIndex,
+          parentPageIndex: resolvedParentPageIndex,
           label: label || name,
         }),
       );
     }
-  }, [linkedChildPageIndex, fieldPath, activePageIndex, label, name, dispatch]);
+  }, [linkedChildPageIndex, fieldPath, resolvedParentPageIndex, label, name, dispatch]);
 
   const hasValues = useMemo(() => {
     return Object.keys(fieldValues || {}).some((key) => {
@@ -163,7 +164,7 @@ const FormInputChildren = ({ valuePath }) => {
       setChildFormNavigation({
         push: true,
         nextValuePath: valuePath,
-        parentPageIndex: activePageIndex,
+        parentPageIndex: resolvedParentPageIndex,
         childPageIndex: linkedChildPageIndex >= 0 ? linkedChildPageIndex : null,
         isEdit: hasValues,
         fallbackLabel: label || name,

@@ -23,7 +23,7 @@ import { upsertChildPageMeta } from "../../../store/slices/fieldSchemaSlice";
 import FieldDescription from "./FieldDescription";
 import FormInputChildren from "./FormInputChildren";
 
-const FieldChecker = ({ valuePath, depth = 0 }) => {
+const FieldChecker = ({ valuePath, depth = 0, parentPageIndex }) => {
   const dispatch = useDispatch();
 
   const fieldPath = removeIndices(valuePath);
@@ -41,6 +41,7 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
     .sort();
 
   const activePage = useSelector(selectActivePage);
+  const resolvedParentPageIndex = parentPageIndex !== undefined ? parentPageIndex : activePage;
 
   const linkedChildPageIndex =
     childFieldNames.length > 0
@@ -90,12 +91,12 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
         upsertChildPageMeta({
           childPageIndex: linkedChildPageIndex,
           parentFieldPath: fieldPath, // here you probably want removeIndices(valuePath)
-          parentPageIndex: activePage,
+          parentPageIndex: resolvedParentPageIndex,
           label: label || name,
         }),
       );
     }
-  }, [linkedChildPageIndex, fieldPath, activePage, label, name, dispatch]);
+  }, [linkedChildPageIndex, fieldPath, resolvedParentPageIndex, label, name, dispatch]);
 
   // multiple + has children → composite multiple
   if (
@@ -118,7 +119,7 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
             )}
           </Typography>
         </Box>
-        <FormInputMultipleChildren valuePath={valuePath} />
+        <FormInputMultipleChildren valuePath={valuePath} parentPageIndex={resolvedParentPageIndex} />
       </>
     );
   }
@@ -140,7 +141,7 @@ const FieldChecker = ({ valuePath, depth = 0 }) => {
             )}
           </Typography>
 
-          <FormInputChildren valuePath={valuePath} />
+          <FormInputChildren valuePath={valuePath} parentPageIndex={resolvedParentPageIndex} />
         </Box>
         {/* <FormInputGroup valuePath={valuePath} /> */}
       </>
