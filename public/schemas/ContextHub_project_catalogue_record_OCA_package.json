@@ -1,5 +1,5 @@
 {
-  "d": "ELrDoZSv2GyGXoCfFzsJT_PLyAFyjNR93ZozLqQ_mr0F",
+  "d": "EMxJdcorRuokb8Xd2HRjEptkywfiGQYRzsvmlIBUDRK3",
   "type": "oca_package/1.0",
   "oca_bundle": {
     "bundle": {
@@ -1633,12 +1633,12 @@
         }
       },
       "EPBpvbzM3SwBWK8MpfHjhhk2T_seKyNCTYtYcm95cWmk": {
-        "d": "EMgpOpR_Id2cCVPvhjKmIldZcPmqsmp2NAS7xui91Nff",
+        "d": "EAmN8LRn10qsB59-MBWCeO5FeN07H41k0j3q6G0iOZZ1",
         "type": "community/adc/extension/1.0",
         "overlays": {
           "form": [
             {
-              "d": "EMHsUo3Izxvn5GsRQ5iLq5g8iHUWaNgs4YrKS7KDnZrr",
+              "d": "ELvt7ie2f5hGq-Dm6OLdMn_8C-WSyKI_5267qqGLs4uB",
               "capture_base": "EPBpvbzM3SwBWK8MpfHjhhk2T_seKyNCTYtYcm95cWmk",
               "type": "community/overlays/adc/form/1.0",
               "language": "eng",
@@ -1651,8 +1651,7 @@
                     "contributor",
                     "organisation",
                     "alternateIdentifier",
-                    "alternateUrl",
-                    "keywords"
+                    "alternateUrl"
                   ],
                   "named_section": "da7818f3-7980-4c80-93c2-10dc4322e13d"
                 }
@@ -1687,9 +1686,6 @@
                     },
                     "description": {
                       "type": "reference"
-                    },
-                    "keywords": {
-                      "type": "Array[Text]"
                     },
                     "organisation": {
                       "type": "reference"

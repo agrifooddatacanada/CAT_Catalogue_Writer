@@ -1,5 +1,5 @@
 {
-  "d": "EEB0baA_cz6NjYbLKwQmtL4DTCmch-_1k3P_0xIGS3qa",
+  "d": "EDHhYLGzQ6LUR8fWkK-1eFCmUsfzHGJ2Y8hyvis5aW4H",
   "type": "oca_package/1.0",
   "oca_bundle": {
     "bundle": {
@@ -809,12 +809,12 @@
         }
       },
       "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t": {
-        "d": "EBe6CEtnJiPvqvgjvMvyQACQoduyOd5iYGFn2mInxLFn",
+        "d": "EIwhw0aKUrrxU53uuTE0llZWAVmpxU5aE6lXQtaW5XcK",
         "type": "community/adc/extension/1.0",
         "overlays": {
           "form": [
             {
-              "d": "EM9M8g5sqz1jnp25xQdRunI3xA1UNn-3TXVWMnEfxZwg",
+              "d": "EL_TJy7yqwtuW1QUdVj6PsXw06ZXkDIT4QXT8Wu1Ujil",
               "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
               "type": "community/overlays/adc/form/1.0",
               "language": "eng",
@@ -833,8 +833,7 @@
                     "dcterms.license",
                     "dcterms.acessRights",
                     "dcat.version",
-                    "adms.versionNotes",
-                    "dcat.keyword"
+                    "adms.versionNotes"
                   ],
                   "named_section": "b62fb7d2-81f5-4247-a9e9-5809313e3837"
                 }
@@ -862,8 +861,7 @@
                 "dcterms.license": "A legal document under which the resource is made available.",
                 "dcterms.acessRights": "Information about who can access the resource or an indication of its security status.",
                 "dcat.version": "The version indicator (name or identifier) of a resource.",
-                "adms.versionNotes": "Notes about the changes from the previous version to this version.",
-                "dcat.keyword": "A keyword or tag describing the resource."
+                "adms.versionNotes": "Notes about the changes from the previous version to this version."
               },
               "title": "ContextHub_schema_catalogue_record",
               "interaction": [
@@ -876,10 +874,6 @@
                     "dcat.contactPoint": {
                       "description": "Relevant contact information for the cataloged resource. Use of vCard is recommended",
                       "type": "reference"
-                    },
-                    "dcat.keyword": {
-                      "description": "A keyword or tag describing the resource.",
-                      "type": "Array[Text]"
                     },
                     "dcat.version": {
                       "description": "The version indicator (name or identifier) of a resource.",
