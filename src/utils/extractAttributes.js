@@ -261,11 +261,11 @@ function extractAttributesFromCaptureBase(
       required: getConformanceValue(conformances, key) === "M",
       recommended: getConformanceValue(conformances, key) === "R",
       optional: getConformanceValue(conformances, key) === "O",
-      multiple: cardinalities[key]
+      multiple: (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) || Array.isArray(value) || (cardinalities[key]
         ? cardinalities[key].includes("n") ||
           cardinalities[key] === "1-" ||
           cardinalities[key] === "0-"
-        : false,
+        : false),
       categories: entryCodes[key] || null,
       captureBase: currentDigest,
       children,
@@ -485,11 +485,12 @@ export function extractAttributes(
     const recommended = conformanceValue === "R";
     const optional = conformanceValue === "O";
     const cardinality = cardinalities[key];
-    const multiple = cardinality
+    const isArrayType = (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) || Array.isArray(value);
+    const multiple = isArrayType || (cardinality
       ? cardinality.includes("n") ||
         cardinality === "1-" ||
         cardinality === "0-"
-      : false;
+      : false);
     const categories = entryCodes[key] || null;
     const label = mainLabels[key] || key;
     const placeholder = placeholders[key] || "";
