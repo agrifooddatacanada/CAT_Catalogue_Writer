@@ -1,5 +1,5 @@
 {
-  "d": "ELjIQvjg6LTthYORx2gppJDXL_IEE0_aqgyIQTpx6qby",
+  "d": "ELrDoZSv2GyGXoCfFzsJT_PLyAFyjNR93ZozLqQ_mr0F",
   "type": "oca_package/1.0",
   "oca_bundle": {
     "bundle": {
@@ -12,7 +12,7 @@
           "Date": "refs:EDT0iY3OOPRdpBC5xIBjz4g_31-G5DV7HUma_nzkiEwW",
           "alternateIdentifier": "refs:EKlf9oKCgfhMvR75RGYCA0kuhysYDR0TEWPNDeXxOrW3",
           "alternateUrl": "refs:EI9-qZMxgWwyumJntFmZVTGl3dbsomnnPlDA7EemQfS7",
-          "contributor": "refs:EN5aUs6xOgpFkZ5cvV8E9WP64_cShWUjy26zoO6Ew322",
+          "contributor": "refs:EGuV50a6r-nfSp6EszZ5fWhbQPw8vIscM2lnpolx-rQP",
           "description": "refs:EKBP1bHRs0eJ9fMvYJPBzWrd8N-I3iLxlxW7fgci-CpX",
           "identifier": "refs:EDKApku1vEqTi5kIy1_-OYq4nwCFa563sU_Td_QrPtuR",
           "keywords": [
@@ -71,18 +71,18 @@
     "dependencies": [
       {
         "v": "OCAS11JSON0017df_",
-        "d": "EN5aUs6xOgpFkZ5cvV8E9WP64_cShWUjy26zoO6Ew322",
+        "d": "EGuV50a6r-nfSp6EszZ5fWhbQPw8vIscM2lnpolx-rQP",
         "capture_base": {
-          "d": "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f",
+          "d": "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu",
           "type": "spec/capture_base/1.1",
           "attributes": {
-            "contribitor.position.id": "Text",
             "contributor.contact": "Text",
             "contributor.family.name": "Text",
             "contributor.given.names": "Text",
             "contributor.id": "Text",
             "contributor.leader": "Text",
             "contributor.position.endDate": "DateTime",
+            "contributor.position.id": "Text",
             "contributor.position.startDate": "DateTime",
             "contributor.role.id": "Text"
           },
@@ -92,18 +92,11 @@
         "overlays": {
           "entry": [
             {
-              "d": "EFSYUynbd3UOAX91TK5p28o_UDjeTbh1JcuYM2ocs5Dh",
-              "capture_base": "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f",
+              "d": "EISrX5EPN7cIN-P4CmgjAGd-YNj_w4BWV8lcN4z1oppp",
+              "capture_base": "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu",
               "type": "spec/overlays/entry/1.1",
               "language": "eng",
               "attribute_entries": {
-                "contribitor.position.id": {
-                  "Co-investigator or Collaborator": "Co-investigator or Collaborator",
-                  "Consultant, e.g., someone hired as a contract researcher by the project": "Consultant, e.g., someone hired as a contract researcher by the project",
-                  "Other Participant not covered by one of the positions above, e.g., ‘member’ or ‘other significant contributor’": "Other Participant not covered by one of the positions above, e.g., ‘member’ or ‘other significant contributor’",
-                  "Partner Investigator, e.g., industry, government, or community collaborator": "Partner Investigator, e.g., industry, government,, or community collaborator",
-                  "Principal or Chief Investigator": "Principal or Chief Investigator"
-                },
                 "contributor.contact": {
                   "null": "no",
                   "yes": "yes"
@@ -111,6 +104,13 @@
                 "contributor.leader": {
                   "null": "no",
                   "yes": "yes"
+                },
+                "contributor.position.id": {
+                  "Co-investigator or Collaborator": "Co-investigator or Collaborator",
+                  "Consultant, e.g., someone hired as a contract researcher by the project": "Consultant, e.g., someone hired as a contract researcher by the project",
+                  "Other Participant not covered by one of the positions above, e.g., ‘member’ or ‘other significant contributor’": "Other Participant not covered by one of the positions above, e.g., ‘member’ or ‘other significant contributor’",
+                  "Partner Investigator, e.g., industry, government, or community collaborator": "Partner Investigator, e.g., industry, government,, or community collaborator",
+                  "Principal or Chief Investigator": "Principal or Chief Investigator"
                 },
                 "contributor.role.id": {
                   "Methodology": "Methodology",
@@ -132,17 +132,10 @@
             }
           ],
           "entry_code": {
-            "d": "EFqYKinc-BpUeC1oXUKcTP2Ep8fg8Ou534KPHKBL_5Wl",
-            "capture_base": "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f",
+            "d": "EFoSaYpXCzQYlEfs6A79_inYInRTZONetFkvvGGZPoSe",
+            "capture_base": "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu",
             "type": "spec/overlays/entry_code/1.1",
             "attribute_entry_codes": {
-              "contribitor.position.id": [
-                "Co-investigator or Collaborator",
-                "Consultant, e.g., someone hired as a contract researcher by the project",
-                "Other Participant not covered by one of the positions above, e.g., ‘member’ or ‘other significant contributor’",
-                "Partner Investigator, e.g., industry, government, or community collaborator",
-                "Principal or Chief Investigator"
-              ],
               "contributor.contact": [
                 "null",
                 "yes"
@@ -150,6 +143,13 @@
               "contributor.leader": [
                 "null",
                 "yes"
+              ],
+              "contributor.position.id": [
+                "Co-investigator or Collaborator",
+                "Consultant, e.g., someone hired as a contract researcher by the project",
+                "Other Participant not covered by one of the positions above, e.g., ‘member’ or ‘other significant contributor’",
+                "Partner Investigator, e.g., industry, government, or community collaborator",
+                "Principal or Chief Investigator"
               ],
               "contributor.role.id": [
                 "Methodology",
@@ -170,52 +170,52 @@
             }
           },
           "format": {
-            "d": "EJbKnVLukpVuS7Zqibh7Pxqr73riFfrA_eswWuILZwTz",
-            "capture_base": "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f",
+            "d": "EC0wy4B_ByJf0p-KS9qvKA1sCBAFIrCOajPy7YTNGnua",
+            "capture_base": "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu",
             "type": "spec/overlays/format/1.1",
             "attribute_formats": {
-              "contribitor.position.id": "^.{0,250}$",
               "contributor.contact": "^.{0,50}$",
               "contributor.family.name": "^.{0,250}$",
               "contributor.given.names": "^.{0,250}$",
               "contributor.id": "^.{0,250}$",
               "contributor.leader": "^.{0,50}$",
               "contributor.position.endDate": "^\\d{4}(-(?:0[1-9]|1[0-2])(-(?:0[1-9]|[12]\\d|3[01]))?)?$",
+              "contributor.position.id": "^.{0,250}$",
               "contributor.position.startDate": "^\\d{4}(-(?:0[1-9]|1[0-2])(-(?:0[1-9]|[12]\\d|3[01]))?)?$",
               "contributor.role.id": "^.{0,250}$"
             }
           },
           "information": [
             {
-              "d": "EBGczi2p-RFjHQ_D7t0pOdhvuR-FtoxlVBPgpKKrQ4QC",
-              "capture_base": "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f",
+              "d": "EP8qK4ujtRM88rXjSTgkgh6JsdownJ8y58chGF-9O39V",
+              "capture_base": "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu",
               "type": "spec/overlays/information/1.1",
               "language": "eng",
               "attribute_information": {
-                "contribitor.position.id": "contributors must have one and only one position at any given time (contributors may also be flagged as a ‘leader’ or ‘contact’ separately)",
                 "contributor.contact": "More than one contributor can be flagged as a contact.",
                 "contributor.family.name": "The family name is in many cases is inherited and held in common by members of a family.",
                 "contributor.given.names": "A given name, also called a first name or forename, is the part of a person’s full name that distinguishes them individually. It may be accompanied by one or more middle names and helps differentiate that person from others in a group, such as a family, who share the same last name.",
                 "contributor.leader": "More than one contributor can be flagged as a leader if the project is jointly led.",
+                "contributor.position.id": "contributors must have one and only one position at any given time (contributors may also be flagged as a ‘leader’ or ‘contact’ separately)",
                 "contributor.role.id": "Changes to roles are tracked through version history rather than explicitly declared."
               }
             }
           ],
           "label": [
             {
-              "d": "EJ1EfA0O98ezknx6QEPQRJurajoHAWZSEQgFx6xDU7Ai",
-              "capture_base": "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f",
+              "d": "EEcJzyXBr8GAbbqPOz0esasqELJzQtYpxU-c-uJPOPUQ",
+              "capture_base": "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu",
               "type": "spec/overlays/label/1.1",
               "language": "eng",
               "attribute_categories": [],
               "attribute_labels": {
-                "contribitor.position.id": "A contributor’s administrative position on a project or activity",
                 "contributor.contact": "Flag indicating that the contributor is a project contact.",
                 "contributor.family.name": "The family name of the contributor (person) associated with the project.",
                 "contributor.given.names": "The given name(s) of the contributor (person) associated with the project.",
                 "contributor.id": "The contributor (person) associated with a project or activity identified by their ORCiD identifier",
                 "contributor.leader": "Flag indicating that the contributor is a project leader.",
                 "contributor.position.endDate": "The date the contributor terminated position associated with the project or activity",
+                "contributor.position.id": "A contributor’s administrative position on a project or activity",
                 "contributor.position.startDate": "The date the contributor began position associated with the project or activity",
                 "contributor.role.id": "Describing a contributor’s scientific or scholarly role on a project using the CRediT vocabulary"
               },
@@ -224,8 +224,8 @@
           ],
           "meta": [
             {
-              "d": "EOwGJlQleN9UBlGz4Js1EyLjo0ysN4t9fxUs5Y1LacsN",
-              "capture_base": "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f",
+              "d": "EKAQj-z2hEZcXCQiEPpz_sS6XxnZm7aE7GiovJrd8RHw",
+              "capture_base": "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu",
               "type": "spec/overlays/meta/1.1",
               "language": "eng",
               "description": "Child schema for contributor",
@@ -917,20 +917,20 @@
   },
   "extensions": {
     "adc": {
-      "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f": {
-        "d": "EJorjyEYL1_RP5yXNj09n9jfuWrqWbO6o-LfYPlcHAow",
+      "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu": {
+        "d": "EGZw28iSfkqUHe3BS_i0qmouc33xdIjYo9HyKXOw_8TC",
         "type": "community/adc/extension/1.0",
         "overlays": {
           "form": [
             {
-              "d": "EAGLZXhFysyqbCcc7XO-mTkv7YAJY0Ff5jiwdBsdmWRW",
-              "capture_base": "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f",
+              "d": "ELEnSqaSFSzMW4GIDrjtF5lsD3LVIpxGt0xjhVhKndTZ",
+              "capture_base": "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu",
               "type": "community/overlays/adc/form/1.0",
               "language": "eng",
               "pages": [
                 {
                   "attribute_order": [
-                    "contribitor.position.id",
+                    "contributor.position.id",
                     "contributor.id",
                     "contributor.position.startDate",
                     "contributor.position.endDate",
@@ -954,7 +954,7 @@
               },
               "description": {
                 "29b5c84c-7ed8-42a8-a970-823d686c3c0e": "Contributors associated to the project",
-                "contribitor.position.id": "contributors must have one and only one position at any given time (contributors may also be flagged as a ‘leader’ or ‘contact’ separately)",
+                "contributor.position.id": "contributors must have one and only one position at any given time (contributors may also be flagged as a ‘leader’ or ‘contact’ separately)",
                 "contributor.leader": "More than one contributor can be flagged as a leader if the project is jointly led.",
                 "contributor.contact": "More than one contributor can be flagged as a contact.",
                 "contributor.role.id": "Changes to roles are tracked through version history rather than explicitly declared.",
@@ -965,10 +965,6 @@
               "interaction": [
                 {
                   "arguments": {
-                    "contribitor.position.id": {
-                      "description": "contributors must have one and only one position at any given time (contributors may also be flagged as a ‘leader’ or ‘contact’ separately)",
-                      "type": "Text"
-                    },
                     "contributor.contact": {
                       "description": "More than one contributor can be flagged as a contact.",
                       "type": "Text"
@@ -991,6 +987,10 @@
                     "contributor.position.endDate": {
                       "type": "DateTime"
                     },
+                    "contributor.position.id": {
+                      "description": "contributors must have one and only one position at any given time (contributors may also be flagged as a ‘leader’ or ‘contact’ separately)",
+                      "type": "Text"
+                    },
                     "contributor.position.startDate": {
                       "type": "DateTime"
                     },
@@ -1004,11 +1004,11 @@
             }
           ],
           "ordering": {
-            "d": "EPTYaoGFDPI_ZM4_kN3HhTBCHQd4TjbPpUD2qyYa4DVi",
-            "capture_base": "EECM0Rg_r8BNro6HFv8T1L_eJl2WEedRn9a4noYuaY2f",
+            "d": "EPjfHfeBGcveaq9I6T7De21MR3eCHFd1o1T2MyL618gT",
+            "capture_base": "EHWh9-JWX4avGMuL-5vgilbec7FFw-OLf6G2VyyMShKu",
             "type": "community/overlays/adc/ordering/1.0",
             "attribute_ordering": [
-              "contribitor.position.id",
+              "contributor.position.id",
               "contributor.contact",
               "contributor.id",
               "contributor.leader",
@@ -1019,7 +1019,7 @@
               "contributor.role.id"
             ],
             "entry_code_ordering": {
-              "contribitor.position.id": [
+              "contributor.position.id": [
                 "Principal or Chief Investigator",
                 "Co-investigator or Collaborator",
                 "Consultant, e.g., someone hired as a contract researcher by the project",

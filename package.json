@@ -56,7 +56,8 @@
     "process": "0.11.10",
     "react-app-rewired": "2.2.1",
     "stream-browserify": "3.0.0",
-    "util": "0.12.5"
+    "util": "0.12.5",
+    "webpack-dev-server": "4.15.2"
   },
   "overrides": {
     "nth-check": "3.0.1",

@@ -1,5 +1,5 @@
 {
-  "d": "EIG5dqeGjqIyNpsBwHVJ6RKEwMUE_mkjjpTVJtNpgk5C",
+  "d": "EEB0baA_cz6NjYbLKwQmtL4DTCmch-_1k3P_0xIGS3qa",
   "type": "oca_package/1.0",
   "oca_bundle": {
     "bundle": {
@@ -16,7 +16,7 @@
           ],
           "dcat.version": "Text",
           "dcterms.acessRights": "Text",
-          "dcterms.creator": "refs:EDWyI6KqOyH00fxQeEBAnAmPihISCVpo5MLC6_XgWrC8",
+          "dcterms.creator": "refs:ECim4LQGVXgkQx2pOC7a_WrTBQc0rkRCHggD5hU5Z3Bv",
           "dcterms.description": "Text",
           "dcterms.issued": "Text",
           "dcterms.language": "Text",
@@ -24,7 +24,7 @@
           "dcterms.publisher": "refs:EE_JbdjQXkB-hguMQIRJvKnGk41oq5fQAlLECQ5MuM-R",
           "dcterms.title": "Text",
           "dcterms.type": "Text",
-          "prov.qualifiedAttribution": "refs:EKgHjgKYXh8yZaETT53D_sL97BGbFQgWT6S9Pa9cWJFW"
+          "prov.qualifiedAttribution": "refs:ENb7ozzEGE8sMbE8rsKKMXngWz9WLJXv6NcelJWmHizL"
         },
         "classification": "",
         "flagged_attributes": []
@@ -173,14 +173,16 @@
     },
     "dependencies": [
       {
-        "v": "OCAS11JSON00099c_",
-        "d": "EKgHjgKYXh8yZaETT53D_sL97BGbFQgWT6S9Pa9cWJFW",
+        "v": "OCAS11JSON000988_",
+        "d": "ENb7ozzEGE8sMbE8rsKKMXngWz9WLJXv6NcelJWmHizL",
         "capture_base": {
-          "d": "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM",
+          "d": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
           "type": "spec/capture_base/1.1",
           "attributes": {
             "foaf.name": "Text",
-            "hadRole": "Text",
+            "hadRole": [
+              "Text"
+            ],
             "id": "Text",
             "type": "Text"
           },
@@ -190,8 +192,8 @@
         "overlays": {
           "entry": [
             {
-              "d": "EB_W0Rzby8HlMrHWon5byhjRqCm58XL4_ehWrZs-FjtF",
-              "capture_base": "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM",
+              "d": "EADLYcZAmtLuX4axWXZNzYZS7XoKkootBYdK4bRk69F1",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
               "type": "spec/overlays/entry/1.1",
               "language": "eng",
               "attribute_entries": {
@@ -212,8 +214,8 @@
             }
           ],
           "entry_code": {
-            "d": "EMFfGjIlC6iBPvqZV6FK_LBC1bhBe9IV3VpjfbxrzlHv",
-            "capture_base": "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM",
+            "d": "EMo0rkF47j4UDsttZYVEPMOOXe_-uFXZbJbOz34zQy9u",
+            "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
             "type": "spec/overlays/entry_code/1.1",
             "attribute_entry_codes": {
               "hadRole": [
@@ -232,20 +234,19 @@
             }
           },
           "format": {
-            "d": "EGhRjL1zJbvKm74aYB8VKLT0QtPf7omh5ZlZXXk-xt_r",
-            "capture_base": "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM",
+            "d": "ECr1zajAW2IVuacHJbZpgleA9E8kT6IyBBq4uZiY6RCn",
+            "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
             "type": "spec/overlays/format/1.1",
             "attribute_formats": {
               "foaf.name": "^.{0,250}$",
-              "hadRole": "^.{0,50}$",
               "id": "^.{0,250}$",
               "type": "^[A-Za-z]{0,50}$"
             }
           },
           "information": [
             {
-              "d": "EELiUYOnxiMYxjXWX3Bvarom7JhrbuT6dMlYkHSRGiUf",
-              "capture_base": "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM",
+              "d": "EMFBE985_MF0jEoodpgxkJ89ILdH9BL6ZJvyaRieaz6w",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
               "type": "spec/overlays/information/1.1",
               "language": "eng",
               "attribute_information": {
@@ -255,8 +256,8 @@
           ],
           "label": [
             {
-              "d": "EAEzD6dfwSzN_OoIvoReZ9g1hiZjGEVzkAxTh9srE3eX",
-              "capture_base": "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM",
+              "d": "EGxFxtK5xomlmi5XaDeQi_fkecPbWAehdAT6_aXhz0Hj",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
               "type": "spec/overlays/label/1.1",
               "language": "eng",
               "attribute_categories": [],
@@ -271,8 +272,8 @@
           ],
           "meta": [
             {
-              "d": "EO5HQ05OtqpgO_lztmm19VKIjItBTc0xIXRQeZuAQ7Gu",
-              "capture_base": "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM",
+              "d": "EL3yM_vjtKy-Qa9nJY9tM_qMHGCkmexkEB0DtK4Gf1ho",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
               "type": "spec/overlays/meta/1.1",
               "language": "eng",
               "description": "Child schema for prov.qualifiedAttribution",
@@ -282,8 +283,8 @@
         }
       },
       {
-        "v": "OCAS11JSON000663_",
-        "d": "EDWyI6KqOyH00fxQeEBAnAmPihISCVpo5MLC6_XgWrC8",
+        "v": "OCAS11JSON00073d_",
+        "d": "ECim4LQGVXgkQx2pOC7a_WrTBQc0rkRCHggD5hU5Z3Bv",
         "capture_base": {
           "d": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
           "type": "spec/capture_base/1.1",
@@ -320,14 +321,23 @@
               ]
             }
           },
+          "format": {
+            "d": "EEbhUfQ9slksAhyZ92oN7MRos2fFqFnXGI-2UoEOIIak",
+            "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "name": "^.{0,250}$",
+              "type": "^.{0,50}$"
+            }
+          },
           "information": [
             {
-              "d": "EMW0Tsbq9W9cJZJOId8VBvFbPOtnToo3fj4-wyEqSwHW",
+              "d": "EJ5Qtd9Jl95zHQy7qum8Ul2SQ3x5JVoub0YOC_rceuyF",
               "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
               "type": "spec/overlays/information/1.1",
               "language": "eng",
               "attribute_information": {
-                "name": "For personal names use the convention of FirstName, LastName."
+                "name": "For personal names use the convention of FirstName LastName."
               }
             }
           ],
@@ -513,14 +523,14 @@
   },
   "extensions": {
     "adc": {
-      "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM": {
-        "d": "EKZsrU8rdRFSLFLDZc0G1uMh7DHmaqZTnXIE8C7KEUPW",
+      "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG": {
+        "d": "EPd3IIA7f7Fv0K_eB05UR1SHR5k8d_zUKNll6qMVxD1p",
         "type": "community/adc/extension/1.0",
         "overlays": {
           "form": [
             {
-              "d": "EJmjibzss781NGmKmmHSuW8VdtgqwoCI3arlqdmh87m2",
-              "capture_base": "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM",
+              "d": "EIVL6Jzhj-_5QQk7fNHu5Yc0ICiAJ3goWlZ7Ukjt0Y-2",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
               "type": "community/overlays/adc/form/1.0",
               "language": "eng",
               "pages": [
@@ -557,7 +567,7 @@
                     },
                     "hadRole": {
                       "input_type": "checkbox-multi",
-                      "type": "Text"
+                      "type": "Array[Text]"
                     },
                     "id": {
                       "type": "Text"
@@ -571,8 +581,8 @@
             }
           ],
           "ordering": {
-            "d": "ECHyW4pZSrICzus9Im8ISo6iUVjdrp5O5Aw1xEQfVOAx",
-            "capture_base": "EHAxoym4Z3RphXeADMXXGHt9C9-vlBK_yqnS96Xrc_WM",
+            "d": "EPHXZJ7fF4WgxoHQfsrwAOgoLyWAxZJ-RjMPcWy69Lqi",
+            "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
             "type": "community/overlays/adc/ordering/1.0",
             "attribute_ordering": [
               "type",
@@ -599,12 +609,12 @@
         }
       },
       "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI": {
-        "d": "EBc92LR4_MvlYe9FlHpZQSsuszwDfnqSCu00wA1CKK4u",
+        "d": "EN2sIT0LR4JZzSR9tVDuo86GshYV70VNbSmk7-b6JlEV",
         "type": "community/adc/extension/1.0",
         "overlays": {
           "form": [
             {
-              "d": "EBLNKrUzzXZmhIy4D_4JeYkWD76D7xz0B_YBYWqp5W6i",
+              "d": "EKXVmakp2GxO_pmZVhVMdizSzU7zrwTMU1OicZ31l2f6",
               "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
               "type": "community/overlays/adc/form/1.0",
               "language": "eng",
@@ -628,14 +638,14 @@
               },
               "description": {
                 "bccfe2c4-61eb-4da7-ab9c-80aa0ad3608c": "The creator.",
-                "name": "For personal names use the convention of FirstName, LastName."
+                "name": "For personal names use the convention of FirstName LastName."
               },
               "title": "dcterms.creator",
               "interaction": [
                 {
                   "arguments": {
                     "name": {
-                      "description": "For personal names use the convention of FirstName, LastName.",
+                      "description": "For personal names use the convention of FirstName LastName.",
                       "type": "Text"
                     },
                     "type": {
