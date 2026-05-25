@@ -1,3 +1,5 @@
+import { escapeKey } from "./pathEncoding.js";
+
 // PULL TOP-LEVEL ATTRIBUTE LABELS FROM MAIN BUNDLE OVERLAYS
 function extractBundleLabelsByLanguage(jsonData, lang) {
   const labelOverlays = jsonData?.oca_bundle?.bundle?.overlays?.label;
@@ -91,7 +93,8 @@ function getAttributeOrderingForCaptureBase(extensions, captureBaseDigest) {
 
 // REORDER THE EXTRACTED FIELDS
 function sortFieldsByOrdering(fields, ordering) {
-  const orderMap = new Map(ordering.map((name, index) => [name, index]));
+  const escapedOrdering = ordering.map(escapeKey);
+  const orderMap = new Map(escapedOrdering.map((name, index) => [name, index]));
   return fields.sort((a, b) => {
     const indexA = orderMap.has(a.name)
       ? orderMap.get(a.name)
@@ -252,7 +255,7 @@ function extractAttributesFromCaptureBase(
     }
 
     fields.push({
-      name: key,
+      name: escapeKey(key),
       label: labels[key] || key, // This will now use dependency-specific labels
       placeholder: placeholders[key] || "",
       description: descriptions[key] || "",
@@ -347,7 +350,7 @@ function extractFormatPatterns(jsonData) {
     )) {
       try {
         // Covert regex string to RegExp object
-        formatPatterns[attr] = new RegExp(regexStr);
+        formatPatterns[escapeKey(attr)] = new RegExp(regexStr);
       } catch (e) {
         console.warn(`Invalid ${attr}: ${regexStr}`, e);
       }
@@ -369,7 +372,7 @@ function extractFormatPatternsFromDep(dependencies) {
       )) {
         try {
           // Covert regex string to RegExp object
-          depFormatPatterns[attr] = new RegExp(regexStr);
+          depFormatPatterns[escapeKey(attr)] = new RegExp(regexStr);
         } catch (e) {
           console.warn(`Invalid ${attr}: ${regexStr}`, e);
         }
@@ -497,7 +500,7 @@ export function extractAttributes(
     const description = descriptions[key] || "";
 
     fields.push({
-      name: key,
+      name: escapeKey(key),
       label,
       placeholder,
       description,
