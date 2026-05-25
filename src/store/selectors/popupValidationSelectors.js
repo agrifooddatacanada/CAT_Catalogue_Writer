@@ -57,7 +57,8 @@ function validateFieldTree(
     return !error;
   }
 
-  if (multiple) {
+  const isMultiple = multiple || (children && children.length > 0);
+  if (isMultiple) {
     const instancePrefix = `${valuePrefix}[`;
     const keys = Object.keys(formState || {}).filter((k) =>
       k.startsWith(instancePrefix),
@@ -172,7 +173,8 @@ export const selectIsRootFormValid = createSelector(
     if (requiredFields.length === 0) return true;
 
     for (const field of requiredFields) {
-      if (field.multiple) {
+      const isMultiple = field.multiple || (field.children && field.children.length > 0);
+      if (isMultiple) {
         const instancePrefix = `${field.path}[`;
         const instances = Object.keys(formState || {}).filter((k) =>
           k.startsWith(instancePrefix),
