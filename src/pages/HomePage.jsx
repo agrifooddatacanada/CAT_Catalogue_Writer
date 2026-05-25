@@ -32,7 +32,6 @@ import { setInitialFormState } from "../store/slices/formValueSlice";
 import { buildInstanceCountsFromValues } from "../utils/instanceCounts";
 import {
   setAllInstanceCounts,
-  setInstanceCount,
 } from "../store/slices/instanceCountsSlice";
 import { serializeRegexPatterns } from "../utils/regexUtils";
 import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths";
@@ -290,7 +289,7 @@ function HomePage() {
       dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
 
       const instanceCount = buildInstanceCountsFromValues(formValues);
-      dispatch(setInstanceCount(instanceCount));
+      dispatch(setAllInstanceCounts(instanceCount));
 
       dispatch(setMode("edit"));
 
