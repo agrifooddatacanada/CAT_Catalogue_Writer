@@ -32,7 +32,6 @@ import { setInitialFormState } from "../store/slices/formValueSlice";
 import { buildInstanceCountsFromValues } from "../utils/instanceCounts";
 import {
   setAllInstanceCounts,
-  setInstanceCount,
 } from "../store/slices/instanceCountsSlice";
 import { serializeRegexPatterns } from "../utils/regexUtils";
 import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths";
@@ -47,6 +46,7 @@ import { selectSchemaName } from "../store/selectors/formSelectors";
 import { extractPages } from "../utils/extractPages";
 import { ROUTE_MAP, SCHEMA_REGISTRY } from "../utils/schemaRegistry";
 import { escapeKey } from "../utils/pathEncoding";
+import { normalizeNestedFields } from "../utils/normalizeJson";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
@@ -241,13 +241,16 @@ function HomePage() {
 
     if (jsonContent) {
       const jsonSchema = await extractJsonSchemaAsync(schema);
-      const formValues = flatten(jsonContent);
-      dispatch(setInitialFormState(formValues));
       const { fields, formatPatterns, depFormatPatterns } =
         extractAttributes(jsonSchema);
       // Enrich fields with paths BEFORE dispatching
       const enrichedFields = enrichFieldsWithPaths(fields);
       const pages = extractPages(jsonSchema, enrichedFields);
+
+      // Normalize jsonContent to fix any legacy incorrectly nested fields
+      const normalizedJson = normalizeNestedFields(jsonContent, enrichedFields);
+      const formValues = flatten(normalizedJson);
+      dispatch(setInitialFormState(formValues));
 
       dispatch(setFields(enrichedFields));
       dispatch(setPages(pages));
@@ -275,14 +278,16 @@ function HomePage() {
 
     if (jsonContent) {
       const jsonSchema = await extractJsonSchemaAsync(schema);
-      const formValues = flatten(jsonContent);
-      dispatch(setInitialFormState(formValues));
-
       const { fields, formatPatterns, depFormatPatterns } =
         extractAttributes(jsonSchema);
       // Enrich fields with paths BEFORE dispatching
       const enrichedFields = enrichFieldsWithPaths(fields);
       const pages = extractPages(jsonSchema, enrichedFields);
+
+      // Normalize jsonContent to fix any legacy incorrectly nested fields
+      const normalizedJson = normalizeNestedFields(jsonContent, enrichedFields);
+      const formValues = flatten(normalizedJson);
+      dispatch(setInitialFormState(formValues));
 
       dispatch(setFields(enrichedFields));
       dispatch(setPages(pages));
@@ -290,7 +295,7 @@ function HomePage() {
       dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
 
       const instanceCount = buildInstanceCountsFromValues(formValues);
-      dispatch(setInstanceCount(instanceCount));
+      dispatch(setAllInstanceCounts(instanceCount));
 
       dispatch(setMode("edit"));
 

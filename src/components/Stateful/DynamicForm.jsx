@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setFormState } from "../../store/slices/formValueSlice";
 import { buildInstanceCountsFromValues } from "../../utils/instanceCounts";
-import { setInstanceCount } from "../../store/slices/instanceCountsSlice";
+import { setAllInstanceCounts } from "../../store/slices/instanceCountsSlice";
 import {
   selectAllFormValues,
   selectFields,
@@ -311,7 +311,7 @@ function DynamicForm({ isEditMode = false }) {
 
     dispatch(setFormState(cleanFormData));
     const instanceCount = buildInstanceCountsFromValues(cleanFormData);
-    dispatch(setInstanceCount(instanceCount));
+    dispatch(setAllInstanceCounts(instanceCount));
     dispatch(setMode("view"));
     navigate("/view");
   };

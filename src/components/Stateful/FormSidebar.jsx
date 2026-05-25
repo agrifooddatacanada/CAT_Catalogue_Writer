@@ -407,7 +407,9 @@ function FormSidebar() {
                               : seg;
                             const f = getFieldByPath(fields, currentSchemaPath);
                             const isSegMultiple =
-                              f?.multiple === true || f?.multiple === "true";
+                              f?.multiple === true ||
+                              f?.multiple === "true" ||
+                              (f?.children && f.children.length > 0);
 
                             constructedPath = constructedPath
                               ? `${constructedPath}.${seg}`
@@ -425,7 +427,8 @@ function FormSidebar() {
                     const parentField = getFieldByPath(fields, parentFieldPath);
                     const isMultiple =
                       parentField?.multiple === true ||
-                      parentField?.multiple === "true";
+                      parentField?.multiple === "true" ||
+                      (parentField?.children && parentField.children.length > 0);
 
                     let nextValuePath;
                     let isEdit = false;

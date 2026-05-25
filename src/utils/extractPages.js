@@ -1,3 +1,5 @@
+import { escapeKey } from "./pathEncoding.js";
+
 function extractPagesForCaptureBase(
   captureBaseDigest,
   jsonData,
@@ -48,7 +50,7 @@ function extractPagesForCaptureBase(
       const items = attributeOrder
         .map((item) => {
           if (typeof item === "string") {
-            const field = fieldsByName[item];
+            const field = fieldsByName[escapeKey(item)];
             if (!field) return null;
 
             return {
@@ -59,7 +61,7 @@ function extractPagesForCaptureBase(
 
           if (item && typeof item === "object" && item.named_section) {
             const sectionFields = (item.attribute_order || [])
-              .map((name) => fieldsByName[name])
+              .map((name) => fieldsByName[escapeKey(name)])
               .filter(Boolean);
 
             if (sectionFields.length === 0) return null;
