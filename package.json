@@ -57,14 +57,14 @@
     "react-app-rewired": "2.2.1",
     "stream-browserify": "3.0.0",
     "util": "0.12.5",
-    "webpack-dev-server": "4.15.2"
+    "webpack-dev-server": "5.2.4"
   },
   "overrides": {
     "nth-check": "3.0.1",
     "postcss": "8.5.15",
     "serialize-javascript": "7.0.5",
     "underscore": "1.13.8",
-    "webpack-dev-server": "4.15.2",
+    "webpack-dev-server": "5.2.4",
     "yaml": "2.9.0",
     "@tootallnate/once": "3.0.1"
   }
