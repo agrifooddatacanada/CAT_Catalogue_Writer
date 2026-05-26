@@ -37,7 +37,7 @@ import {
   selectInstanceCount,
 } from "../../../store/selectors/formSelectors";
 import { removeIndices } from "../../../utils/removeIndices";
-import { getValidationError } from "../../../utils/validationUtils";
+import { getValidationError, getMaxLengthFromPattern } from "../../../utils/validationUtils";
 import { selectMode } from "../../../store/slices/modeSlice";
 import {
   incrementInstanceCount,
@@ -134,9 +134,16 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
   // Only show error text after the field has been touched
   const showError = touched && !!validationError;
 
-  // const errorProps = showError
-  //   ? { error: true, helperText: validationError }
-  //   : {};
+  const fieldNameForMax = fieldPath.split(".").pop() || name;
+  const maxLength = useMemo(
+    () =>
+      getMaxLengthFromPattern(
+        fieldNameForMax,
+        formatPatterns,
+        depFormatPatterns
+      ),
+    [fieldNameForMax, formatPatterns, depFormatPatterns]
+  );
 
   const fieldErrorProps = showError ? { error: true } : {};
   // const textErrorProps = showError
@@ -629,15 +636,21 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
             onChange={(e) => onChange(valuePath, e.target.value)}
             onBlur={handleBlur}
           />
-          {showError && (
-            <Typography
-              variant="caption"
-              color="error"
-              sx={{ mt: 0.5, ml: 1, display: "block" }}
-            >
-              {validationError}
-            </Typography>
-          )}
+          <Box sx={{ display: "flex", justifyContent: "space-between", my: 0.25, px: 1 }}>
+            {showError ? (
+              <Typography variant="caption" color="error">
+                {validationError}
+              </Typography>
+            ) : <Box />}
+            {!readOnly && maxLength && (
+              <Typography
+                variant="caption"
+                color={value?.length > maxLength ? "error" : "textSecondary"}
+              >
+                {value?.length || 0} / {maxLength}
+              </Typography>
+            )}
+          </Box>
         </Box>
       )}
       {/* {validationError && !readOnly && (
