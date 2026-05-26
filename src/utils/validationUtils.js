@@ -45,3 +45,29 @@ export function getValidationError({
   }
   return null;
 }
+
+export function getMaxLengthFromPattern(fieldName, formatPatterns, depFormatPatterns) {
+  const allPatterns = { ...formatPatterns, ...depFormatPatterns };
+  const patternData = allPatterns[fieldName];
+  if (!patternData) return null;
+
+  let regexPattern;
+  if (typeof patternData === "string") {
+    regexPattern = patternData;
+  } else if (patternData?.source && patternData.type === "regex") {
+    regexPattern = patternData.source;
+  }
+  if (!regexPattern) return null;
+
+  const match = regexPattern.match(/\{(\d+)?,(\d+)?\}\$?$/);
+  if (match && match[2]) {
+    return parseInt(match[2], 10);
+  }
+
+  const exactMatch = regexPattern.match(/\{(\d+)\}\$?$/);
+  if (exactMatch && exactMatch[1]) {
+    return parseInt(exactMatch[1], 10);
+  }
+
+  return null;
+}
