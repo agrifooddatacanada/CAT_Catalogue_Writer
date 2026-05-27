@@ -1,5 +1,5 @@
 {
-  "d": "EOY8nFCd32oFl1JbuVWMwepIYSS_rldfG9EqARrv_zqB",
+  "d": "EN7uEvxEVkmqZ6cI5TX1lEizLAw7y7HtX0o-Dm4Aivno",
   "type": "oca_package/1.0",
   "oca_bundle": {
     "bundle": {
@@ -13,7 +13,7 @@
           "alternateIdentifier": "refs:EKlf9oKCgfhMvR75RGYCA0kuhysYDR0TEWPNDeXxOrW3",
           "alternateUrl": "refs:EI9-qZMxgWwyumJntFmZVTGl3dbsomnnPlDA7EemQfS7",
           "contributor": "refs:EGuV50a6r-nfSp6EszZ5fWhbQPw8vIscM2lnpolx-rQP",
-          "description": "refs:EP2FcnZkbfos1whPEzxDkNF9LHi88leDiHzltT8Xidcs",
+          "description": "refs:EKbJnJ5yn2JX00z7eYHxYiJlg5lFBTvrgExmRodQwxSs",
           "identifier": "refs:EDKApku1vEqTi5kIy1_-OYq4nwCFa563sU_Td_QrPtuR",
           "keywords": [
             "Text"
@@ -235,8 +235,8 @@
         }
       },
       {
-        "v": "OCAS11JSON000a99_",
-        "d": "EP2FcnZkbfos1whPEzxDkNF9LHi88leDiHzltT8Xidcs",
+        "v": "OCAS11JSON000aa0_",
+        "d": "EKbJnJ5yn2JX00z7eYHxYiJlg5lFBTvrgExmRodQwxSs",
         "capture_base": {
           "d": "ENUXO0Viu7teORWILzt0p5cUIF6j5j_E5-eXlARU7slz",
           "type": "spec/capture_base/1.1",
@@ -311,12 +311,12 @@
             }
           },
           "format": {
-            "d": "EFiItl6WvF8KBlZcnO1hAM03-KQDYVhEIxOSe0bh17Zq",
+            "d": "EBOQpmOfHcs9lNzck3ksX7PE04kPaaUiVepm5I2RZAlh",
             "capture_base": "ENUXO0Viu7teORWILzt0p5cUIF6j5j_E5-eXlARU7slz",
             "type": "spec/overlays/format/1.1",
             "attribute_formats": {
               "description.language.id": "^.{0,50}$",
-              "description.text": "^.{0,4000}$",
+              "description.text": "^[\\s\\S]{0,4000}$",
               "description.type.id": "^.{0,250}$"
             }
           },

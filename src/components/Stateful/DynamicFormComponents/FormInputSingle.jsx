@@ -586,7 +586,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                 }
               }}
               onBlur={handleBlur}
-              format={placeholder === "YYYY" ? "yyyy" : "MM/dd/yyyy"}
+              format={placeholder === "YYYY" ? "yyyy" : "yyyy/MM/dd"}
               slotProps={{
                 textField: { size: "small", error: !!validationError },
               }}
