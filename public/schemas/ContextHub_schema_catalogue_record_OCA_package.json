@@ -1,10 +1,10 @@
 {
-  "d": "EDHhYLGzQ6LUR8fWkK-1eFCmUsfzHGJ2Y8hyvis5aW4H",
+  "d": "ECir3x7p8x2qTsY8OgHmnzeNS_hukgY2u2_oTkknluwR",
   "type": "oca_package/1.0",
   "oca_bundle": {
     "bundle": {
-      "v": "OCAS11JSON0012fd_",
-      "d": "EDlF6k8na-Ecf90_dJm_jZS0xnOFPafyVFhKOKDpela7",
+      "v": "OCAS11JSON001304_",
+      "d": "EPb6WQ6dDJKvXChj6rPkweJ1ol7D6N0DEWmi-l_mhIGp",
       "capture_base": {
         "d": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
         "type": "spec/capture_base/1.1",
@@ -94,7 +94,7 @@
           }
         },
         "format": {
-          "d": "ED03FGaD05PY0BZsJkLc1v2UKEy5g5lr58nYx3_zr-9y",
+          "d": "EGCFb6nzEhTth22W7v7p33NaDJRbpwUIHFz0FqjgWWzS",
           "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
           "type": "spec/overlays/format/1.1",
           "attribute_formats": {
@@ -102,7 +102,7 @@
             "dcat.keyword": "^.{0,50}$",
             "dcat.version": "^.{0,50}$",
             "dcterms.acessRights": "^.{0,50}$",
-            "dcterms.description": "^.{0,800}$",
+            "dcterms.description": "^[\\s\\S]{0,800}$",
             "dcterms.language": "^.{0,50}$",
             "dcterms.license": "^.{0,50}$",
             "dcterms.title": "^.{0,250}$",
