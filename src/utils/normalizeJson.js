@@ -28,7 +28,15 @@ export function normalizeNestedFields(data, fields) {
         }
       }
 
-      // 2. Recursively normalize children if present
+      // 2. If this field is multiple, make sure its value is an array
+      if (field.multiple) {
+        const val = result[unescapedName];
+        if (val !== undefined && val !== null && !Array.isArray(val)) {
+          result[unescapedName] = [val];
+        }
+      }
+
+      // 3. Recursively normalize children if present
       const currentVal = result[unescapedName];
       if (currentVal !== undefined && field.children && field.children.length > 0) {
         result[unescapedName] = normalizeNestedFields(currentVal, field.children);
