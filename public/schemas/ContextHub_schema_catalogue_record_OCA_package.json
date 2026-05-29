@@ -1,12 +1,12 @@
 {
-  "d": "ECir3x7p8x2qTsY8OgHmnzeNS_hukgY2u2_oTkknluwR",
+  "d": "EFYsOXECYgGO2kfWRs830lNBs9c87VJ16gLuIPJ35kUO",
   "type": "oca_package/1.0",
   "oca_bundle": {
     "bundle": {
-      "v": "OCAS11JSON001304_",
-      "d": "EPb6WQ6dDJKvXChj6rPkweJ1ol7D6N0DEWmi-l_mhIGp",
+      "v": "OCAS11JSON00130a_",
+      "d": "EJROeTX4O_BaiiBDbj1pl-KC4Gz2CoxWFrrgFUcO7eGq",
       "capture_base": {
-        "d": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
+        "d": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
         "type": "spec/capture_base/1.1",
         "attributes": {
           "adms.versionNotes": "Text",
@@ -15,7 +15,7 @@
             "Text"
           ],
           "dcat.version": "Text",
-          "dcterms.acessRights": "Text",
+          "dcterms.accessRights": "Text",
           "dcterms.creator": "refs:ECim4LQGVXgkQx2pOC7a_WrTBQc0rkRCHggD5hU5Z3Bv",
           "dcterms.description": "Text",
           "dcterms.issued": "Text",
@@ -24,7 +24,7 @@
           "dcterms.publisher": "refs:EE_JbdjQXkB-hguMQIRJvKnGk41oq5fQAlLECQ5MuM-R",
           "dcterms.title": "Text",
           "dcterms.type": "Text",
-          "prov.qualifiedAttribution": "refs:ENb7ozzEGE8sMbE8rsKKMXngWz9WLJXv6NcelJWmHizL"
+          "prov.qualifiedAttribution": "refs:EJPEriSt9Rgo5qJC8ydrPltcyw_wYPiDAnrXg_G4qc43"
         },
         "classification": "",
         "flagged_attributes": []
@@ -32,12 +32,12 @@
       "overlays": {
         "entry": [
           {
-            "d": "EDwGxNCAdTRvTBWLCpFR0LgW49Zd94uSgejcyXrrbknI",
-            "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
+            "d": "EMmjfenyTcisZhjkQXPWrsigJz1tGTVUSsXa8IW0MbFj",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
             "type": "spec/overlays/entry/1.1",
             "language": "eng",
             "attribute_entries": {
-              "dcterms.acessRights": {
+              "dcterms.accessRights": {
                 "Closed Access": "Closed Access",
                 "Open Access": "Open Access",
                 "Restricted Access": "Restricted Access"
@@ -64,11 +64,11 @@
           }
         ],
         "entry_code": {
-          "d": "ENMxR3AEIrN0HFsVmR5nzun5QtxvE2uhwsyydRnE8v02",
-          "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
+          "d": "EJcTmrnmi6Frfd5f9h81ZWLr7Kh3v1WFgmP4_InGTn5D",
+          "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
           "type": "spec/overlays/entry_code/1.1",
           "attribute_entry_codes": {
-            "dcterms.acessRights": [
+            "dcterms.accessRights": [
               "Closed Access",
               "Open Access",
               "Restricted Access"
@@ -94,14 +94,14 @@
           }
         },
         "format": {
-          "d": "EGCFb6nzEhTth22W7v7p33NaDJRbpwUIHFz0FqjgWWzS",
-          "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
+          "d": "EETZBnvIU3Un6pYH73JZk-fI_E3lDxOF0buzY6ULqlrD",
+          "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
           "type": "spec/overlays/format/1.1",
           "attribute_formats": {
             "adms.versionNotes": "^.{0,250}$",
             "dcat.keyword": "^.{0,50}$",
             "dcat.version": "^.{0,50}$",
-            "dcterms.acessRights": "^.{0,50}$",
+            "dcterms.accessRights": "^.{0,50}$",
             "dcterms.description": "^[\\s\\S]{0,800}$",
             "dcterms.language": "^.{0,50}$",
             "dcterms.license": "^.{0,50}$",
@@ -111,8 +111,8 @@
         },
         "information": [
           {
-            "d": "EABNNvI_61uxHCWj8U8V5V2x_gbN04uS0gSgT6tnaZV1",
-            "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
+            "d": "EEKVGx3W5gX2gK2cUYTQc1Ndpoy8wy9g_GkmaxRBEDRl",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
             "type": "spec/overlays/information/1.1",
             "language": "eng",
             "attribute_information": {
@@ -120,7 +120,7 @@
               "dcat.contactPoint": "Relevant contact information for the cataloged resource. Use of vCard is recommended",
               "dcat.keyword": "A keyword or tag describing the resource.",
               "dcat.version": "The version indicator (name or identifier) of a resource.",
-              "dcterms.acessRights": "Information about who can access the resource or an indication of its security status.",
+              "dcterms.accessRights": "Information about who can access the resource or an indication of its security status.",
               "dcterms.creator": "foaf:agent of the entity/entities responsible for producing the resource. Consider this to be the ICT?",
               "dcterms.description": "A free-text account of the resource.",
               "dcterms.issued": "Date of formal issuance of the resource.",
@@ -135,8 +135,8 @@
         ],
         "label": [
           {
-            "d": "EPHSNk8a4fSwliODtfYWsE2JoORWHaSLQNtZUNDg0voM",
-            "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
+            "d": "EBV_k8dgVeFaXPK_Ldm11BzF9Q8iva2dhpTRUK7pPLkV",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
             "type": "spec/overlays/label/1.1",
             "language": "eng",
             "attribute_categories": [],
@@ -145,7 +145,7 @@
               "dcat.contactPoint": "Contact Point",
               "dcat.keyword": "Keyword",
               "dcat.version": "Version",
-              "dcterms.acessRights": "Access Rights",
+              "dcterms.accessRights": "Access Rights",
               "dcterms.creator": "Creator",
               "dcterms.description": "Description",
               "dcterms.issued": "Issued",
@@ -161,8 +161,8 @@
         ],
         "meta": [
           {
-            "d": "EJR6m9GOw3xpWrX8R_nCsWFh49FLCtyfWDsYeggq-aNm",
-            "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
+            "d": "EDwRQ7s1gTX7UOSiCvwZz_FzCjR4Pu7d4WjkKYCmjswU",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
             "type": "spec/overlays/meta/1.1",
             "language": "eng",
             "description": "The ContextHub catalogue record describing a schema based on DCAT.",
@@ -173,8 +173,8 @@
     },
     "dependencies": [
       {
-        "v": "OCAS11JSON000988_",
-        "d": "ENb7ozzEGE8sMbE8rsKKMXngWz9WLJXv6NcelJWmHizL",
+        "v": "OCAS11JSON000987_",
+        "d": "EJPEriSt9Rgo5qJC8ydrPltcyw_wYPiDAnrXg_G4qc43",
         "capture_base": {
           "d": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
           "type": "spec/capture_base/1.1",
@@ -245,12 +245,12 @@
           },
           "information": [
             {
-              "d": "EMFBE985_MF0jEoodpgxkJ89ILdH9BL6ZJvyaRieaz6w",
+              "d": "EN6WDpD1y16wkt7-e7kuc1gHkCB1kIVYJ99ciUYKrgVP",
               "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
               "type": "spec/overlays/information/1.1",
               "language": "eng",
               "attribute_information": {
-                "foaf.name": "Follow the convention of FirstName, LastName"
+                "foaf.name": "Follow the convention of FirstName LastName"
               }
             }
           ],
@@ -524,12 +524,12 @@
   "extensions": {
     "adc": {
       "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG": {
-        "d": "EPd3IIA7f7Fv0K_eB05UR1SHR5k8d_zUKNll6qMVxD1p",
+        "d": "EFdKEx3zImmAdEG6ooBKVyxrsgmD7j5CYTdigYTriefu",
         "type": "community/adc/extension/1.0",
         "overlays": {
           "form": [
             {
-              "d": "EIVL6Jzhj-_5QQk7fNHu5Yc0ICiAJ3goWlZ7Ukjt0Y-2",
+              "d": "ED4QKEm0HWlA3IGGZgGPmzhJeJnnL-dzv5uKMgvxXbGU",
               "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
               "type": "community/overlays/adc/form/1.0",
               "language": "eng",
@@ -555,14 +555,14 @@
               },
               "description": {
                 "658824d7-eb80-488d-9e95-c65176285d13": "Attribution of the contributors of the schema and the roles that they played.",
-                "foaf.name": "Follow the convention of FirstName, LastName"
+                "foaf.name": "Follow the convention of FirstName LastName"
               },
               "title": "prov.qualifiedAttribution",
               "interaction": [
                 {
                   "arguments": {
                     "foaf.name": {
-                      "description": "Follow the convention of FirstName, LastName",
+                      "description": "Follow the convention of FirstName LastName",
                       "type": "Text"
                     },
                     "hadRole": {
@@ -808,14 +808,14 @@
           }
         }
       },
-      "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t": {
-        "d": "EIwhw0aKUrrxU53uuTE0llZWAVmpxU5aE6lXQtaW5XcK",
+      "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI": {
+        "d": "EM89WnfXLeXL8HtnHT__jIYYFZiinBc5OQvUSHCGaWXC",
         "type": "community/adc/extension/1.0",
         "overlays": {
           "form": [
             {
-              "d": "EL_TJy7yqwtuW1QUdVj6PsXw06ZXkDIT4QXT8Wu1Ujil",
-              "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
+              "d": "EARRwKbQwKROGpnos83JNAyAck1h5HBbyoRf1eRvYl05",
+              "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
               "type": "community/overlays/adc/form/1.0",
               "language": "eng",
               "pages": [
@@ -831,7 +831,7 @@
                     "dcterms.creator",
                     "dcterms.publisher",
                     "dcterms.license",
-                    "dcterms.acessRights",
+                    "dcterms.accessRights",
                     "dcat.version",
                     "adms.versionNotes"
                   ],
@@ -859,7 +859,7 @@
                 "dcterms.creator": "foaf:agent of the entity/entities responsible for producing the resource. Consider this to be the ICT?",
                 "dcterms.publisher": "foaf:agent. The entity responsible for making the resource available..",
                 "dcterms.license": "A legal document under which the resource is made available.",
-                "dcterms.acessRights": "Information about who can access the resource or an indication of its security status.",
+                "dcterms.accessRights": "Information about who can access the resource or an indication of its security status.",
                 "dcat.version": "The version indicator (name or identifier) of a resource.",
                 "adms.versionNotes": "Notes about the changes from the previous version to this version."
               },
@@ -879,7 +879,7 @@
                       "description": "The version indicator (name or identifier) of a resource.",
                       "type": "Text"
                     },
-                    "dcterms.acessRights": {
+                    "dcterms.accessRights": {
                       "description": "Information about who can access the resource or an indication of its security status.",
                       "type": "Text"
                     },
@@ -925,8 +925,8 @@
             }
           ],
           "ordering": {
-            "d": "ECcO7V6lCvaGQElgF3wFeAtukfebJ_s30-lvDA0PkJcC",
-            "capture_base": "EFT8a-s6Y_0rIZJldfhVVFwSUrrbV1IVXetAvPNFmy0t",
+            "d": "EC5-iE9sNmNI5N0Gyes4rTZfmX7NKKUfdoHjIKLydVoy",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
             "type": "community/overlays/adc/ordering/1.0",
             "attribute_ordering": [
               "dcterms.type",
@@ -940,7 +940,7 @@
               "dcat.version",
               "dcterms.publisher",
               "dcat.keyword",
-              "dcterms.acessRights",
+              "dcterms.accessRights",
               "prov.qualifiedAttribution",
               "adms.versionNotes"
             ],
@@ -963,7 +963,7 @@
                 "PDM",
                 "No license specified"
               ],
-              "dcterms.acessRights": [
+              "dcterms.accessRights": [
                 "Open Access",
                 "Restricted Access",
                 "Closed Access"
