@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Stack, Box } from "@mui/system";
 import {
   Button,
@@ -48,6 +48,44 @@ import { ROUTE_MAP, SCHEMA_REGISTRY } from "../utils/schemaRegistry";
 import { escapeKey } from "../utils/pathEncoding";
 import { normalizeNestedFields } from "../utils/normalizeJson";
 
+// FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
+  function flatten(obj, parentKey = "", result = {}) {
+    if (Array.isArray(obj)) {
+      if (obj.length === 0) {
+        // Always include the array path
+        result[parentKey] = obj;
+      } else {
+        // Then recurse into elements
+        obj.forEach((item, index) => {
+          const newKey = `${parentKey}[${index}]`;
+          if (item !== null && typeof item === "object") {
+            flatten(item, newKey, result);
+          } else {
+            result[newKey] = item;
+          }
+        });
+      }
+      return result;
+    }
+    // Object case
+    for (const key in obj) {
+      if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+
+      const value = obj[key];
+      const escapedKey = escapeKey(key);
+      const newKey = parentKey ? `${parentKey}.${escapedKey}` : escapedKey;
+
+      if (value !== null && typeof value === "object") {
+        // Then recurse into children
+        flatten(value, newKey, result);
+      } else {
+        // Primitive → set directly
+        result[newKey] = value;
+      }
+    }
+    return result;
+  }
+
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
   const [jsonContent, setJsonContent] = useState(null);
@@ -61,11 +99,16 @@ function HomePage() {
 
   const [schemaLocked, setSchemaLocked] = useState(false); // true when schema came from @schema_id
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation(); // use translation function
   const dispatch = useDispatch();
 
   // RESET on mount/return to HomePage
   useEffect(() => {
+    // Skip reset if we're about to auto-load from URL params
+    const dataUrl = searchParams.get("dataUrl");
+    if (dataUrl) return;
+
     // Reset Redux upload state
     dispatch(resetUploaded());
 
@@ -76,7 +119,68 @@ function HomePage() {
     setJsonContent(null);
     setUploadedFiles(null);
     setSchemaLocked(false);
-  }, [dispatch]); // empty deps = run once on mount
+  }, [dispatch, searchParams]); // empty deps = run once on mount
+
+  // AUTO-LOAD from URL params (e.g. ?dataUrl=<url>&schema=<schemaName>)
+  // This enables ContextHub to deep-link into editing an existing catalogue record.
+  useEffect(() => {
+    const dataUrl = searchParams.get("dataUrl");
+    const schemaParam = searchParams.get("schema");
+    if (!dataUrl || !schemaParam) return;
+
+    let cancelled = false;
+
+    const loadFromUrl = async () => {
+      try {
+        const response = await fetch(dataUrl);
+        if (!response.ok) throw new Error(`Failed to fetch data: ${response.status}`);
+        const jsonData = await response.json();
+
+        if (cancelled) return;
+
+        // Auto-select the schema
+        dispatch(setSchemaName(schemaParam));
+
+        // Load the schema and parse form data (same logic as handleEditClick)
+        const jsonSchema = await extractJsonSchemaAsync(schemaParam);
+        if (!jsonSchema) throw new Error("Schema fetch failed");
+
+        const { fields: rawFields, formatPatterns, depFormatPatterns } =
+          extractAttributes(jsonSchema);
+        const enrichedFields = enrichFieldsWithPaths(rawFields);
+        const pages = extractPages(jsonSchema, enrichedFields);
+
+        // Normalize and flatten the JSON data
+        const normalizedJson = normalizeNestedFields(jsonData, enrichedFields);
+        const formValues = flatten(normalizedJson);
+
+        dispatch(setInitialFormState(formValues));
+        dispatch(setFields(enrichedFields));
+        dispatch(setPages(pages));
+        dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
+        dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+
+        const instanceCount = buildInstanceCountsFromValues(formValues);
+        dispatch(setAllInstanceCounts(instanceCount));
+        dispatch(setIsUploaded(true));
+        dispatch(setMode("edit"));
+
+        if (cancelled) return;
+
+        // Navigate to form in edit mode
+        const baseRoute = ROUTE_MAP[schemaParam] || "/form";
+        navigate(`${baseRoute}?schema=${encodeURIComponent(schemaParam)}`);
+      } catch (err) {
+        console.error("Auto-load from URL failed:", err);
+        if (!cancelled) {
+          alert(`Failed to load catalogue data from URL: ${err.message}`);
+        }
+      }
+    };
+
+    loadFromUrl();
+    return () => { cancelled = true; };
+  }, [searchParams, dispatch, navigate]);
 
   //
   const handleSchemaSelect = (e) => {
@@ -151,44 +255,6 @@ function HomePage() {
 
     setSchemaLocked(false);
   };
-
-  // FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
-  function flatten(obj, parentKey = "", result = {}) {
-    if (Array.isArray(obj)) {
-      if (obj.length === 0) {
-        // Always include the array path
-        result[parentKey] = obj;
-      } else {
-        // Then recurse into elements
-        obj.forEach((item, index) => {
-          const newKey = `${parentKey}[${index}]`;
-          if (item !== null && typeof item === "object") {
-            flatten(item, newKey, result);
-          } else {
-            result[newKey] = item;
-          }
-        });
-      }
-      return result;
-    }
-    // Object case
-    for (const key in obj) {
-      if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
-
-      const value = obj[key];
-      const escapedKey = escapeKey(key);
-      const newKey = parentKey ? `${parentKey}.${escapedKey}` : escapedKey;
-
-      if (value !== null && typeof value === "object") {
-        // Then recurse into children
-        flatten(value, newKey, result);
-      } else {
-        // Primitive → set directly
-        result[newKey] = value;
-      }
-    }
-    return result;
-  }
 
   // Form Routing
   const getFormRoute = async () => {
