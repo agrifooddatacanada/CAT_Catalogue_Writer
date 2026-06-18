@@ -7,6 +7,7 @@ import Footer from "../components/Stateless/Footer";
 import DynamicForm from "../components/Stateful/DynamicForm";
 import EditIcon from "@mui/icons-material/Edit";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import SaveIcon from "@mui/icons-material/Save";
 import PageHeaders from "../components/Stateless/PageHeaders";
 import { saidify } from "saidify";
 import theme from "../theme";
@@ -26,6 +27,7 @@ function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [updating, setUpdating] = React.useState(false);
 
   const schema = useSelector(selectSchemaName);
   const isUploadedJson = useSelector(selectHasFormData);
@@ -151,6 +153,65 @@ function ViewPage() {
     URL.revokeObjectURL(url);
   };
 
+  const updateContextHub = async (jsonData) => {
+    setUpdating(true);
+    try {
+      const dataUrl = window.sessionStorage.getItem("dataUrl");
+      if (!dataUrl) {
+        throw new Error("No ContextHub data source URL found in session.");
+      }
+
+      // Deep clone to avoid mutating original formState
+      const dataForSaid = deepClone(jsonData);
+
+      // Clean existing metadata fields
+      const cleanKeys = ["catalogue_id", "d", "@context", "@schema_id"];
+      cleanKeys.forEach((key) => {
+        if (key in dataForSaid) delete dataForSaid[key];
+      });
+
+      // Canonicalize
+      const canonicalizedState = canonicalize(dataForSaid);
+      const formData = JSON.parse(canonicalizedState);
+
+      // Get context from schema or Redux
+      const contextUrl = getContextUrl(schema);
+      const schemaId = getSchemaId(schema);
+
+      // Build exact structure: @context, @type, d (empty), then form data
+      const formDataWithId = {
+        "@context": contextUrl,
+        "@type": "Catalogue Record",
+        "@schema_id": schemaId,
+        d: "",
+        ...formData,
+      };
+
+      // Compute SAID using modified data
+      const [, objWithSaid] = saidify(formDataWithId, "d");
+
+      const response = await fetch(dataUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(objWithSaid),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error?.message || `HTTP error! status: ${response.status}`);
+      }
+
+      alert("Catalogue updated successfully on ContextHub!");
+    } catch (err) {
+      console.error("Failed to update ContextHub:", err);
+      alert(`Failed to update ContextHub: ${err.message}`);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   if (!jsonSchema) {
     return <div>{t("viewpage.loading")}</div>;
   }
@@ -214,6 +275,24 @@ function ViewPage() {
         >
           {t("viewpage.download")}
         </Button>
+        {window.sessionStorage.getItem("dataUrl") && (
+          <Button
+            variant="contained"
+            disabled={updating}
+            sx={{
+              backgroundColor: theme.primaryColor,
+              "&:hover": {
+                backgroundColor: theme.primaryColor,
+              },
+              mt: "2px",
+              mr: "10px",
+            }}
+            onClick={() => updateContextHub(formState)}
+            startIcon={updating ? null : <SaveIcon />}
+          >
+            {updating ? "Updating..." : "Update ContextHub"}
+          </Button>
+        )}
       </Box>
       <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />
     </div>
