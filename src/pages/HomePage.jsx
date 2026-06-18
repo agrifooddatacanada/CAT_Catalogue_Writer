@@ -107,7 +107,10 @@ function HomePage() {
   useEffect(() => {
     // Skip reset if we're about to auto-load from URL params
     const dataUrl = searchParams.get("dataUrl");
-    if (dataUrl) return;
+    if (dataUrl) {
+      window.sessionStorage.setItem("dataUrl", dataUrl);
+      return;
+    }
 
     // Reset Redux upload state
     dispatch(resetUploaded());
@@ -119,6 +122,9 @@ function HomePage() {
     setJsonContent(null);
     setUploadedFiles(null);
     setSchemaLocked(false);
+
+    // Clear dataUrl
+    window.sessionStorage.removeItem("dataUrl");
   }, [dispatch, searchParams]); // empty deps = run once on mount
 
   // AUTO-LOAD from URL params (e.g. ?dataUrl=<url>&schema=<schemaName>)
