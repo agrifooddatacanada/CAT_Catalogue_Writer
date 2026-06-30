@@ -28,7 +28,7 @@ function PageHeaders({
         <Stack direction={"row"} alignItems={"center"}>
           <Box
             component="a"
-            href="/"
+            href="https://www.semanticengine.org/"
             sx={{
               cursor: "pointer",
               marginLeft: "0px !important",
