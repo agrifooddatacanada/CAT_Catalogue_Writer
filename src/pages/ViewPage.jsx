@@ -111,12 +111,29 @@ function ViewPage() {
 
   const jsonSchema = useSelector(selectFields);
 
+  const injectDcatNamespace = (context) => {
+    const dcatNamespace = { dcat: "http://www.w3.org/ns/dcat#" };
+    if (!context) return dcatNamespace;
+    if (Array.isArray(context)) {
+      const hasDcat = context.some(
+        (item) => typeof item === "object" && item !== null && "dcat" in item
+      );
+      if (hasDcat) return context;
+      return [...context, dcatNamespace];
+    }
+    if (typeof context === "object") {
+      if ("dcat" in context) return context;
+      return { ...context, ...dcatNamespace };
+    }
+    return [context, dcatNamespace];
+  };
+
   const downloadJson = (jsonData) => {
     // Deep clone to avoid mutating original formState
     const dataForSaid = deepClone(jsonData);
 
     // Clean existing metadata fields
-    const cleanKeys = ["catalogue_id", "d", "@context", "@schema_id"];
+    const cleanKeys = ["catalogue_id", "d", "@context", "@schema_id", "@type"];
     cleanKeys.forEach((key) => {
       if (key in dataForSaid) delete dataForSaid[key];
     });
@@ -128,11 +145,12 @@ function ViewPage() {
     // Get context from schema or Redux (match your logic)
     const contextUrl = getContextUrl(schema);
     const schemaId = getSchemaId(schema);
+    const finalContext = injectDcatNamespace(contextUrl);
 
     // Build exact structure: @context, @type, d (empty), then form data
     const formDataWithId = {
-      "@context": contextUrl,
-      "@type": "Catalogue Record",
+      "@context": finalContext,
+      "@type": "dcat:CatalogRecord",
       "@schema_id": schemaId,
       d: "",
       ...formData,
@@ -165,7 +183,7 @@ function ViewPage() {
       const dataForSaid = deepClone(jsonData);
 
       // Clean existing metadata fields
-      const cleanKeys = ["catalogue_id", "d", "@context", "@schema_id"];
+      const cleanKeys = ["catalogue_id", "d", "@context", "@schema_id", "@type"];
       cleanKeys.forEach((key) => {
         if (key in dataForSaid) delete dataForSaid[key];
       });
@@ -177,11 +195,12 @@ function ViewPage() {
       // Get context from schema or Redux
       const contextUrl = getContextUrl(schema);
       const schemaId = getSchemaId(schema);
+      const finalContext = injectDcatNamespace(contextUrl);
 
       // Build exact structure: @context, @type, d (empty), then form data
       const formDataWithId = {
-        "@context": contextUrl,
-        "@type": "Catalogue Record",
+        "@context": finalContext,
+        "@type": "dcat:CatalogRecord",
         "@schema_id": schemaId,
         d: "",
         ...formData,
@@ -194,6 +213,7 @@ function ViewPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json"
         },
         body: JSON.stringify(objWithSaid),
       });
