@@ -5,6 +5,7 @@ export const SCHEMA_CONTEXT_MAP = {
   "Basic DMP": "https://w3id.org/dcso/ns/core#",
   "cataloguerecord_DCAT.top": "http://purl.org/dc/terms/",
   "ContextHub_project_catalogue_record": ["https://schema.org",{"raid": "https://raid.org/schema/","vocab": "https://vocabulary.raid.org/"}],
+  "ContextHub_questionnaire_catalogue_record": {"dcat": "http://www.w3.org/ns/dcat#","dcterms": "http://purl.org/dc/terms/","foaf": "http://xmlns.com/foaf/0.1/","prov": "http://www.w3.org/ns/prov#","adms": "http://www.w3.org/ns/adms#"},
   "ContextHub_schema_catalogue_record": {"dcat": "http://www.w3.org/ns/dcat#","dcterms": "http://purl.org/dc/terms/","foaf": "http://xmlns.com/foaf/0.1/","prov": "http://www.w3.org/ns/prov#","adms": "http://www.w3.org/ns/adms#"},
   "Data Request Schema": "test",
   DataCite: "https://schema.datacite.org/",
