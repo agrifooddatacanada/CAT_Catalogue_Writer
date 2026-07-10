@@ -9,7 +9,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import SaveIcon from "@mui/icons-material/Save";
 import PageHeaders from "../components/Stateless/PageHeaders";
-import { saidify } from "saidify";
+import { saidifyUrn } from "saidify";
 import theme from "../theme";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -157,7 +157,7 @@ function ViewPage() {
     };
 
     // Compute SAID using modified data
-    const [, objWithSaid] = saidify(formDataWithId, "d");
+    const [, objWithSaid] = saidifyUrn(formDataWithId, "d");
 
     const content = JSON.stringify(objWithSaid);
     const blob = new Blob([content], { type: "application/ld+json" });
@@ -207,7 +207,7 @@ function ViewPage() {
       };
 
       // Compute SAID using modified data
-      const [, objWithSaid] = saidify(formDataWithId, "d");
+      const [, objWithSaid] = saidifyUrn(formDataWithId, "d");
 
       const response = await fetch(dataUrl, {
         method: "POST",
