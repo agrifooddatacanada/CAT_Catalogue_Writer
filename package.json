@@ -22,7 +22,7 @@
     "react-redux": "9.2.0",
     "react-router-dom": "7.15.1",
     "react-scripts": "5.0.1",
-    "saidify": "0.2.2",
+    "saidify": "1.1.1",
     "web-vitals": "5.1.0"
   },
   "scripts": {
