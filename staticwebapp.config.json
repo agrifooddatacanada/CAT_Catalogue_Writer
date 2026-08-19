@@ -1,4 +1,4 @@
-{
+﻿{
     "navigationFallback": {
         "rewrite": "/index.html",
         "exclude": [
@@ -7,8 +7,7 @@
         ]
     },
     "globalHeaders": {
-        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https: http://localhost:*;",
-        "X-Frame-Options": "SAMEORIGIN",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https: http://localhost:*; frame-ancestors 'self' http://localhost:* https://*.semanticengine.org https://csdcc.datacontexthub.org https://contexthub-dev.climatesmartagrifood.ca",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "same-origin"
     }
