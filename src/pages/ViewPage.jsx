@@ -1,6 +1,6 @@
 import React from "react";
 import { Box } from "@mui/system";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@mui/material";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
 import Footer from "../components/Stateless/Footer";
@@ -8,6 +8,7 @@ import DynamicForm from "../components/Stateful/DynamicForm";
 import EditIcon from "@mui/icons-material/Edit";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import SaveIcon from "@mui/icons-material/Save";
+import SendIcon from "@mui/icons-material/Send";
 import PageHeaders from "../components/Stateless/PageHeaders";
 import { saidifyUrn } from "saidify";
 import theme from "../theme";
@@ -26,8 +27,13 @@ import { unescapeKey } from "../utils/pathEncoding";
 function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
   const [updating, setUpdating] = React.useState(false);
+
+  const iframeParam = searchParams.get("iframe");
+  const buttonLabelParam = searchParams.get("buttonLabel");
+  const isIframeMode = iframeParam === "true" || window.self !== window.top;
 
   const schema = useSelector(selectSchemaName);
   const isUploadedJson = useSelector(selectHasFormData);
@@ -128,7 +134,7 @@ function ViewPage() {
     return [context, dcatNamespace];
   };
 
-  const downloadJson = (jsonData) => {
+  const generateCatalogueRecord = (jsonData) => {
     // Deep clone to avoid mutating original formState
     const dataForSaid = deepClone(jsonData);
 
@@ -138,11 +144,11 @@ function ViewPage() {
       if (key in dataForSaid) delete dataForSaid[key];
     });
 
-    // Canonicalize (assuming you import canonicalize)
+    // Canonicalize
     const canonicalizedState = canonicalize(dataForSaid);
     const formData = JSON.parse(canonicalizedState);
 
-    // Get context from schema or Redux (match your logic)
+    // Get context from schema or Redux
     const contextUrl = getContextUrl(schema);
     const schemaId = getSchemaId(schema);
     const finalContext = injectDcatNamespace(contextUrl);
@@ -158,8 +164,12 @@ function ViewPage() {
 
     // Compute SAID using modified data
     const [, objWithSaid] = saidifyUrn(formDataWithId, "d");
+    return objWithSaid;
+  };
 
-    const content = JSON.stringify(objWithSaid);
+  const downloadJson = (jsonData) => {
+    const objWithSaid = generateCatalogueRecord(jsonData);
+    const content = JSON.stringify(objWithSaid, null, 2);
     const blob = new Blob([content], { type: "application/ld+json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -171,6 +181,19 @@ function ViewPage() {
     URL.revokeObjectURL(url);
   };
 
+  const postMessageToParent = (jsonData) => {
+    const objWithSaid = generateCatalogueRecord(jsonData);
+    const payload = {
+      type: "CATALOGUE_RECORD",
+      record: objWithSaid,
+    };
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage(payload, "*");
+    } else {
+      window.postMessage(payload, "*");
+    }
+  };
+
   const updateContextHub = async (jsonData) => {
     setUpdating(true);
     try {
@@ -179,35 +202,7 @@ function ViewPage() {
         throw new Error("No ContextHub data source URL found in session.");
       }
 
-      // Deep clone to avoid mutating original formState
-      const dataForSaid = deepClone(jsonData);
-
-      // Clean existing metadata fields
-      const cleanKeys = ["catalogue_id", "d", "@context", "@schema_id", "@type"];
-      cleanKeys.forEach((key) => {
-        if (key in dataForSaid) delete dataForSaid[key];
-      });
-
-      // Canonicalize
-      const canonicalizedState = canonicalize(dataForSaid);
-      const formData = JSON.parse(canonicalizedState);
-
-      // Get context from schema or Redux
-      const contextUrl = getContextUrl(schema);
-      const schemaId = getSchemaId(schema);
-      const finalContext = injectDcatNamespace(contextUrl);
-
-      // Build exact structure: @context, @type, d (empty), then form data
-      const formDataWithId = {
-        "@context": finalContext,
-        "@type": "dcat:CatalogRecord",
-        "@schema_id": schemaId,
-        d: "",
-        ...formData,
-      };
-
-      // Compute SAID using modified data
-      const [, objWithSaid] = saidifyUrn(formDataWithId, "d");
+      const objWithSaid = generateCatalogueRecord(jsonData);
 
       const response = await fetch(dataUrl, {
         method: "POST",
@@ -243,7 +238,10 @@ function ViewPage() {
   const handleEditClick = () => {
     dispatch(setMode("edit"));
     // Pass schema back to form so it loads correct OCA package
-    navigate("/form");
+    navigate({
+      pathname: "/form",
+      search: window.location.search,
+    });
   };
 
   return (
@@ -295,6 +293,23 @@ function ViewPage() {
         >
           {t("viewpage.download")}
         </Button>
+        {(isIframeMode || buttonLabelParam) && (
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: theme.primaryColor,
+              "&:hover": {
+                backgroundColor: theme.primaryColor,
+              },
+              mt: "2px",
+              mr: "10px",
+            }}
+            onClick={() => postMessageToParent(formState)}
+            startIcon={<SendIcon />}
+          >
+            {buttonLabelParam || "UPDATE TO CONTEXTHUB"}
+          </Button>
+        )}
         {window.sessionStorage.getItem("dataUrl") && (
           <Button
             variant="contained"

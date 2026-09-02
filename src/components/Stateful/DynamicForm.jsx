@@ -313,7 +313,10 @@ function DynamicForm({ isEditMode = false }) {
     const instanceCount = buildInstanceCountsFromValues(cleanFormData);
     dispatch(setAllInstanceCounts(instanceCount));
     dispatch(setMode("view"));
-    navigate("/view");
+    navigate({
+      pathname: "/view",
+      search: window.location.search,
+    });
   };
 
   const hasAsterisk = (fields) => {

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Box } from "@mui/system";
 import DynamicForm from "../components/Stateful/DynamicForm";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
@@ -54,14 +54,15 @@ function FormPage() {
   }, [dispatch]);
 
   const [searchParams] = useSearchParams();
+  const { schemaSlug } = useParams();
 
   // Redux state
   const reduxSchema = useSelector(selectSchemaName);
   const fields = useSelector(selectFields);
   const hasFormData = useSelector(selectHasFormData);
 
-  // Try URL param first, then Redux
-  const schemaFromUrl = searchParams.get("schema");
+  // Try URL search param first, then route param, then Redux
+  const schemaFromUrl = searchParams.get("schema") || schemaSlug;
   const schema = reduxSchema || schemaFromUrl;
   const isEditMode = hasFormData;
 
