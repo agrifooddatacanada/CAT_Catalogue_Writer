@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Pagination, Typography, Fab } from "@mui/material";
-import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
@@ -18,7 +17,7 @@ import {
 import FieldChecker from "./DynamicFormComponents/FieldChecker";
 import { selectIsRootFormValid } from "../../store/selectors/popupValidationSelectors";
 import { selectMode, setMode } from "../../store/slices/modeSlice";
-import { setViewMode, setCurrentPage } from "../../store/slices/formUiSlice";
+import { setCurrentPage } from "../../store/slices/formUiSlice";
 import { selectActivePage } from "../../store/slices/activePageSlice";
 import { selectPages } from "../../store/selectors/formSelectors";
 import NestedChildFormContent from "./DynamicFormComponents/NestedChildFormContent";
@@ -28,25 +27,7 @@ import {
 } from "../../store/slices/childFormNavigationSlice";
 import { setActivePage } from "../../store/slices/activePageSlice";
 
-const filterMandatoryFields = (fields) => {
-  if (!Array.isArray(fields)) return [];
-  return fields
-    .filter((field) => field.required)
-    .map((field) => ({
-      ...field,
-      children: field.children ? filterMandatoryFields(field.children) : [],
-    }));
-};
-
-const filterRecommendedFields = (fields) => {
-  if (!Array.isArray(fields)) return [];
-  return fields
-    .filter((field) => field.required || field.recommended)
-    .map((field) => ({
-      ...field,
-      children: field.children ? filterRecommendedFields(field.children) : [],
-    }));
-};
+import { filterFieldsByViewMode } from "../../utils/viewModeUtils";
 
 const getValueByPath = (obj, path) => {
   if (!obj || !path) return undefined;
@@ -64,7 +45,7 @@ const getValueByPath = (obj, path) => {
 };
 
 // COMPONENT STATE
-function DynamicForm({ isEditMode = false }) {
+function DynamicForm({ isEditMode: propIsEditMode }) {
   const { t } = useTranslation(); // use translation function
   const navigate = useNavigate();
 
@@ -157,6 +138,8 @@ function DynamicForm({ isEditMode = false }) {
 
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
+  const isEditMode =
+    propIsEditMode !== undefined ? propIsEditMode : mode === "edit";
 
   const getActiveItems = () => {
     if (!hasSchemaPages) return [];
@@ -191,80 +174,21 @@ function DynamicForm({ isEditMode = false }) {
     });
   }, [activePage, currentPage]);
 
-  // Helper functions
-  const hasMandatoryFields = (fieldList) => {
-    return Array.isArray(fieldList) && fieldList.some((f) => f.required);
-  };
-  const hasRecommendedFields = (fieldList) => {
-    return (
-      Array.isArray(fieldList) &&
-      fieldList.some((f) => f.recommended && !f.required)
-    );
-  };
-  const hasOptionalFields = (fieldList) => {
-    return Array.isArray(fieldList) && fieldList.some((f) => f.optional);
-  };
+  const displayedFields = filterFieldsByViewMode(sourceFields, viewMode);
 
-  // Initialize state with safe default
-  // const [viewMode, setViewMode] = useState("mandatory");
-
-  // Set correct view mode once fields load
-  useEffect(() => {
-    if (!Array.isArray(sourceFields) || sourceFields.length === 0) return;
-
-    const getInitialViewMode = (fields) => {
-      if (hasMandatoryFields(fields)) return "mandatory";
-      if (hasRecommendedFields(fields)) return "recommended";
-      if (hasOptionalFields(fields)) return "complete";
-      return "complete";
-    };
-
-    dispatch(setViewMode(getInitialViewMode(sourceFields)));
-  }, [sourceFields, activePage, hasSchemaPages, dispatch]); // removed the inline helpers
-
-  // displayedFields logic
-  const getDisplayedFields = () => {
-    if (!Array.isArray(sourceFields)) return [];
-
-    switch (viewMode) {
-      case "mandatory":
-        return filterMandatoryFields(sourceFields);
-      case "recommended":
-        return filterRecommendedFields(sourceFields);
-      case "complete":
-      default:
-        return sourceFields;
-    }
-  };
-
-  const displayedFields = getDisplayedFields();
-
-  const filterFieldsByViewMode = (fieldList) => {
-    if (!Array.isArray(fieldList)) return [];
-
-    switch (viewMode) {
-      case "mandatory":
-        return filterMandatoryFields(fieldList);
-      case "recommended":
-        return filterRecommendedFields(fieldList);
-      case "complete":
-      default:
-        return fieldList;
-    }
-  };
 
   const displayedItems = hasSchemaPages
     ? activeItems
         .map((item) => {
           if (item.type === "field") {
-            const filtered = filterFieldsByViewMode([item.field]);
+            const filtered = filterFieldsByViewMode([item.field], viewMode);
             return filtered.length > 0
               ? { type: "field", field: filtered[0], _sourcePageIndex: item._sourcePageIndex }
               : null;
           }
 
           if (item.type === "section") {
-            const filteredFields = filterFieldsByViewMode(item.fields || []);
+            const filteredFields = filterFieldsByViewMode(item.fields || [], viewMode);
             return filteredFields.length > 0
               ? { ...item, fields: filteredFields, _sourcePageIndex: item._sourcePageIndex }
               : null;
@@ -756,11 +680,10 @@ function DynamicForm({ isEditMode = false }) {
                         backgroundColor: theme.primaryColor,
                       },
                     }}
-                    startIcon={isEditMode && <SaveIcon />}
-                    endIcon={!isEditMode && <SendIcon />}
+                    endIcon={<SendIcon />}
                   >
                     {isEditMode
-                      ? t("dynamicform.save_changes")
+                      ? t("dynamicform.update_review")
                       : t("dynamicform.review")}
                   </Button>
                 )}

@@ -22,6 +22,7 @@ import { setMode } from "../store/slices/modeSlice";
 import canonicalize from "../utils/canonicalize";
 import { getContextUrl, getSchemaId } from "../utils/schemaMapping";
 import { unescapeKey } from "../utils/pathEncoding";
+import { ROUTE_MAP } from "../utils/schemaRegistry";
 
 function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function
@@ -159,16 +160,23 @@ function ViewPage() {
     // Compute SAID using modified data
     const [, objWithSaid] = saidifyUrn(formDataWithId, "d");
 
-    const content = JSON.stringify(objWithSaid);
-    const blob = new Blob([content], { type: "application/ld+json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `catalogue-${objWithSaid.d || "export"}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    if (window.self !== window.top) {
+      window.parent.postMessage({
+        type: "UPDATE_IN_CONTEXTHUB",
+        record: objWithSaid
+      }, "*");
+    } else {
+      const content = JSON.stringify(objWithSaid);
+      const blob = new Blob([content], { type: "application/ld+json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `catalogue-${objWithSaid.d || "export"}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
   };
 
   const updateContextHub = async (jsonData) => {
@@ -243,7 +251,8 @@ function ViewPage() {
   const handleEditClick = () => {
     dispatch(setMode("edit"));
     // Pass schema back to form so it loads correct OCA package
-    navigate("/form");
+    const baseRoute = (schema && ROUTE_MAP[schema]) || "/form";
+    navigate(`${baseRoute}?schema=${encodeURIComponent(schema || "")}`);
   };
 
   return (
@@ -291,9 +300,9 @@ function ViewPage() {
             mr: "10px",
           }}
           onClick={() => downloadJson(formState)}
-          startIcon={<FileDownloadIcon />}
+          startIcon={window.self !== window.top ? <SaveIcon /> : <FileDownloadIcon />}
         >
-          {t("viewpage.download")}
+          {window.self !== window.top ? "UPDATE IN CONTEXTHUB" : t("viewpage.download")}
         </Button>
         {window.sessionStorage.getItem("dataUrl") && (
           <Button

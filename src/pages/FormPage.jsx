@@ -8,7 +8,6 @@ import PageHeaders from "../components/Stateless/PageHeaders";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectFields,
-  selectHasFormData,
   selectSchemaName,
   selectPages,
 } from "../store/selectors/formSelectors";
@@ -24,7 +23,9 @@ import { extractAttributes } from "../utils/extractAttributes";
 import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths";
 import { serializeRegexPatterns } from "../utils/regexUtils";
 import { Link, Typography } from "@mui/material";
-import { setMode } from "../store/slices/modeSlice";
+import { selectMode } from "../store/slices/modeSlice";
+import { setViewMode } from "../store/slices/formUiSlice";
+import { getInitialViewMode } from "../utils/viewModeUtils";
 import FormSidebar from "../components/Stateful/FormSidebar";
 import { extractPages } from "../utils/extractPages";
 import { selectActivePage } from "../store/slices/activePageSlice";
@@ -49,21 +50,17 @@ function FormPage() {
       ? childFormNavigation.fallbackLabel
       : activePageData?.label || "";
 
-  useEffect(() => {
-    dispatch(setMode("edit"));
-  }, [dispatch]);
-
   const [searchParams] = useSearchParams();
 
   // Redux state
   const reduxSchema = useSelector(selectSchemaName);
   const fields = useSelector(selectFields);
-  const hasFormData = useSelector(selectHasFormData);
+  const mode = useSelector(selectMode);
 
   // Try URL param first, then Redux
   const schemaFromUrl = searchParams.get("schema");
   const schema = reduxSchema || schemaFromUrl;
-  const isEditMode = hasFormData;
+  const isEditMode = mode === "edit";
 
   // AUTO-LOAD SCHEMA
   useEffect(() => {
@@ -89,6 +86,7 @@ function FormPage() {
         dispatch(
           setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)),
         );
+        dispatch(setViewMode(getInitialViewMode(enrichedFields)));
       } catch (error) {
         console.error("Schema load failed:", error);
       }

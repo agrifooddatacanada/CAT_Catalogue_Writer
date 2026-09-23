@@ -28,47 +28,14 @@ import {
   setChildFormNavigation,
 } from "../../store/slices/childFormNavigationSlice";
 
-const filterMandatoryFields = (fields) => {
-  if (!Array.isArray(fields)) return [];
-  return fields
-    .filter((field) => field.required)
-    .map((field) => ({
-      ...field,
-      children: field.children ? filterMandatoryFields(field.children) : [],
-    }));
-};
+import {
+  hasMandatoryFields,
+  hasRecommendedFields,
+  hasOptionalFields,
+  getDisplayedFields,
+  isFieldVisibleInViewMode,
+} from "../../utils/viewModeUtils";
 
-const filterRecommendedFields = (fields) => {
-  if (!Array.isArray(fields)) return [];
-  return fields
-    .filter((field) => field.required || field.recommended)
-    .map((field) => ({
-      ...field,
-      children: field.children ? filterRecommendedFields(field.children) : [],
-    }));
-};
-
-const getDisplayedFields = (fields, viewMode) => {
-  if (!Array.isArray(fields)) return [];
-  switch (viewMode) {
-    case "mandatory":
-      return filterMandatoryFields(fields);
-    case "recommended":
-      return filterRecommendedFields(fields);
-    case "complete":
-    default:
-      return fields;
-  }
-};
-
-const hasMandatoryFields = (fields) =>
-  Array.isArray(fields) && fields.some((f) => f.required);
-
-const hasRecommendedFields = (fields) =>
-  Array.isArray(fields) && fields.some((f) => f.recommended && !f.required);
-
-const hasOptionalFields = (fields) =>
-  Array.isArray(fields) && fields.some((f) => f.optional);
 
 const getFieldByPath = (fieldsArray, targetPath) => {
   if (!Array.isArray(fieldsArray)) return null;
@@ -131,10 +98,13 @@ function FormSidebar() {
     if (p.isChildPage) {
       const meta = childPagesMeta?.[p.index];
       if (meta && meta.parentPageIndex !== undefined) {
-        if (!childrenByParent[meta.parentPageIndex]) {
-          childrenByParent[meta.parentPageIndex] = [];
+        const parentField = getFieldByPath(fields, meta.parentFieldPath);
+        if (isFieldVisibleInViewMode(parentField, viewMode)) {
+          if (!childrenByParent[meta.parentPageIndex]) {
+            childrenByParent[meta.parentPageIndex] = [];
+          }
+          childrenByParent[meta.parentPageIndex].push(p);
         }
-        childrenByParent[meta.parentPageIndex].push(p);
       }
     }
   });
