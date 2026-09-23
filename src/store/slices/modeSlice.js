@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  mode: "", // "view" | "edit"
+  mode: "write", // "write" | "edit" | "view"
 };
 
 const modeSlice = createSlice({
@@ -9,7 +9,7 @@ const modeSlice = createSlice({
   initialState,
   reducers: {
     setMode: (state, action) => {
-      state.mode = action.payload; // "view" or "edit"
+      state.mode = action.payload; // "write" | "edit" | "view"
     },
     // Toggle
     toggleMode: (state) => {
@@ -27,5 +27,5 @@ export default modeSlice.reducer;
 
 // Selectors
 export const selectMode = (state) => state.mode.mode;
-// export const isViewMode = (state) => state.mode.mode === "view";
-// export const isEditMode = (state) => state.mode.mode === "edit";
+export const isEditMode = (state) => state.mode.mode === "edit";
+

@@ -21,6 +21,10 @@ import {
 import { makeSelectIsPopupValid } from "../../../store/selectors/popupValidationSelectors";
 import { getValidationError } from "../../../utils/validationUtils";
 import { selectMode } from "../../../store/slices/modeSlice";
+import {
+  filterMandatoryFields,
+  filterRecommendedFields,
+} from "../../../utils/viewModeUtils";
 
 const getFieldByPath = (fieldsArray, targetPath) => {
   if (!Array.isArray(fieldsArray)) return null;
@@ -34,26 +38,6 @@ const getFieldByPath = (fieldsArray, targetPath) => {
     }
   }
   return null;
-};
-
-const filterMandatoryFields = (fields) => {
-  if (!Array.isArray(fields)) return [];
-  return fields
-    .filter((field) => field.required)
-    .map((field) => ({
-      ...field,
-      children: field.children ? filterMandatoryFields(field.children) : [],
-    }));
-};
-
-const filterRecommendedFields = (fields) => {
-  if (!Array.isArray(fields)) return [];
-  return fields
-    .filter((field) => field.required || field.recommended)
-    .map((field) => ({
-      ...field,
-      children: field.children ? filterRecommendedFields(field.children) : [],
-    }));
 };
 
 const NestedChildFormContent = ({
@@ -193,10 +177,18 @@ const NestedChildFormContent = ({
     if (!Array.isArray(fieldList)) return [];
 
     switch (viewMode) {
-      case "mandatory":
-        return filterMandatoryFields(fieldList);
-      case "recommended":
-        return filterRecommendedFields(fieldList);
+      case "mandatory": {
+        const mandatoryOnly = filterMandatoryFields(fieldList);
+        if (mandatoryOnly.length > 0) return mandatoryOnly;
+        const recommendedOnly = filterRecommendedFields(fieldList);
+        if (recommendedOnly.length > 0) return recommendedOnly;
+        return fieldList;
+      }
+      case "recommended": {
+        const recommendedOnly = filterRecommendedFields(fieldList);
+        if (recommendedOnly.length > 0) return recommendedOnly;
+        return fieldList;
+      }
       case "complete":
       default:
         return fieldList;

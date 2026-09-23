@@ -156,6 +156,24 @@ export const makeSelectIsPopupValid = (nextValuePath) =>
     },
   );
 
+function hasAnyNonEmptyValue(formState) {
+  if (!formState || typeof formState !== "object") return false;
+  return Object.values(formState).some((val) => {
+    if (val === null || val === undefined) return false;
+    if (typeof val === "string") return val.trim() !== "";
+    if (Array.isArray(val)) {
+      return (
+        val.length > 0 &&
+        val.some(
+          (v) => v !== null && v !== undefined && String(v).trim() !== "",
+        )
+      );
+    }
+    if (typeof val === "object") return Object.keys(val).length > 0;
+    return true;
+  });
+}
+
 // Root selector - safe against null/undefined
 export const selectIsRootFormValid = createSelector(
   [
@@ -166,20 +184,20 @@ export const selectIsRootFormValid = createSelector(
   ],
   (formState, fields, formatPatterns, depFormatPatterns) => {
     // NULL GUARDS
-    if (!Array.isArray(fields)) return false;
+    if (!Array.isArray(fields) || fields.length === 0) return false;
 
-    // Only required top-level fields
-    const requiredFields = fields.filter((f) => f?.required);
-    if (requiredFields.length === 0) return true;
+    // Do not enable if all fields are empty
+    if (!hasAnyNonEmptyValue(formState)) return false;
 
-    for (const field of requiredFields) {
-      const isMultiple = field.multiple || (field.children && field.children.length > 0);
+    for (const field of fields) {
+      const isMultiple =
+        field.multiple || (field.children && field.children.length > 0);
       if (isMultiple) {
         const instancePrefix = `${field.path}[`;
         const instances = Object.keys(formState || {}).filter((k) =>
           k.startsWith(instancePrefix),
         );
-        if (instances.length === 0) return false;
+        if (field.required && instances.length === 0) return false;
 
         const indices = new Set(
           instances.map((i) => i.slice(instancePrefix.length).split("]")[0]),
@@ -211,3 +229,4 @@ export const selectIsRootFormValid = createSelector(
     return true;
   },
 );
+

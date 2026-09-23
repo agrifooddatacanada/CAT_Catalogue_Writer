@@ -43,6 +43,8 @@ import {
   setIsUploaded,
 } from "../store/slices/uploadFileSlice";
 import { selectSchemaName } from "../store/selectors/formSelectors";
+import { setViewMode } from "../store/slices/formUiSlice";
+import { getInitialViewMode } from "../utils/viewModeUtils";
 import { extractPages } from "../utils/extractPages";
 import { ROUTE_MAP, SCHEMA_REGISTRY } from "../utils/schemaRegistry";
 import { escapeKey } from "../utils/pathEncoding";
@@ -117,6 +119,7 @@ function HomePage() {
 
     // Reset fieldSchema upload state
     dispatch(resetFieldSchemas());
+    dispatch(setMode("write"));
 
     // Reset local state
     setJsonContent(null);
@@ -165,6 +168,7 @@ function HomePage() {
         dispatch(setPages(pages));
         dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
         dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+        dispatch(setViewMode(getInitialViewMode(enrichedFields)));
 
         const instanceCount = buildInstanceCountsFromValues(formValues);
         dispatch(setAllInstanceCounts(instanceCount));
@@ -275,6 +279,7 @@ function HomePage() {
     dispatch(setPages(pages));
     dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
     dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+    dispatch(setViewMode(getInitialViewMode(enrichedFields)));
 
     // Return route WITH schema param
     // const routeMap = {
@@ -296,7 +301,7 @@ function HomePage() {
   //
   const handleNavigate = async () => {
     const route = await getFormRoute(); // Awaits schema extraction & dispatches
-    dispatch(setMode("edit"));
+    dispatch(setMode("write"));
     navigate(route);
   };
 
@@ -328,6 +333,7 @@ function HomePage() {
       dispatch(setPages(pages));
       dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
       dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+      dispatch(setViewMode(getInitialViewMode(enrichedFields)));
 
       const instanceCount = buildInstanceCountsFromValues(formValues);
       dispatch(setAllInstanceCounts(instanceCount));
@@ -365,6 +371,7 @@ function HomePage() {
       dispatch(setPages(pages));
       dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
       dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+      dispatch(setViewMode(getInitialViewMode(enrichedFields)));
 
       const instanceCount = buildInstanceCountsFromValues(formValues);
       dispatch(setAllInstanceCounts(instanceCount));

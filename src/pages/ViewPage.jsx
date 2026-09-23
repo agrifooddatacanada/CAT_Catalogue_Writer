@@ -23,6 +23,7 @@ import { setMode } from "../store/slices/modeSlice";
 import canonicalize from "../utils/canonicalize";
 import { getContextUrl, getSchemaId } from "../utils/schemaMapping";
 import { unescapeKey } from "../utils/pathEncoding";
+import { ROUTE_MAP } from "../utils/schemaRegistry";
 
 function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function
@@ -238,9 +239,13 @@ function ViewPage() {
   const handleEditClick = () => {
     dispatch(setMode("edit"));
     // Pass schema back to form so it loads correct OCA package
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get("schema") && schema) {
+      params.set("schema", schema);
+    }
     navigate({
       pathname: "/form",
-      search: window.location.search,
+      search: params.toString() ? `?${params.toString()}` : "",
     });
   };
 
@@ -289,9 +294,9 @@ function ViewPage() {
             mr: "10px",
           }}
           onClick={() => downloadJson(formState)}
-          startIcon={<FileDownloadIcon />}
+          startIcon={window.self !== window.top ? <SaveIcon /> : <FileDownloadIcon />}
         >
-          {t("viewpage.download")}
+          {window.self !== window.top ? "UPDATE IN CONTEXTHUB" : t("viewpage.download")}
         </Button>
         {(isIframeMode || buttonLabelParam) && (
           <Button
