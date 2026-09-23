@@ -23,7 +23,7 @@ import { setMode } from "../store/slices/modeSlice";
 import canonicalize from "../utils/canonicalize";
 import { getContextUrl, getSchemaId } from "../utils/schemaMapping";
 import { unescapeKey } from "../utils/pathEncoding";
-import { ROUTE_MAP } from "../utils/schemaRegistry";
+// import { ROUTE_MAP } from "../utils/schemaRegistry";
 
 function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function
