@@ -9,7 +9,11 @@ import {
   ListItemText,
   Divider,
   Chip,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import theme from "../../theme";
 import {
   selectAllInstanceCounts,
@@ -51,7 +55,7 @@ const getFieldByPath = (fieldsArray, targetPath) => {
   return null;
 };
 
-function FormSidebar() {
+function FormSidebar({ onNavigate, onClose, isDrawer = false, onCollapse, isDocked = false }) {
   // ALL hooks at the top — no exceptions
   const pages = useSelector(selectPages);
   const activePage = useSelector(selectActivePage);
@@ -226,17 +230,78 @@ function FormSidebar() {
   ].filter(Boolean).length;
 
   return (
-    <Paper elevation={2} sx={{ borderRadius: 1, overflow: "hidden" }}>
+    <Paper
+      elevation={isDrawer ? 0 : 2}
+      sx={{
+        borderRadius: isDrawer ? 0 : 1,
+        overflow: "hidden",
+        width: 280,
+        height: isDrawer ? "100%" : "auto",
+        maxHeight: isDrawer ? "100vh" : "calc(100vh - 48px)",
+        overflowY: "auto",
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* SCHEMA PAGES NAV */}
       <Box
         sx={{
           px: 2,
-          py: 2,
+          py: 1.5,
           backgroundColor: theme.primaryColor,
-          color: theme.backgroundColor,
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 1,
         }}
       >
-        <Typography variant="h6">{schemaName || "Form Navigation"}</Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            fontSize: "1.05rem",
+            fontWeight: 700,
+            color: "#fff",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {schemaName || "Form Navigation"}
+        </Typography>
+        {onClose && (
+          <IconButton
+            onClick={onClose}
+            size="small"
+            sx={{
+              color: "#fff",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+              },
+            }}
+            aria-label="Close navigation sidebar"
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        )}
+        {!onClose && onCollapse && (
+          <Tooltip title="Collapse sidebar">
+            <IconButton
+              onClick={onCollapse}
+              size="small"
+              sx={{
+                color: "#fff",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                },
+              }}
+              aria-label="Collapse navigation sidebar"
+            >
+              <ChevronLeftIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
 
       {availableModesCount > 1 && (
@@ -287,7 +352,9 @@ function FormSidebar() {
         <List disablePadding>
           <ListItemButton
             selected
-            onClick={() => {}}
+            onClick={() => {
+              onNavigate?.();
+            }}
             sx={{
               "&.Mui-selected": {
                 backgroundColor: theme.secondaryColor,
@@ -424,9 +491,11 @@ function FormSidebar() {
                     );
 
                     dispatch(setActivePage(i));
+                    onNavigate?.();
                   } else {
                     dispatch(setActivePage(i));
                     dispatch(clearChildFormNavigation());
+                    onNavigate?.();
                   }
                 }}
                 sx={{
