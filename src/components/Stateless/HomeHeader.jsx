@@ -1,8 +1,13 @@
+import React from "react";
+import { useSearchParams } from "react-router-dom";
 import { Stack, Box } from "@mui/system";
 import SelectLanguage from "../Stateful/LanguageSelector";
 import theme from "../../theme";
+import { checkIsIframe } from "../../utils/iframeUtils";
 
 function HomeHeader({ semantic_engine, catalogue }) {
+  const [searchParams] = useSearchParams();
+  const isIframeMode = checkIsIframe(searchParams);
 
   return (
       <div className="Header">
@@ -50,35 +55,37 @@ function HomeHeader({ semantic_engine, catalogue }) {
                 selected_item_color="rgba(225, 225, 225, 1)"
               />
             </Box>
-            <Box
-              component="a"
-              href="https://agrifooddatacanada.ca/"
-              target="_blank"
-              rel="noreferrer"
-              sx={{
-                marginLeft: "0px !important",
-                display: "inline-block",
-                "& img": {
-                  marginRight: {
-                    sm: "0px",
-                    md: "20px",
+            {!isIframeMode && (
+              <Box
+                component="a"
+                href="https://agrifooddatacanada.ca/"
+                target="_blank"
+                rel="noreferrer"
+                sx={{
+                  marginLeft: "0px !important",
+                  display: "inline-block",
+                  "& img": {
+                    marginRight: {
+                      sm: "0px",
+                      md: "20px",
+                    },
+                    width: {
+                      md: "250px",
+                    },
+                    maxHeight: {
+                      xs: "70px",
+                      sm: "70px",
+                      md: "100px",
+                    },
                   },
-                  width: {
-                    md: "250px",
-                  },
-                  maxHeight: {
-                    xs: "70px",
-                    sm: "70px",
-                    md: "100px",
-                  },
-                },
-              }}
-            >
-              <img
-                src="/assets/images/agri-logo-white.png"
-                alt="Agri-Food Data Canada at UoG White Logo"
-              />
-            </Box>
+                }}
+              >
+                <img
+                  src="/assets/images/agri-logo-white.png"
+                  alt="Agri-Food Data Canada at UoG White Logo"
+                />
+              </Box>
+            )}
           </Stack>
         </Stack>
       </div>

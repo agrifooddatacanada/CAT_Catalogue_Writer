@@ -1,10 +1,12 @@
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 import SelectLanguage from "../Stateful/LanguageSelector";
 import { Stack, Box } from "@mui/system";
 import { Button, Tooltip, Typography } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import theme from "../../theme";
+import { checkIsIframe } from "../../utils/iframeUtils";
 
 function PageHeaders({
   page_heading,
@@ -12,126 +14,131 @@ function PageHeaders({
   help_button_redirect,
 }) {
   const { t } = useTranslation(); // use translation function
+  const [searchParams] = useSearchParams();
+  const isIframeMode = checkIsIframe(searchParams);
 
   return (
-    <div className="Header" style={{ maxWidth: "100%", overflowX: "hidden" }}>
+    <div className="Header" style={{ maxWidth: "100%", overflow: "visible" }}>
       <Stack
-        direction={{ xs: "column", md: "row" }}
-        alignItems={{ xs: "stretch", md: "center" }}
+        direction={isIframeMode ? "row" : { xs: "column", md: "row" }}
+        alignItems="center"
         justifyContent="space-between"
         sx={{
-          minHeight: { xs: "auto", md: 72 },
+          minHeight: isIframeMode ? 52 : { xs: "auto", md: 72 },
           px: { xs: 1.5, sm: 2, md: 3 },
-          py: { xs: 1, md: 0 },
+          py: isIframeMode ? 0.5 : { xs: 1, md: 0 },
           color: theme.primaryColor,
           gap: { xs: 1, md: 2 },
           maxWidth: "100%",
           boxSizing: "border-box",
+          overflow: "visible",
         }}
       >
-        {/* Left side for desktops OR 1st row for mobile/tablet/iframe */}
-        <Stack
-          direction={"row"}
-          alignItems={"center"}
-          justifyContent="space-between"
-          sx={{
-            width: { xs: "100%", md: "auto" },
-            flexShrink: 0,
-            gap: 1,
-          }}
-        >
-          {/* Logos */}
+        {/* Logos and mobile language selector (hidden in iframe mode) */}
+        {!isIframeMode && (
           <Stack
-            direction="row"
-            alignItems="center"
+            direction={"row"}
+            alignItems={"center"}
+            justifyContent="space-between"
             sx={{
+              width: { xs: "100%", md: "auto" },
               flexShrink: 0,
-              gap: { xs: 1, sm: 1.5 },
+              gap: 1,
             }}
           >
-            {/* Semantic Engine Logo */}
-            <Box
-              component="a"
-              href="https://www.semanticengine.org/"
-              target="_blank"
-              rel="noreferrer"
+            {/* Logos */}
+            <Stack
+              direction="row"
+              alignItems="center"
               sx={{
-                display: "flex",
-                alignItems: "center",
-                "& img": {
-                  display: "block",
-                  width: { xs: 75, sm: 85, md: 95 },
-                  height: "auto",
-                },
+                flexShrink: 0,
+                gap: { xs: 1, sm: 1.5 },
               }}
             >
-              <img
-                src="/assets/images/semantic-engine-logo.png"
-                alt="Semantic Engine Logo"
+              {/* Semantic Engine Logo */}
+              <Box
+                component="a"
+                href="https://www.semanticengine.org/"
+                target="_blank"
+                rel="noreferrer"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  "& img": {
+                    display: "block",
+                    width: { xs: 75, sm: 85, md: 95 },
+                    height: "auto",
+                  },
+                }}
+              >
+                <img
+                  src="/assets/images/semantic-engine-logo.png"
+                  alt="Semantic Engine Logo"
+                />
+              </Box>
+
+              {/* Logo Divider */}
+              <Box
+                sx={{
+                  display: { xs: "none", sm: "block" },
+                  width: "1px",
+                  height: 36,
+                  bgcolor: "rgb(190, 190, 190)",
+                }}
               />
-            </Box>
 
-            {/* Logo Divider */}
+              {/* Agri-Food Data Canada Logo */}
+              <Box
+                component="a"
+                href="https://agrifooddatacanada.ca/"
+                target="_blank"
+                rel="noreferrer"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  "& img": {
+                    display: "block",
+                    width: { xs: 100, sm: 120, md: 140 },
+                    height: "auto",
+                  },
+                }}
+              >
+                <img
+                  src="/assets/images/agri-logo.png"
+                  alt="Agri-Food Data Canada at UoG White Logo"
+                />
+              </Box>
+            </Stack>
+
+            {/* Language Selector for mobile/compact screens */}
             <Box
               sx={{
-                display: { xs: "none", sm: "block" },
-                width: "1px",
-                height: 36,
-                bgcolor: "rgb(190, 190, 190)",
-              }}
-            />
-
-            {/* Agri-Food Data Canada Logo */}
-            <Box
-              component="a"
-              href="https://agrifooddatacanada.ca/"
-              target="_blank"
-              rel="noreferrer"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                "& img": {
-                  display: "block",
-                  width: { xs: 100, sm: 120, md: 140 },
-                  height: "auto",
-                },
+                display: { xs: "block", md: "none" },
+                ml: "auto",
+                flexShrink: 0,
               }}
             >
-              <img
-                src="/assets/images/agri-logo.png"
-                alt="Agri-Food Data Canada at UoG White Logo"
+              <SelectLanguage
+                helperText_color={theme.primaryColor}
+                select_bgColor="white"
+                select_color={theme.primaryColor}
+                menu_bgColor="rgba(235, 235, 235, 0.95)"
+                menu_color={theme.primaryColor}
+                selected_item_bgColor="rgba(215, 215, 215, 1)"
+                selected_item_color="rgba(175, 175, 175, 1)"
               />
             </Box>
           </Stack>
+        )}
 
-          {/* Language Selector for mobile/compact screens */}
-          <Box
-            sx={{
-              display: { xs: "block", md: "none" },
-              ml: "auto",
-              flexShrink: 0,
-            }}
-          >
-            <SelectLanguage
-              helperText_color={theme.primaryColor}
-              select_bgColor="white"
-              select_color={theme.primaryColor}
-              menu_bgColor="rgba(235, 235, 235, 0.95)"
-              menu_color={theme.primaryColor}
-              selected_item_bgColor="rgba(215, 215, 215, 1)"
-              selected_item_color="rgba(175, 175, 175, 1)"
-            />
-          </Box>
-        </Stack>
-
-        {/* 2nd row for mobile/compact OR right side for desktop */}
+        {/* Page Title & Controls */}
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="space-between"
           sx={{
-            width: { xs: "100%", md: "auto" },
-            flex: { xs: "none", md: 1 },
+            width: isIframeMode ? "100%" : { xs: "100%", md: "auto" },
+            flex: 1,
             minWidth: 0,
             gap: 1.5,
           }}
@@ -152,7 +159,7 @@ function PageHeaders({
                 minWidth: 0,
                 margin: 0,
                 color: theme.primaryColor,
-                fontSize: { xs: "16px", sm: "20px", md: "23px" },
+                fontSize: { xs: "16px", sm: "18px", md: "22px" },
                 fontWeight: 700,
                 lineHeight: 1.2,
                 whiteSpace: "nowrap",
@@ -184,7 +191,7 @@ function PageHeaders({
             )}
           </Stack>
 
-          {/* Right Controls: Help Button & Desktop Language Selector */}
+          {/* Right Controls: Help Button & Language Selector */}
           <Stack
             direction="row"
             alignItems="center"
@@ -217,8 +224,13 @@ function PageHeaders({
               </Button>
             )}
 
-            {/* Language selector for desktops */}
-            <Box sx={{ display: { xs: "none", md: "block" }, flexShrink: 0 }}>
+            {/* Language selector */}
+            <Box
+              sx={{
+                display: isIframeMode ? "block" : { xs: "none", md: "block" },
+                flexShrink: 0,
+              }}
+            >
               <SelectLanguage
                 helperText_color={theme.primaryColor}
                 select_bgColor="white"

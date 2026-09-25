@@ -23,6 +23,7 @@ import { setMode } from "../store/slices/modeSlice";
 import canonicalize from "../utils/canonicalize";
 import { getContextUrl, getSchemaId } from "../utils/schemaMapping";
 import { unescapeKey } from "../utils/pathEncoding";
+import { checkIsIframe } from "../utils/iframeUtils";
 
 function ViewPage() {
   const { t, lang } = useTranslation(); // use translation function
@@ -31,9 +32,8 @@ function ViewPage() {
   const dispatch = useDispatch();
   const [updating, setUpdating] = React.useState(false);
 
-  const iframeParam = searchParams.get("iframe");
   const buttonLabelParam = searchParams.get("buttonLabel");
-  const isIframeMode = iframeParam === "true" || window.self !== window.top;
+  const isIframeMode = checkIsIframe(searchParams);
 
   const schema = useSelector(selectSchemaName);
   const isUploadedJson = useSelector(selectHasFormData);

@@ -37,6 +37,7 @@ import { getInitialViewMode } from "../utils/viewModeUtils";
 import FormSidebar from "../components/Stateful/FormSidebar";
 import { extractPages } from "../utils/extractPages";
 import { selectActivePage } from "../store/slices/activePageSlice";
+import { checkIsIframe } from "../utils/iframeUtils";
 
 function FormPage() {
   const { t } = useTranslation(); // use translation function
@@ -61,8 +62,7 @@ function FormPage() {
   const [searchParams] = useSearchParams();
   const { schemaSlug } = useParams();
 
-  const iframeParam = searchParams.get("iframe");
-  const isIframeMode = iframeParam === "true" || window.self !== window.top;
+  const isIframeMode = checkIsIframe(searchParams);
 
   const isSmallScreen = useMediaQuery("(max-width: 1024px)");
   const [sidebarDrawerOpen, setSidebarDrawerOpen] = useState(false);
