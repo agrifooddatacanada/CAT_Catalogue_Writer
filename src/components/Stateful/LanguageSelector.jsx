@@ -32,6 +32,7 @@ export default function SelectLanguage({
             color: helperText_color,
             fontSize: { xs: "7.5px", sm: "8.25px", lg: "9px" },
             lineHeight: 1.2,
+            m: 0,
           }}
         >
           {lang === "eng" ? "Sélectionnez le Français ici" : "Select English here"}

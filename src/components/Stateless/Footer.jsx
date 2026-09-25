@@ -1,6 +1,15 @@
 import * as React from "react";
+import { useSearchParams } from "react-router-dom";
+import { checkIsIframe } from "../../utils/iframeUtils";
 
 function Footer({ powered_by, supported_by }) {
+  const [searchParams] = useSearchParams();
+  const isIframeMode = checkIsIframe(searchParams);
+
+  if (isIframeMode) {
+    return null;
+  }
+
   return (
     <div className="Footer">
       <hr
