@@ -53,6 +53,7 @@ function validateFieldTree(
       readOnly: false,
       formatPatterns: formatPatterns || {},
       depFormatPatterns: depFormatPatterns || {},
+      allFormValues: formState,
     });
     return !error;
   }
@@ -136,10 +137,10 @@ export const makeSelectIsPopupValid = (nextValuePath) =>
             formState[key] !== undefined &&
             String(formState[key]).trim() !== "",
         );
-        return hasAnyData;
+        if (!hasAnyData) return false;
       }
 
-      // NORMAL CASE: validate each child normally
+      // Validate each child normally
       for (const child of baseField.children) {
         const childPrefix = `${nextValuePath}.${child.name}`;
         const ok = validateFieldTree(

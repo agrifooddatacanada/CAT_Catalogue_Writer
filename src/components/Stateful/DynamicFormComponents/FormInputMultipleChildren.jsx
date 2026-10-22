@@ -35,6 +35,7 @@ import { setCurrentPage } from "../../../store/slices/formUiSlice";
 import { selectPages } from "../../../store/selectors/formSelectors";
 import { setChildFormNavigation } from "../../../store/slices/childFormNavigationSlice";
 import { upsertChildPageMeta } from "../../../store/slices/fieldSchemaSlice";
+import { extractCleanOrcid } from "../../../utils/orcidUtils";
 
 const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPageIndex }) => {
   // const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -360,9 +361,40 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
                   pb: 0,
                 }}
               >
-                <Typography variant="h6" gutterBottom>
-                  {field.label} #{instance.visualIndex + 1}
-                </Typography>
+                {(() => {
+                  const instanceOrcid = extractCleanOrcid(
+                    instance.data["id"] ||
+                    Object.entries(instance.data).find(([k]) =>
+                      k.toLowerCase().includes("orcid") || k.endsWith(".id")
+                    )?.[1]
+                  );
+                  const isDuplicateInList = instanceOrcid && instances.some((other) => {
+                    if (other.reduxIndex === instance.reduxIndex) return false;
+                    const otherOrcid = extractCleanOrcid(
+                      other.data["id"] ||
+                      Object.entries(other.data).find(([k]) =>
+                        k.toLowerCase().includes("orcid") || k.endsWith(".id")
+                      )?.[1]
+                    );
+                    return otherOrcid && otherOrcid === instanceOrcid;
+                  });
+
+                  return (
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mb: 1 }}>
+                      <Typography variant="h6" sx={{ mb: 0 }}>
+                        {field.label} #{instance.visualIndex + 1}
+                      </Typography>
+                      {isDuplicateInList && (
+                        <Chip
+                          label="Duplicate Contributor"
+                          color="warning"
+                          size="small"
+                          sx={{ fontWeight: 600, height: 20, fontSize: "0.7rem" }}
+                        />
+                      )}
+                    </Box>
+                  );
+                })()}
                 {(() => {
                   const sortedEntries = Object.entries(instance.data).sort(
                     ([keyA], [keyB]) => compareKeys(keyA, keyB)

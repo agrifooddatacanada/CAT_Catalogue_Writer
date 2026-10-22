@@ -1,10 +1,14 @@
+import { checkDuplicateContributorOrcid } from "./orcidUtils";
+
 export function getValidationError({
   field,
   fieldPath,
+  valuePath,
   value,
   readOnly,
   formatPatterns,
   depFormatPatterns,
+  allFormValues,
 }) {
   const { name, label, required } = field;
 
@@ -16,8 +20,21 @@ export function getValidationError({
   // 2. Skip if readOnly or empty (after required check)
   if (readOnly || !value) return null;
 
+  // 2.5. Duplicate Contributor ORCID check
+  if (allFormValues) {
+    const pathToUse = valuePath || fieldPath;
+    const dupCheck = checkDuplicateContributorOrcid(allFormValues, pathToUse, value);
+    if (dupCheck.isDuplicate) {
+      const dupLabel = dupCheck.duplicateName
+        ? `${dupCheck.duplicateName} (${dupCheck.duplicateOrcid})`
+        : dupCheck.duplicateOrcid;
+      return `Contributor already added: ${dupLabel}`;
+    }
+  }
+
   // 3. Field name from path
-  const fieldName = fieldPath.split(".").pop() || name;
+  const pathToExtract = fieldPath || valuePath || "";
+  const fieldName = pathToExtract.split(".").pop() || name;
 
   // 4. Merge patterns
   const allPatterns = { ...formatPatterns, ...depFormatPatterns };

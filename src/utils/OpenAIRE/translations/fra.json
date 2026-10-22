@@ -97,5 +97,18 @@
   "no_data": "Aucune donnée n’existe pour",
   "powered_by": "Propulsé par",
   "supported_by": "Soutenu par",
-  "page_help": "Aide pour cette page"
+  "page_help": "Aide pour cette page",
+  "orcid": {
+    "verified_available": "ORCID vérifié par ContextHub disponible",
+    "add_verified_orcid": "Ajouter mon ORCID vérifié",
+    "adding_orcid": "Ajout et récupération du nom...",
+    "orcid_added": "ORCID ajouté",
+    "fetch_name_from_orcid": "Récupérer le nom depuis ORCID",
+    "fetching_name": "Récupération du nom depuis ORCID...",
+    "name_fetched": "Nom récupéré depuis ORCID : ",
+    "name_set_contexthub": "ORCID ajouté et nom défini depuis ContextHub : ",
+    "added_orcid": "ORCID vérifié ajouté : ",
+    "contributor_already_added": "Contributeur déjà ajouté",
+    "duplicate_warning_text": "a déjà été ajouté comme contributeur à cette fiche. Les contributeurs ne peuvent pas être répétés."
+  }
 }

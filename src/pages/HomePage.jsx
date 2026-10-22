@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Stack, Box } from "@mui/system";
 import {
+  Alert,
   Button,
   FormControl,
   FormHelperText,
@@ -41,12 +42,17 @@ import {
   resetUploaded,
   selectIsUploaded,
   setIsUploaded,
+  setRecordMetadata,
 } from "../store/slices/uploadFileSlice";
 import { selectSchemaName } from "../store/selectors/formSelectors";
 import { setViewMode } from "../store/slices/formUiSlice";
 import { getInitialViewMode } from "../utils/viewModeUtils";
 import { extractPages } from "../utils/extractPages";
-import { ROUTE_MAP, SCHEMA_REGISTRY } from "../utils/schemaRegistry";
+import {
+  ROUTE_MAP,
+  SCHEMA_REGISTRY,
+  getSchemaPluginOutdatedStatus,
+} from "../utils/schemaRegistry";
 import { escapeKey } from "../utils/pathEncoding";
 import { normalizeNestedFields } from "../utils/normalizeJson";
 
@@ -100,6 +106,7 @@ function HomePage() {
   const hasUploadedFile = isUploaded;
 
   const [schemaLocked, setSchemaLocked] = useState(false); // true when schema came from @schema_id
+  const [outdatedSchemaInfo, setOutdatedSchemaInfo] = useState(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation(); // use translation function
@@ -125,6 +132,7 @@ function HomePage() {
     setJsonContent(null);
     setUploadedFiles(null);
     setSchemaLocked(false);
+    setOutdatedSchemaInfo(null);
 
     // Clear dataUrl
     window.sessionStorage.removeItem("dataUrl");
@@ -175,6 +183,18 @@ function HomePage() {
         dispatch(setIsUploaded(true));
         dispatch(setMode("edit"));
 
+        // Record lineage metadata for revision tracking
+        const loadedVersion = jsonData.dcterms?.version || jsonData.version || jsonData["dcterms:version"] || "1.0.0";
+        const loadedIsVersionOf = jsonData.dcterms?.isVersionOf || jsonData.isVersionOf || jsonData["dcterms:isVersionOf"] || null;
+        dispatch(
+          setRecordMetadata({
+            originalSaid: jsonData.d || null,
+            recordVersion: loadedVersion,
+            isVersionOf: loadedIsVersionOf,
+            schemaId: jsonData["@schema_id"] || null,
+          })
+        );
+
         if (cancelled) return;
 
         // Navigate to form in edit mode
@@ -222,6 +242,10 @@ function HomePage() {
         // 1) Read `@schema_id` from the uploaded JSON-LD
         const schemaId = jsonData["@schema_id"];
 
+        // Check if the form questionnaire used for this record is outdated
+        const outdatedInfo = getSchemaPluginOutdatedStatus(schemaId);
+        setOutdatedSchemaInfo(outdatedInfo.isOutdated ? outdatedInfo : null);
+
         // 2) Map it to internal schema name
         const detectedSchema = schemaId ? getSchemaFromId(schemaId) : null;
 
@@ -236,6 +260,18 @@ function HomePage() {
           // Do NOT touch existing schema; user might already have selected it
           setSchemaLocked(false); // user can choose schema from the menu
         }
+
+        // Record lineage metadata for revision tracking
+        const loadedVersion = jsonData.dcterms?.version || jsonData.version || jsonData["dcterms:version"] || "1.0.0";
+        const loadedIsVersionOf = jsonData.dcterms?.isVersionOf || jsonData.isVersionOf || jsonData["dcterms:isVersionOf"] || null;
+        dispatch(
+          setRecordMetadata({
+            originalSaid: jsonData.d || null,
+            recordVersion: loadedVersion,
+            isVersionOf: loadedIsVersionOf,
+            schemaId,
+          })
+        );
       } catch (err) {
         console.error(err);
         alert(t("homepage.file_select_invalid_json"));
@@ -264,6 +300,7 @@ function HomePage() {
     dispatch(resetFieldSchemas());
 
     setSchemaLocked(false);
+    setOutdatedSchemaInfo(null);
   };
 
   // Form Routing
@@ -548,7 +585,21 @@ function HomePage() {
             }
           />
 
-          <Box sx={{ width: "100%", mb: 2 }}>
+          <Box sx={{ width: "100%", mb: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
+            {hasUploadedFile && outdatedSchemaInfo && (
+              <Alert severity="warning" sx={{ mb: 1.5, textAlign: "left", width: "85%" }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  Form Questionnaire Outdated
+                </Typography>
+                <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
+                  This catalogue record was created using an earlier version of the{" "}
+                  <strong>{outdatedSchemaInfo.family}</strong> form questionnaire (v
+                  {outdatedSchemaInfo.currentVersion}). A newer version of the form (v
+                  {outdatedSchemaInfo.latestVersion}) is available.
+                </Typography>
+              </Alert>
+            )}
+
             {hasUploadedFile && uploadedFiles?.[0]?.name && (
               <Typography
                 sx={{

@@ -7,6 +7,7 @@ import uploadFile from "./slices/uploadFileSlice";
 import formUi from "./slices/formUiSlice";
 import activePage from "./slices/activePageSlice";
 import childFormNavigation from "./slices/childFormNavigationSlice";
+import userContext from "./slices/userContextSlice";
 
 const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
     formUi,
     activePage,
     childFormNavigation,
+    userContext,
   },
 });
 

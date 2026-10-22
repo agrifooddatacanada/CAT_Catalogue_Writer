@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, Alert } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
+import { checkDuplicateContributorOrcid } from "../../../utils/orcidUtils";
 import { useDispatch, useSelector } from "react-redux";
 import FieldChecker from "./FieldChecker";
 import { removeIndices } from "../../../utils/removeIndices";
@@ -82,7 +83,8 @@ const NestedChildFormContent = ({
       if (fieldDef) {
         const error = getValidationError({
           field: fieldDef,
-          fieldPath: fPath,
+          fieldPath: key,
+          valuePath: key,
           value: fieldDef.multiple
             ? Array.isArray(value)
               ? value
@@ -91,6 +93,7 @@ const NestedChildFormContent = ({
           readOnly,
           formatPatterns,
           depFormatPatterns,
+          allFormValues: fieldValues,
         });
         if (error) return false;
       }
@@ -105,7 +108,25 @@ const NestedChildFormContent = ({
     depFormatPatterns,
   ]);
 
-  const canSave = isPopupValid && isFormatValid;
+  const duplicateOrcidInfo = useMemo(() => {
+    if (!fieldValues || !nextValuePath) return { isDuplicate: false };
+    const childKeys = Object.keys(fieldValues).filter((k) =>
+      k.startsWith(nextValuePath),
+    );
+    const orcidKey = childKeys.find(
+      (k) =>
+        k.endsWith(".id") ||
+        k.includes(".id") ||
+        k.toLowerCase().includes("orcid"),
+    );
+    if (!orcidKey) return { isDuplicate: false };
+    const orcidVal = fieldValues[orcidKey];
+    if (!orcidVal) return { isDuplicate: false };
+
+    return checkDuplicateContributorOrcid(fieldValues, orcidKey, orcidVal);
+  }, [fieldValues, nextValuePath]);
+
+  const canSave = isPopupValid && isFormatValid && !duplicateOrcidInfo.isDuplicate;
 
   const latestFieldValuesRef = useRef(fieldValues);
   const isSavedRef = useRef(false);
@@ -302,6 +323,27 @@ const NestedChildFormContent = ({
   return (
     <Box>
       {renderContent()}
+
+      {duplicateOrcidInfo.isDuplicate && (
+        <Alert
+          severity="warning"
+          sx={{
+            mt: 2,
+            mb: 1,
+            borderRadius: "8px",
+            border: "1px solid #ff9800",
+            backgroundColor: "rgba(255, 152, 0, 0.08)",
+          }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "#e65100" }}>
+            {t("orcid.contributor_already_added") || "Contributor Already Added"}
+          </Typography>
+          <Typography variant="caption" sx={{ color: "text.primary", display: "block", mt: 0.25 }}>
+            A contributor with ORCID ID <strong>{duplicateOrcidInfo.duplicateOrcid}</strong>
+            {duplicateOrcidInfo.duplicateName ? ` (${duplicateOrcidInfo.duplicateName})` : ""} has already been added to this record. Contributors cannot be repeated.
+          </Typography>
+        </Alert>
+      )}
 
       <Box
         sx={{
