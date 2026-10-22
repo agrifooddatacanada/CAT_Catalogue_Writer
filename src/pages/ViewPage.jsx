@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box } from "@mui/system";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Typography,
+  Chip,
+  Stack,
+  Alert,
+} from "@mui/material";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
 import Footer from "../components/Stateless/Footer";
 import DynamicForm from "../components/Stateful/DynamicForm";
@@ -20,17 +27,30 @@ import {
   selectSchemaName,
 } from "../store/selectors/formSelectors";
 import { setMode } from "../store/slices/modeSlice";
+import {
+  selectOriginalSaid,
+  selectRecordVersion,
+  selectIsVersionOf,
+  selectVersionNotes,
+  setRecordVersion,
+  setVersionNotes,
+} from "../store/slices/uploadFileSlice";
+import {
+  KNOWN_SCHEMA_MANIFEST,
+  getSchemaPluginOutdatedStatus,
+  normalizeVersion,
+} from "../utils/schemaRegistry";
 import canonicalize from "../utils/canonicalize";
 import { getContextUrl, getSchemaId } from "../utils/schemaMapping";
 import { unescapeKey } from "../utils/pathEncoding";
 import { checkIsIframe } from "../utils/iframeUtils";
 
 function ViewPage() {
-  const { t, lang } = useTranslation(); // use translation function
+  const { t, lang } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
-  const [updating, setUpdating] = React.useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const buttonLabelParam = searchParams.get("buttonLabel");
   const isIframeMode = checkIsIframe(searchParams);
@@ -38,6 +58,24 @@ function ViewPage() {
   const schema = useSelector(selectSchemaName);
   const isUploadedJson = useSelector(selectHasFormData);
   const flatFormState = useSelector(selectAllFormValues);
+
+  // Lineage & Version Redux State
+  const originalSaid = useSelector(selectOriginalSaid);
+  const savedRecordVersion = useSelector(selectRecordVersion);
+  const isVersionOfPrior = useSelector(selectIsVersionOf);
+  const savedVersionNotes = useSelector(selectVersionNotes);
+
+  // The catalogue record version ALWAYS inherits the version of the resource it describes
+  const resourceVersion = savedRecordVersion || "1.0.0";
+  const [currentNotes, setCurrentNotesState] = useState(
+    savedVersionNotes || ""
+  );
+
+  const handleNotesChange = (e) => {
+    const val = e.target.value;
+    setCurrentNotesState(val);
+    dispatch(setVersionNotes(val));
+  };
 
   function unflatten(flatObject) {
     const result = {};
@@ -49,12 +87,10 @@ function ViewPage() {
         const isLast = i === path.length - 1;
         const nextSegment = path[i + 1];
         if (isLast) {
-          // Leaf - deep clone the value to avoid frozen object issues
           current[segment] = deepClone(value);
         } else {
           const isNextArrayIndex = typeof nextSegment === "number";
           if (typeof segment === "number") {
-            // Current container MUST be an array
             if (!Array.isArray(current)) {
               current = [];
             }
@@ -64,7 +100,6 @@ function ViewPage() {
             }
             current = current[segment];
           } else {
-            // segment is a string key
             if (current[segment] == null) {
               current[segment] = isNextArrayIndex ? [] : {};
             }
@@ -76,7 +111,6 @@ function ViewPage() {
     return result;
   }
 
-  // Deep clone to handle frozen/immutable objects
   function deepClone(value) {
     if (value === null || typeof value !== "object") {
       return value;
@@ -101,7 +135,6 @@ function ViewPage() {
 
   function parsePath(path) {
     if (!path) return [];
-
     return path
       .split(/\.|\[/)
       .filter(Boolean)
@@ -114,7 +147,6 @@ function ViewPage() {
   }
 
   const formState = unflatten(flatFormState);
-
   const jsonSchema = useSelector(selectFields);
 
   const injectDcatNamespace = (context) => {
@@ -134,11 +166,15 @@ function ViewPage() {
     return [context, dcatNamespace];
   };
 
+  /**
+   * Generates a deterministic, immutable catalogue record with SAID.
+   * Preserves lineage by injecting dcterms:isVersionOf, dcterms:version,
+   * adms:versionNotes, and dcterms:modified.
+   */
   const generateCatalogueRecord = (jsonData) => {
-    // Deep clone to avoid mutating original formState
     const dataForSaid = deepClone(jsonData);
 
-    // Clean existing metadata fields
+    // Clean existing identifiers that should not be hashed directly
     const cleanKeys = ["catalogue_id", "d", "@context", "@schema_id", "@type"];
     cleanKeys.forEach((key) => {
       if (key in dataForSaid) delete dataForSaid[key];
@@ -148,21 +184,55 @@ function ViewPage() {
     const canonicalizedState = canonicalize(dataForSaid);
     const formData = JSON.parse(canonicalizedState);
 
-    // Get context from schema or Redux
+    // Determine normalized SemVer (inherited from described resource) and timestamp
+    const semVer = normalizeVersion(resourceVersion, "1.0.0");
+    const timestamp = new Date().toISOString();
+
+    // Preserve and enrich Dublin Core terms
+    const existingDcterms =
+      formData.dcterms && typeof formData.dcterms === "object"
+        ? formData.dcterms
+        : {};
+
+    const updatedDcterms = {
+      ...existingDcterms,
+      version: semVer,
+      modified: timestamp,
+    };
+
+    // Append-only revision tracking: Point to previous SAID if revising
+    if (originalSaid) {
+      updatedDcterms.isVersionOf = originalSaid;
+    } else if (isVersionOfPrior) {
+      updatedDcterms.isVersionOf = isVersionOfPrior;
+    }
+
+    if (currentNotes && currentNotes.trim()) {
+      updatedDcterms["adms:versionNotes"] = currentNotes.trim();
+    }
+
+    formData.dcterms = updatedDcterms;
+
+    // Get context and schema ID
     const contextUrl = getContextUrl(schema);
     const schemaId = getSchemaId(schema);
+    const schemaMeta = KNOWN_SCHEMA_MANIFEST[schemaId];
+    const schemaPluginVersion = schemaMeta?.version || "1.0.0";
     const finalContext = injectDcatNamespace(contextUrl);
 
-    // Build exact structure: @context, @type, d (empty), then form data
+    // Build standard DCAT CatalogRecord structure
+    // Embeds the schema plugin version so the system knows the form questionnaire version
+    // without altering the content of the schema plugin file itself.
     const formDataWithId = {
       "@context": finalContext,
       "@type": "dcat:CatalogRecord",
       "@schema_id": schemaId,
+      "@schema_version": schemaPluginVersion,
       d: "",
       ...formData,
     };
 
-    // Compute SAID using modified data
+    // Deterministically calculate new SAID
     const [, objWithSaid] = saidifyUrn(formDataWithId, "d");
     return objWithSaid;
   };
@@ -187,10 +257,34 @@ function ViewPage() {
       type: "CATALOGUE_RECORD",
       record: objWithSaid,
     };
+
+    let delivered = false;
     if (window.parent && window.parent !== window) {
       window.parent.postMessage(payload, "*");
+      delivered = true;
+    } else if (window.opener && !window.opener.closed) {
+      try {
+        window.opener.postMessage(payload, "*");
+        delivered = true;
+      } catch (err) {
+        console.warn("Failed to post message to window.opener:", err);
+      }
+    }
+
+    if (delivered) {
+      if (window.opener && window.opener !== window) {
+        alert("Catalogue record updated in ContextHub! You can close this tab.");
+        try {
+          window.close();
+        } catch {
+          // Window closing may be blocked by browser
+        }
+      }
     } else {
-      window.postMessage(payload, "*");
+      alert(
+        "Could not directly update ContextHub because the parent window could not be reached. The catalogue record file will now be downloaded so you can upload it to ContextHub."
+      );
+      downloadJson(jsonData);
     }
   };
 
@@ -208,17 +302,19 @@ function ViewPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify(objWithSaid),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.error?.message || `HTTP error! status: ${response.status}`);
+        throw new Error(
+          errorData?.error?.message || `HTTP error! status: ${response.status}`
+        );
       }
 
-      alert("Catalogue updated successfully on ContextHub!");
+      alert("Catalogue updated successfully on ContextHub as a new revision!");
     } catch (err) {
       console.error("Failed to update ContextHub:", err);
       alert(`Failed to update ContextHub: ${err.message}`);
@@ -237,7 +333,6 @@ function ViewPage() {
 
   const handleEditClick = () => {
     dispatch(setMode("edit"));
-    // Pass schema back to form so it loads correct OCA package
     const params = new URLSearchParams(window.location.search);
     if (!params.get("schema") && schema) {
       params.set("schema", schema);
@@ -263,41 +358,129 @@ function ViewPage() {
       />
 
       <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
+        {/* Versioning & Revision Lineage Control Panel */}
+        <Box
+          sx={{
+            mb: 3,
+            p: 2.5,
+            border: "1px solid #d0d7de",
+            borderRadius: 2,
+            backgroundColor: "#f6f8fa",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {(() => {
+            const currentSchemaId = getSchemaId(schema);
+            const outdatedInfo = getSchemaPluginOutdatedStatus(currentSchemaId);
+            if (!outdatedInfo.isOutdated) return null;
+            return (
+              <Alert
+                severity="warning"
+                sx={{ mb: 2 }}
+              >
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  Form Questionnaire Outdated
+                </Typography>
+                <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
+                  This catalogue record was created using an earlier version of the{" "}
+                  <strong>{outdatedInfo.family}</strong> form questionnaire (v
+                  {outdatedInfo.currentVersion}). A newer version of the form (v
+                  {outdatedInfo.latestVersion}) is available.
+                </Typography>
+              </Alert>
+            );
+          })()}
+
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            justifyContent="space-between"
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            spacing={2}
+            sx={{ mb: 2 }}
+          >
+            <Box>
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 600, color: theme.primaryColor }}
+              >
+                Catalogue Record Lineage & Version
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Catalogue record versions inherit the version of the resource they describe.
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
+                Resource Version:
+              </Typography>
+              <Chip
+                label={`v${resourceVersion}`}
+                size="small"
+                color="primary"
+                sx={{ fontWeight: 700, px: 0.5 }}
+              />
+            </Box>
+          </Stack>
+
+          {/* Lineage & Schema Badges */}
+          <Stack
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+            flexWrap="wrap"
+            sx={{ mb: 1.5 }}
+          >
+            {originalSaid ? (
+              <Chip
+                label={`Revises: ${originalSaid.slice(0, 24)}...`}
+                color="info"
+                variant="outlined"
+                size="small"
+                title={`Previous Record SAID: ${originalSaid}`}
+              />
+            ) : (
+              <Chip
+                label="Initial Record (v1.0.0 or v0.1.0)"
+                color="success"
+                variant="outlined"
+                size="small"
+              />
+            )}
+
+            <Chip
+              label={`Schema: ${schema || "Default"} (${(getSchemaId(schema) || "").slice(0, 16)}...)`}
+              variant="outlined"
+              size="small"
+            />
+          </Stack>
+
+          {originalSaid && (
+            <Alert severity="info" sx={{ mb: 1.5, py: 0.5, fontSize: "0.85rem" }}>
+              Editing creates an immutable new revision linked via{" "}
+              <code>dcterms:isVersionOf</code>. The original record remains unchanged.
+            </Alert>
+          )}
+
+          {/* Version Notes */}
+          <TextField
+            fullWidth
+            size="small"
+            label="Revision Notes (optional)"
+            placeholder="e.g. Initial draft 0.1.0, or corrected author description"
+            value={currentNotes}
+            onChange={handleNotesChange}
+            helperText="Stored in the catalogue record JSON under dcterms['adms:versionNotes'] and synced to the Neo4j database as cat.versionNotes"
+            FormHelperTextProps={{
+              sx: { fontSize: "0.78rem", color: "text.secondary", mt: 0.5 },
+            }}
+            sx={{ backgroundColor: "#fff" }}
+          />
+        </Box>
+
         <DynamicForm language={lang} />
 
-        <Button
-          variant="contained"
-          type="submit"
-          sx={{
-            backgroundColor: theme.primaryColor,
-            "&:hover": {
-              backgroundColor: theme.primaryColor,
-            },
-            mt: "2px",
-            mr: "10px",
-          }}
-          onClick={handleEditClick}
-          startIcon={<EditIcon />}
-        >
-          {t("viewpage.edit")}
-        </Button>
-        <Button
-          variant="contained"
-          type="submit"
-          sx={{
-            backgroundColor: theme.primaryColor,
-            "&:hover": {
-              backgroundColor: theme.primaryColor,
-            },
-            mt: "2px",
-            mr: "10px",
-          }}
-          onClick={() => downloadJson(formState)}
-          startIcon={window.self !== window.top ? <SaveIcon /> : <FileDownloadIcon />}
-        >
-          {window.self !== window.top ? "UPDATE IN CONTEXTHUB" : t("viewpage.download")}
-        </Button>
-        {(isIframeMode || buttonLabelParam) && (
+        <Box sx={{ mt: 3 }}>
           <Button
             variant="contained"
             sx={{
@@ -305,33 +488,64 @@ function ViewPage() {
               "&:hover": {
                 backgroundColor: theme.primaryColor,
               },
-              mt: "2px",
               mr: "10px",
             }}
-            onClick={() => postMessageToParent(formState)}
-            startIcon={<SendIcon />}
+            onClick={handleEditClick}
+            startIcon={<EditIcon />}
           >
-            {buttonLabelParam || "UPDATE TO CONTEXTHUB"}
+            {t("viewpage.edit")}
           </Button>
-        )}
-        {window.sessionStorage.getItem("dataUrl") && (
+
           <Button
             variant="contained"
-            disabled={updating}
             sx={{
               backgroundColor: theme.primaryColor,
               "&:hover": {
                 backgroundColor: theme.primaryColor,
               },
-              mt: "2px",
               mr: "10px",
             }}
-            onClick={() => updateContextHub(formState)}
-            startIcon={updating ? null : <SaveIcon />}
+            onClick={() => downloadJson(formState)}
+            startIcon={<FileDownloadIcon />}
           >
-            {updating ? "Updating..." : "Update ContextHub"}
+            {t("viewpage.download")}
           </Button>
-        )}
+
+          {(isIframeMode || buttonLabelParam) && (
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: theme.primaryColor,
+                "&:hover": {
+                  backgroundColor: theme.primaryColor,
+                },
+                mr: "10px",
+              }}
+              onClick={() => postMessageToParent(formState)}
+              startIcon={<SendIcon />}
+            >
+              {buttonLabelParam || "UPDATE TO CONTEXTHUB"}
+            </Button>
+          )}
+
+          {window.sessionStorage.getItem("dataUrl") && (
+            <Button
+              variant="contained"
+              disabled={updating}
+              sx={{
+                backgroundColor: theme.primaryColor,
+                "&:hover": {
+                  backgroundColor: theme.primaryColor,
+                },
+                mr: "10px",
+              }}
+              onClick={() => updateContextHub(formState)}
+              startIcon={updating ? null : <SaveIcon />}
+            >
+              {updating ? "Updating..." : "Update ContextHub"}
+            </Button>
+          )}
+        </Box>
       </Box>
       <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />
     </div>

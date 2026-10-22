@@ -6,10 +6,12 @@ import React, {
   useState,
 } from "react";
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
   Chip,
+  CircularProgress,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -21,6 +23,18 @@ import {
   TextareaAutosize,
   Typography,
 } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import SyncIcon from "@mui/icons-material/Sync";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { selectUserContext } from "../../../store/slices/userContextSlice";
+import {
+  checkDuplicateContributorOrcid,
+  extractCleanOrcid,
+  fetchOrcidPersonName,
+  findSiblingNameFieldKey,
+  isQualifiedAttributionOrcidField,
+  isValidOrcid,
+} from "../../../utils/orcidUtils";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -33,6 +47,7 @@ import {
   selectFieldByPath,
   selectFieldValue,
   selectFormatPatterns,
+  selectFormState,
   selectFormValueByPrefix,
   selectInstanceCount,
 } from "../../../store/selectors/formSelectors";
@@ -116,23 +131,177 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
 
+  const userContext = useSelector(selectUserContext);
+
+  const isOrcidField = useMemo(() => {
+    return isQualifiedAttributionOrcidField(field, fieldPath);
+  }, [field, fieldPath]);
+
+  const parentPath = useMemo(() => {
+    const parts = fieldPath.split(".");
+    return parts.length > 1 ? parts.slice(0, -1).join(".") : null;
+  }, [fieldPath]);
+
+  const parentFieldSelector = useMemo(
+    () => (parentPath ? selectFieldByPath(parentPath) : () => null),
+    [parentPath]
+  );
+  const parentField = useSelector(parentFieldSelector);
+
+  const nameValuePath = useMemo(() => {
+    if (!isOrcidField) return null;
+    const siblingKey = findSiblingNameFieldKey(parentField);
+    const lastDotIndex = valuePath.lastIndexOf(".");
+    const instancePrefix =
+      lastDotIndex !== -1 ? valuePath.substring(0, lastDotIndex) : "";
+    return instancePrefix ? `${instancePrefix}.${siblingKey}` : siblingKey;
+  }, [isOrcidField, parentField, valuePath]);
+
+  const allFormValues = useSelector(selectFormState);
+
+  const cleanUserOrcid = useMemo(() => {
+    return extractCleanOrcid(userContext?.orcid);
+  }, [userContext?.orcid]);
+
+  const isUserOrcidUsedElsewhere = useMemo(() => {
+    if (!cleanUserOrcid || !allFormValues || !isOrcidField) return false;
+    return Object.entries(allFormValues).some(([key, val]) => {
+      if (key === valuePath) return false;
+      if (parentPath && !key.startsWith(parentPath)) return false;
+      const cleanVal = extractCleanOrcid(val);
+      return cleanVal && cleanVal === cleanUserOrcid;
+    });
+  }, [cleanUserOrcid, allFormValues, isOrcidField, valuePath, parentPath]);
+
+  const [isFetchingName, setIsFetchingName] = useState(false);
+  const [fetchFeedback, setFetchFeedback] = useState(null);
+
+  const handleAddContextHubOrcid = useCallback(async () => {
+    if (!userContext?.orcid) return;
+    const targetOrcid = userContext.orcid;
+
+    // Set the ORCID in this field
+    onChange(valuePath, targetOrcid);
+
+    // If we have ContextHub user's name, immediately set it into sibling contributor name
+    let appliedContextHubName = false;
+    if (nameValuePath && userContext.name) {
+      dispatch(setFieldValue({ path: nameValuePath, value: userContext.name }));
+      appliedContextHubName = true;
+    }
+
+    setIsFetchingName(true);
+    setFetchFeedback({
+      type: "info",
+      message: t("orcid.adding_orcid") || "Adding ORCID & fetching details...",
+    });
+
+    try {
+      const res = await fetchOrcidPersonName(targetOrcid);
+      if (res?.name && nameValuePath) {
+        dispatch(setFieldValue({ path: nameValuePath, value: res.name }));
+        setFetchFeedback({
+          type: "success",
+          message: `${t("orcid.name_fetched") || "Name fetched: "}${res.name}`,
+        });
+      } else if (appliedContextHubName) {
+        setFetchFeedback({
+          type: "success",
+          message: `${t("orcid.name_set_contexthub") || "Name set from ContextHub: "}${userContext.name}`,
+        });
+      } else {
+        setFetchFeedback({
+          type: "success",
+          message: `${t("orcid.added_orcid") || "Added verified ORCID: "}${targetOrcid}`,
+        });
+      }
+    } catch {
+      if (appliedContextHubName) {
+        setFetchFeedback({
+          type: "success",
+          message: `${t("orcid.name_set_contexthub") || "Name set from ContextHub: "}${userContext.name}`,
+        });
+      } else {
+        setFetchFeedback({
+          type: "info",
+          message: `${t("orcid.added_orcid") || "Added verified ORCID: "}${targetOrcid}`,
+        });
+      }
+    } finally {
+      setIsFetchingName(false);
+      setTimeout(() => setFetchFeedback(null), 5000);
+    }
+  }, [userContext, valuePath, nameValuePath, dispatch, t]);
+
+  const handleFetchNameDirectlyFromOrcid = useCallback(async () => {
+    const rawVal = value || userContext?.orcid || "";
+    const clean = extractCleanOrcid(rawVal);
+    if (!clean) {
+      setFetchFeedback({
+        type: "error",
+        message: "Please enter a valid ORCID (e.g. 0000-0002-1825-0097)",
+      });
+      setTimeout(() => setFetchFeedback(null), 4000);
+      return;
+    }
+
+    setIsFetchingName(true);
+    setFetchFeedback({
+      type: "info",
+      message: t("orcid.fetching_name") || "Fetching name from ORCID...",
+    });
+
+    try {
+      const res = await fetchOrcidPersonName(clean);
+      if (res?.name && nameValuePath) {
+        dispatch(setFieldValue({ path: nameValuePath, value: res.name }));
+        setFetchFeedback({
+          type: "success",
+          message: `${t("orcid.name_fetched") || "Name fetched from ORCID: "}${res.name}`,
+        });
+      } else {
+        setFetchFeedback({
+          type: "error",
+          message: res?.error || "No public name visible on this ORCID record",
+        });
+      }
+    } catch {
+      setFetchFeedback({
+        type: "error",
+        message: "Failed to connect to ORCID API",
+      });
+    } finally {
+      setIsFetchingName(false);
+      setTimeout(() => setFetchFeedback(null), 6000);
+    }
+  }, [value, userContext, nameValuePath, dispatch, t]);
+
   const [touched, setTouched] = useState(false);
+
+  const duplicateOrcidInfo = useMemo(() => {
+    if (!isOrcidField || !value || !allFormValues) {
+      return { isDuplicate: false, duplicateOrcid: null, duplicateName: null, duplicateIndex: null };
+    }
+    return checkDuplicateContributorOrcid(allFormValues, valuePath, value);
+  }, [isOrcidField, value, allFormValues, valuePath]);
 
   const validationError = useMemo(
     () =>
       getValidationError({
         field,
-        fieldPath,
+        fieldPath: valuePath,
+        valuePath,
         value,
         readOnly,
         formatPatterns,
         depFormatPatterns,
+        allFormValues,
       }),
-    [field, fieldPath, value, readOnly, formatPatterns, depFormatPatterns],
+    [field, valuePath, value, readOnly, formatPatterns, depFormatPatterns, allFormValues],
   );
 
-  // Only show error text after the field has been touched
-  const showError = touched && !!validationError;
+  // Show error text after touched, or immediately if duplicate contributor ORCID detected
+  const showError = (touched || duplicateOrcidInfo.isDuplicate) && !!validationError;
 
   const fieldNameForMax = fieldPath.split(".").pop() || name;
   const maxLength = useMemo(
@@ -233,6 +402,122 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
 
       {multiple && type.includes("Text") ? null : (
         <FieldDescription valuePath={valuePath} />
+      )}
+
+      {/* ContextHub Verified ORCID Option Banner */}
+      {isOrcidField &&
+        !readOnly &&
+        userContext?.orcidVerified &&
+        userContext?.orcid &&
+        !isUserOrcidUsedElsewhere && (
+        <Box
+          sx={{
+            my: 1.5,
+            p: 1.5,
+            borderRadius: "8px",
+            background:
+              "linear-gradient(135deg, rgba(166, 206, 57, 0.12) 0%, rgba(166, 206, 57, 0.04) 100%)",
+            border: "1px solid rgba(166, 206, 57, 0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 1.5,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                backgroundColor: "#A6CE39",
+                color: "#fff",
+                fontSize: "13px",
+                fontWeight: 700,
+                fontFamily: "sans-serif",
+                flexShrink: 0,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
+              }}
+            >
+              iD
+            </Box>
+            <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, color: "#2e7d32", fontSize: "0.85rem" }}
+                >
+                  {t("orcid.verified_available") || "ContextHub Verified ORCID Available"}
+                </Typography>
+                <Chip
+                  size="small"
+                  label="Verified"
+                  color="success"
+                  variant="filled"
+                  sx={{ height: 18, fontSize: "0.68rem", fontWeight: 600 }}
+                />
+              </Box>
+              <Typography
+                variant="caption"
+                sx={{ color: "text.secondary", display: "block", mt: 0.25 }}
+              >
+                {userContext.orcid}
+                {userContext.name ? ` • ${userContext.name}` : ""}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {value && extractCleanOrcid(value) === extractCleanOrcid(userContext.orcid) ? (
+              <Chip
+                icon={<CheckCircleIcon sx={{ fontSize: 16, color: "#2e7d32 !important" }} />}
+                label={t("orcid.orcid_added") || "Added to field"}
+                size="small"
+                variant="outlined"
+                sx={{
+                  borderColor: "#A6CE39",
+                  color: "#2e7d32",
+                  fontWeight: 600,
+                  backgroundColor: "rgba(166, 206, 57, 0.12)",
+                }}
+              />
+            ) : (
+              <Button
+                size="small"
+                variant="contained"
+                disabled={isFetchingName}
+                onClick={handleAddContextHubOrcid}
+                startIcon={
+                  isFetchingName ? (
+                    <CircularProgress size={14} color="inherit" />
+                  ) : (
+                    <CheckCircleIcon sx={{ fontSize: 16 }} />
+                  )
+                }
+                sx={{
+                  backgroundColor: "#A6CE39",
+                  color: "#1b3806",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  fontSize: "0.8rem",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                  "&:hover": {
+                    backgroundColor: "#93b831",
+                  },
+                }}
+              >
+                {isFetchingName
+                  ? t("orcid.adding_orcid") || "Adding..."
+                  : t("orcid.add_verified_orcid") || "Use My Verified ORCID"}
+              </Button>
+            )}
+          </Box>
+        </Box>
       )}
 
       {categories && categories.length > 0 ? (
@@ -609,6 +894,29 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
         </Box>
       ) : (
         <Box sx={{ position: "relative", width: "100%" }}>
+          {isOrcidField && !readOnly && duplicateOrcidInfo.isDuplicate && (
+            <Alert
+              severity="warning"
+              sx={{
+                mb: 1.5,
+                borderRadius: "8px",
+                border: "1px solid #ff9800",
+                backgroundColor: "rgba(255, 152, 0, 0.08)",
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "#e65100" }}>
+                {t("orcid.contributor_already_added") || "Contributor Already Added"}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.primary", display: "block", mt: 0.25 }}>
+                {duplicateOrcidInfo.duplicateName
+                  ? `${duplicateOrcidInfo.duplicateName} (${duplicateOrcidInfo.duplicateOrcid})`
+                  : duplicateOrcidInfo.duplicateOrcid}{" "}
+                {t("orcid.duplicate_warning_text") ||
+                  "has already been added as a contributor to this record. Contributors cannot be repeated."}
+              </Typography>
+            </Alert>
+          )}
+
           <TextareaAutosize
             disabled={readOnly}
             minRows={1}
@@ -619,11 +927,13 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               fontFamily: "inherit",
               fontSize: "inherit",
               resize: readOnly ? "none" : "vertical",
-              borderColor: showError
-                ? "#d32f2f"
-                : readOnly
-                  ? "white"
-                  : "rgba(0, 0, 0, 0.23)",
+              borderColor: duplicateOrcidInfo.isDuplicate
+                ? "#ed6c02"
+                : showError
+                  ? "#d32f2f"
+                  : readOnly
+                    ? "white"
+                    : "rgba(0, 0, 0, 0.23)",
               borderRadius: "4px",
               color: readOnly ? "black" : "inherit",
               WebkitTextFillColor: readOnly ? "black" : "inherit",
@@ -636,12 +946,103 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
             onChange={(e) => onChange(valuePath, e.target.value)}
             onBlur={handleBlur}
           />
-          <Box sx={{ display: "flex", justifyContent: "space-between", my: 0.25, px: 1 }}>
-            {showError ? (
-              <Typography variant="caption" color="error">
-                {validationError}
-              </Typography>
-            ) : <Box />}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              my: 0.25,
+              px: 1,
+              flexWrap: "wrap",
+              gap: 0.5,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+              {showError ? (
+                <Typography
+                  variant="caption"
+                  color={duplicateOrcidInfo.isDuplicate ? "warning.main" : "error"}
+                  sx={{
+                    fontWeight: duplicateOrcidInfo.isDuplicate ? 600 : 400,
+                  }}
+                >
+                  {validationError}
+                </Typography>
+              ) : null}
+
+              {isOrcidField && !readOnly && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Button
+                    size="small"
+                    variant="text"
+                    disabled={isFetchingName || !value}
+                    onClick={handleFetchNameDirectlyFromOrcid}
+                    startIcon={
+                      isFetchingName ? (
+                        <CircularProgress size={13} color="inherit" />
+                      ) : (
+                        <SyncIcon sx={{ fontSize: 15 }} />
+                      )
+                    }
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      color: "#2e7d32",
+                      py: 0.25,
+                      px: 0.75,
+                      minHeight: 0,
+                      "&:hover": {
+                        backgroundColor: "rgba(166, 206, 57, 0.12)",
+                      },
+                    }}
+                  >
+                    {isFetchingName
+                      ? t("orcid.fetching_name") || "Fetching name..."
+                      : t("orcid.fetch_name_from_orcid") || "Fetch Name from ORCID"}
+                  </Button>
+
+                  {fetchFeedback && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          fetchFeedback.type === "success"
+                            ? "success.main"
+                            : fetchFeedback.type === "error"
+                              ? "error.main"
+                              : "info.main",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {fetchFeedback.message}
+                    </Typography>
+                  )}
+                </Box>
+              )}
+
+              {isOrcidField && readOnly && value && isValidOrcid(value) && (
+                <Box
+                  component="a"
+                  href={`https://orcid.org/${extractCleanOrcid(value)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    fontSize: "0.75rem",
+                    color: "#2e7d32",
+                    textDecoration: "none",
+                    fontWeight: 500,
+                    "&:hover": { textDecoration: "underline" },
+                  }}
+                >
+                  <span>View ORCID profile</span>
+                  <OpenInNewIcon sx={{ fontSize: 13 }} />
+                </Box>
+              )}
+            </Box>
+
             {!readOnly && maxLength && (
               <Typography
                 variant="caption"
