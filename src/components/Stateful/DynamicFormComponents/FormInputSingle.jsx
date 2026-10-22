@@ -181,7 +181,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     const targetOrcid = userContext.orcid;
 
     // Set the ORCID in this field
-    onChange(valuePath, targetOrcid);
+    dispatch(setFieldValue({ path: valuePath, value: targetOrcid }));
 
     // If we have ContextHub user's name, immediately set it into sibling contributor name
     let appliedContextHubName = false;
