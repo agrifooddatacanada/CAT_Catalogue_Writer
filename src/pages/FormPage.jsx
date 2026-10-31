@@ -297,7 +297,7 @@ function FormPage() {
     }
 
     return () => window.removeEventListener("message", handleMessage);
-  }, [searchParams, applyRecordToForm]);
+  }, [searchParams, applyRecordToForm, fields, isPublishedParam]);
 
   // AUTO-LOAD SCHEMA
   useEffect(() => {
