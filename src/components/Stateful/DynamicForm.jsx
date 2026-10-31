@@ -52,14 +52,18 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
   const [showTopBtn, setShowTopBtn] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowTopBtn(true);
-      } else {
-        setShowTopBtn(false);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isPast = window.scrollY > 300;
+          setShowTopBtn((prev) => (prev !== isPast ? isPast : prev));
+          ticking = false;
+        });
+        ticking = true;
       }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -101,15 +105,16 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
   //   ),
   // );
 
-  const basePageIndices = pages
+  const safePages = Array.isArray(pages) ? pages : [];
+  const basePageIndices = safePages
     .map((_, i) => i)
-    .filter((i) => !pages[i]?.isChildPage);
+    .filter((i) => !safePages[i]?.isChildPage);
 
   // console.log("childPagesMeta:", childPagesMeta);
   // console.log("allChildPageIndices:", [...allChildPageIndices]);
   // console.log("basePageIndices:", basePageIndices);
 
-  const isCurrentPageAChildPage = !!pages[activePage]?.isChildPage;
+  const isCurrentPageAChildPage = !!safePages[activePage]?.isChildPage;
 
   const currentBasePagePosition = basePageIndices.indexOf(activePage);
 

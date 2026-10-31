@@ -105,13 +105,7 @@ export const KNOWN_SCHEMA_MANIFEST = {
   },
   "EKXaGk0pzYY8hMX0uAzyU3gOTPw1saFN-IPzgHWw7I1I": {
     family: "ContextHub_schema_catalogue_record",
-    version: "0.1.0",
-    status: "deprecated",
-  },
-  "EPljipFPGhABEX6szhAUoHitTDzBkuAIWV1b818B20Is": {
-    family: "ContextHub_schema_catalogue_record",
     version: "1.0.0",
-    isVersionOf: "EKXaGk0pzYY8hMX0uAzyU3gOTPw1saFN-IPzgHWw7I1I",
     status: "active",
   },
   "EA5-t0oGau19k-wmR4-WsxD44ed6-WpUQUC26ztoTta3": {

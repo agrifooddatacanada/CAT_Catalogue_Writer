@@ -7,6 +7,7 @@ const initialState = {
   isVersionOf: null,
   versionNotes: "",
   schemaId: null,
+  isPublished: false,
 };
 
 const uploadFile = createSlice({
@@ -22,8 +23,10 @@ const uploadFile = createSlice({
     },
     // Set revision metadata
     setRecordMetadata: (state, action) => {
-      const { originalSaid, recordVersion, isVersionOf, versionNotes, schemaId } = action.payload || {};
-      if (originalSaid !== undefined) state.originalSaid = originalSaid;
+      const { originalSaid, recordVersion, isVersionOf, versionNotes, schemaId, isPublished } = action.payload || {};
+      const published = isPublished !== undefined ? Boolean(isPublished) : state.isPublished;
+      if (isPublished !== undefined) state.isPublished = published;
+      if (originalSaid !== undefined) state.originalSaid = published ? originalSaid : null;
       if (recordVersion !== undefined) state.recordVersion = recordVersion;
       if (isVersionOf !== undefined) state.isVersionOf = isVersionOf;
       if (versionNotes !== undefined) state.versionNotes = versionNotes;
@@ -38,6 +41,12 @@ const uploadFile = createSlice({
     setIsVersionOf: (state, action) => {
       state.isVersionOf = action.payload || null;
     },
+    setIsPublished: (state, action) => {
+      state.isPublished = Boolean(action.payload);
+      if (!state.isPublished) {
+        state.originalSaid = null;
+      }
+    },
     // Reset to default
     resetUploaded: (state) => {
       state.isUploaded = initialState.isUploaded;
@@ -46,6 +55,7 @@ const uploadFile = createSlice({
       state.isVersionOf = initialState.isVersionOf;
       state.versionNotes = initialState.versionNotes;
       state.schemaId = initialState.schemaId;
+      state.isPublished = initialState.isPublished;
     },
   },
 });
@@ -57,6 +67,7 @@ export const {
   setRecordVersion,
   setVersionNotes,
   setIsVersionOf,
+  setIsPublished,
   resetUploaded,
 } = uploadFile.actions;
 
@@ -69,3 +80,4 @@ export const selectRecordVersion = (state) => state.uploadFile.recordVersion || 
 export const selectIsVersionOf = (state) => state.uploadFile.isVersionOf;
 export const selectVersionNotes = (state) => state.uploadFile.versionNotes;
 export const selectLoadedSchemaId = (state) => state.uploadFile.schemaId;
+export const selectIsPublished = (state) => Boolean(state.uploadFile.isPublished);

@@ -32,6 +32,7 @@ import {
   selectRecordVersion,
   selectIsVersionOf,
   selectVersionNotes,
+  selectIsPublished,
   setVersionNotes,
 } from "../store/slices/uploadFileSlice";
 import {
@@ -63,6 +64,22 @@ function ViewPage() {
   const savedRecordVersion = useSelector(selectRecordVersion);
   const isVersionOfPrior = useSelector(selectIsVersionOf);
   const savedVersionNotes = useSelector(selectVersionNotes);
+  const isPublishedRedux = useSelector(selectIsPublished);
+
+  const isPublishedFromParam = searchParams.get("isPublished");
+  const isPublishedSession = (() => {
+    try {
+      return window.sessionStorage.getItem("contexthub_is_published");
+    } catch {
+      return null;
+    }
+  })();
+
+  const isPublished = isPublishedFromParam !== null
+    ? isPublishedFromParam === "true"
+    : isPublishedSession !== null
+      ? isPublishedSession === "true"
+      : Boolean(isPublishedRedux);
 
   // The catalogue record version ALWAYS inherits the version of the resource it describes
   const resourceVersion = savedRecordVersion || "1.0.0";
@@ -199,10 +216,10 @@ function ViewPage() {
       modified: timestamp,
     };
 
-    // Append-only revision tracking: Point to previous SAID if revising
-    if (originalSaid) {
+    // Append-only revision tracking: Point to previous SAID if revising a published record
+    if (isPublished && originalSaid) {
       updatedDcterms.isVersionOf = originalSaid;
-    } else if (isVersionOfPrior) {
+    } else if (isPublished && isVersionOfPrior) {
       updatedDcterms.isVersionOf = isVersionOfPrior;
     }
 
@@ -395,14 +412,14 @@ function ViewPage() {
             justifyContent="space-between"
             alignItems={{ xs: "flex-start", sm: "center" }}
             spacing={2}
-            sx={{ mb: 2 }}
+            sx={{ mb: isPublished ? 2 : 1 }}
           >
             <Box>
               <Typography
                 variant="subtitle1"
                 sx={{ fontWeight: 600, color: theme.primaryColor }}
               >
-                Catalogue Record Lineage & Version
+                {isPublished ? "Catalogue Record Lineage & Version" : "Catalogue Record Version"}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 Catalogue record versions inherit the version of the resource they describe.
@@ -422,39 +439,41 @@ function ViewPage() {
             </Box>
           </Stack>
 
-          {/* Lineage & Schema Badges */}
-          <Stack
-            direction="row"
-            spacing={1.5}
-            alignItems="center"
-            flexWrap="wrap"
-            sx={{ mb: 1.5 }}
-          >
-            {originalSaid ? (
+          {/* Lineage & Schema Badges (Only shown when revising a published record) */}
+          {isPublished && (
+            <Stack
+              direction="row"
+              spacing={1.5}
+              alignItems="center"
+              flexWrap="wrap"
+              sx={{ mb: 1.5 }}
+            >
+              {originalSaid ? (
+                <Chip
+                  label={`Revises: ${originalSaid.slice(0, 24)}...`}
+                  color="info"
+                  variant="outlined"
+                  size="small"
+                  title={`Previous Record SAID: ${originalSaid}`}
+                />
+              ) : (
+                <Chip
+                  label="Initial Record (v1.0.0 or v0.1.0)"
+                  color="success"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+
               <Chip
-                label={`Revises: ${originalSaid.slice(0, 24)}...`}
-                color="info"
+                label={`Schema: ${schema || "Default"} (${(getSchemaId(schema) || "").slice(0, 16)}...)`}
                 variant="outlined"
                 size="small"
-                title={`Previous Record SAID: ${originalSaid}`}
               />
-            ) : (
-              <Chip
-                label="Initial Record (v1.0.0 or v0.1.0)"
-                color="success"
-                variant="outlined"
-                size="small"
-              />
-            )}
+            </Stack>
+          )}
 
-            <Chip
-              label={`Schema: ${schema || "Default"} (${(getSchemaId(schema) || "").slice(0, 16)}...)`}
-              variant="outlined"
-              size="small"
-            />
-          </Stack>
-
-          {originalSaid && (
+          {isPublished && originalSaid && (
             <Alert severity="info" sx={{ mb: 1.5, py: 0.5, fontSize: "0.85rem" }}>
               Editing creates an immutable new revision linked via{" "}
               <code>dcterms:isVersionOf</code>. The original record remains unchanged.
@@ -527,7 +546,10 @@ function ViewPage() {
             </Button>
           )}
 
-          {window.sessionStorage.getItem("dataUrl") && (
+          {!isIframeMode &&
+            !buttonLabelParam &&
+            window.sessionStorage.getItem("dataUrl") &&
+            !window.sessionStorage.getItem("dataUrl")?.startsWith("data:") && (
             <Button
               variant="contained"
               disabled={updating}

@@ -117,7 +117,11 @@ function HomePage() {
     // Skip reset if we're about to auto-load from URL params
     const dataUrl = searchParams.get("dataUrl");
     if (dataUrl) {
-      window.sessionStorage.setItem("dataUrl", dataUrl);
+      if (!dataUrl.startsWith("data:")) {
+        window.sessionStorage.setItem("dataUrl", dataUrl);
+      } else {
+        window.sessionStorage.removeItem("dataUrl");
+      }
       return;
     }
 

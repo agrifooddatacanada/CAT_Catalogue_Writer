@@ -92,7 +92,8 @@ function FormSidebar({ onNavigate, onClose, isDrawer = false, onCollapse, isDock
   }
 
   const visiblePages = [];
-  const pagesWithIndex = pages.map((page, i) => ({ ...page, index: i }));
+  const safePages = Array.isArray(pages) ? pages : [];
+  const pagesWithIndex = safePages.map((page, i) => ({ ...page, index: i }));
 
   const basePages = pagesWithIndex.filter((p) => !p.isChildPage);
 

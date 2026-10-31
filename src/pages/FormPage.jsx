@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Box } from "@mui/system";
 import DynamicForm from "../components/Stateful/DynamicForm";
@@ -31,13 +31,52 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import theme from "../theme";
-import { selectMode } from "../store/slices/modeSlice";
+import { setMode, selectMode } from "../store/slices/modeSlice";
 import { setViewMode } from "../store/slices/formUiSlice";
 import { getInitialViewMode } from "../utils/viewModeUtils";
 import FormSidebar from "../components/Stateful/FormSidebar";
 import { extractPages } from "../utils/extractPages";
 import { selectActivePage } from "../store/slices/activePageSlice";
 import { checkIsIframe } from "../utils/iframeUtils";
+import { setInitialFormState } from "../store/slices/formValueSlice";
+import { buildInstanceCountsFromValues } from "../utils/instanceCounts";
+import { setAllInstanceCounts } from "../store/slices/instanceCountsSlice";
+import { setIsUploaded, setRecordMetadata } from "../store/slices/uploadFileSlice";
+import { escapeKey } from "../utils/pathEncoding";
+import { normalizeNestedFields } from "../utils/normalizeJson";
+
+// FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
+function flatten(obj, parentKey = "", result = {}) {
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) {
+      result[parentKey] = obj;
+    } else {
+      obj.forEach((item, index) => {
+        const newKey = `${parentKey}[${index}]`;
+        if (item !== null && typeof item === "object") {
+          flatten(item, newKey, result);
+        } else {
+          result[newKey] = item;
+        }
+      });
+    }
+    return result;
+  }
+  for (const key in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+
+    const value = obj[key];
+    const escapedKey = escapeKey(key);
+    const newKey = parentKey ? `${parentKey}.${escapedKey}` : escapedKey;
+
+    if (value !== null && typeof value === "object") {
+      flatten(value, newKey, result);
+    } else {
+      result[newKey] = value;
+    }
+  }
+  return result;
+}
 
 function FormPage() {
   const { t } = useTranslation(); // use translation function
@@ -78,7 +117,187 @@ function FormPage() {
   // Try URL search param first, then route param, then Redux
   const schemaFromUrl = searchParams.get("schema") || schemaSlug;
   const schema = reduxSchema || schemaFromUrl;
-  const isEditMode = mode === "edit";
+  const isEditMode = mode === "edit" || searchParams.get("mode") === "edit";
+
+  const isPublishedParam =
+    searchParams.get("isPublished") === "true" ||
+    searchParams.get("published") === "true";
+
+  const recordAppliedRef = useRef(false);
+  const pendingRecordRef = useRef(null);
+  const lastAppliedRecordJsonRef = useRef("");
+
+  const applyRecordToForm = useCallback(
+    (jsonData, targetFields = fields, published = isPublishedParam) => {
+      if (!jsonData || typeof jsonData !== "object") return;
+
+      let jsonStr = "";
+      try {
+        jsonStr = JSON.stringify(jsonData);
+      } catch {
+        jsonStr = "";
+      }
+
+      if (jsonStr && lastAppliedRecordJsonRef.current === jsonStr && recordAppliedRef.current) {
+        return;
+      }
+
+      if (!targetFields || !Array.isArray(targetFields) || targetFields.length === 0) {
+        pendingRecordRef.current = jsonData;
+        return;
+      }
+
+      try {
+        const normalizedJson = normalizeNestedFields(jsonData, targetFields);
+        const formValues = flatten(normalizedJson);
+
+        dispatch(setInitialFormState(formValues));
+        const instanceCount = buildInstanceCountsFromValues(formValues);
+        dispatch(setAllInstanceCounts(instanceCount));
+        dispatch(setIsUploaded(true));
+        dispatch(setMode("edit"));
+
+        const loadedVersion =
+          jsonData.dcterms?.version ||
+          jsonData.version ||
+          jsonData["dcterms:version"] ||
+          "1.0.0";
+        const loadedIsVersionOf =
+          jsonData.dcterms?.isVersionOf ||
+          jsonData.isVersionOf ||
+          jsonData["dcterms:isVersionOf"] ||
+          null;
+
+        dispatch(
+          setRecordMetadata({
+            originalSaid: published ? (jsonData.d || null) : null,
+            recordVersion: loadedVersion,
+            isVersionOf: loadedIsVersionOf,
+            schemaId: jsonData["@schema_id"] || null,
+            isPublished: published,
+          })
+        );
+        lastAppliedRecordJsonRef.current = jsonStr;
+        recordAppliedRef.current = true;
+        pendingRecordRef.current = null;
+      } catch (err) {
+        console.error("Error applying record to form:", err);
+      }
+    },
+    [dispatch, fields, isPublishedParam]
+  );
+
+  // AUTO-LOAD RECORD from URL params, sessionStorage, or postMessage
+  useEffect(() => {
+    // Clean up any stale dataUrl in sessionStorage that starts with "data:"
+    try {
+      const existingDataUrl = window.sessionStorage.getItem("dataUrl");
+      if (existingDataUrl && existingDataUrl.startsWith("data:")) {
+        window.sessionStorage.removeItem("dataUrl");
+      }
+    } catch {
+      // Ignore sessionStorage access errors
+    }
+
+    // 1. Check dataUrl from search params or sessionStorage
+    const dataUrl = searchParams.get("dataUrl");
+    if (dataUrl) {
+      if (!dataUrl.startsWith("data:")) {
+        try {
+          window.sessionStorage.setItem("dataUrl", dataUrl);
+        } catch (e) {
+          console.warn("Could not save dataUrl to sessionStorage:", e);
+        }
+      }
+      if (dataUrl.startsWith("data:application/json")) {
+        try {
+          const commaIndex = dataUrl.indexOf(",");
+          if (commaIndex !== -1) {
+            const isBase64 = dataUrl.slice(0, commaIndex).includes(";base64");
+            const dataStr = dataUrl.slice(commaIndex + 1);
+            const decoded = isBase64 ? atob(dataStr) : decodeURIComponent(dataStr);
+            const parsed = JSON.parse(decoded);
+            applyRecordToForm(parsed);
+          }
+        } catch (e) {
+          console.warn("Could not inline decode dataUrl, falling back to fetch:", e);
+          fetch(dataUrl)
+            .then((r) => r.json())
+            .then((data) => applyRecordToForm(data))
+            .catch((err) => console.warn("dataUrl fetch failed:", err));
+        }
+      } else {
+        fetch(dataUrl)
+          .then((r) => r.json())
+          .then((data) => applyRecordToForm(data))
+          .catch((err) => console.warn("dataUrl fetch failed:", err));
+      }
+    }
+
+    // 2. Check pending record stored in sessionStorage by App.js
+    try {
+      const storedPending = window.sessionStorage.getItem("contexthub_pending_record");
+      if (storedPending) {
+        const parsed = JSON.parse(storedPending);
+        if (parsed && typeof parsed === "object") {
+          applyRecordToForm(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not parse sessionStorage pending record:", e);
+    }
+
+    // 3. Listen for postMessage from parent (iframe) or opener (popup / new tab)
+    const handleMessage = (event) => {
+      try {
+        const msg = event.data;
+        if (!msg || typeof msg !== "object") return;
+
+        if (
+          msg.type === "SET_RECORD" ||
+          msg.type === "LOAD_RECORD" ||
+          msg.type === "SET_DATA" ||
+          msg.type === "SET_CATALOGUE_RECORD" ||
+          msg.type === "IMPORT_RECORD" ||
+          msg.type === "PREFILL_RECORD" ||
+          msg.type === "PREFILL" ||
+          msg.action === "LOAD_RECORD"
+        ) {
+          const record = msg.record || msg.data || msg.payload;
+          const msgPublished =
+            msg.isPublished !== undefined
+              ? Boolean(msg.isPublished)
+              : isPublishedParam;
+          try {
+            window.sessionStorage.setItem("contexthub_is_published", String(msgPublished));
+          } catch {}
+          if (record && typeof record === "object") {
+            applyRecordToForm(record, fields, msgPublished);
+          }
+        }
+      } catch (err) {
+        console.warn("Error handling postMessage in FormPage:", err);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    // 4. Request record from parent (iframe) and opener (new tab)
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "REQUEST_RECORD" }, "*");
+      window.parent.postMessage({ type: "REQUEST_USER_CONTEXT" }, "*");
+    }
+    if (window.opener && window.opener !== window && !window.opener.closed) {
+      try {
+        window.opener.postMessage({ type: "REQUEST_RECORD" }, "*");
+        window.opener.postMessage({ type: "REQUEST_USER_CONTEXT" }, "*");
+      } catch (e) {
+        console.warn("Could not request record from opener:", e);
+      }
+    }
+
+    return () => window.removeEventListener("message", handleMessage);
+  }, [searchParams, applyRecordToForm]);
 
   // AUTO-LOAD SCHEMA
   useEffect(() => {
@@ -98,20 +317,24 @@ function FormPage() {
         const enrichedFields = enrichFieldsWithPaths(rawFields);
         const pages = extractPages(jsonSchema, enrichedFields);
 
-        dispatch(setFields(enrichedFields));
         dispatch(setPages(pages));
         dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
         dispatch(
           setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)),
         );
         dispatch(setViewMode(getInitialViewMode(enrichedFields)));
+        dispatch(setFields(enrichedFields));
+
+        if (pendingRecordRef.current) {
+          applyRecordToForm(pendingRecordRef.current, enrichedFields);
+        }
       } catch (error) {
         console.error("Schema load failed:", error);
       }
     };
 
     loadSchema();
-  }, [schema, dispatch, fields, fields?.length]); // deps: schema changes or fields empty
+  }, [schema, dispatch, fields, fields?.length, applyRecordToForm]); // deps: schema changes or fields empty
 
   // Loading states
   if (!schema) {
@@ -124,7 +347,7 @@ function FormPage() {
     );
   }
 
-  if (!Array.isArray(fields)) {
+  if (!Array.isArray(fields) || !Array.isArray(pages)) {
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>
         <Typography>Loading {schema} schema...</Typography>
