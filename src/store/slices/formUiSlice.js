@@ -15,7 +15,9 @@ const formUi = createSlice({
       state.currentPage = 1;
     },
     setCurrentPage: (state, action) => {
-      state.currentPage = action.payload;
+      if (state.currentPage !== action.payload) {
+        state.currentPage = action.payload;
+      }
     },
     resetFormUi: (state) => {
       state.viewMode = "mandatory";

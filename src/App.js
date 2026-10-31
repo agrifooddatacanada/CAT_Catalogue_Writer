@@ -28,6 +28,34 @@ function App() {
             })
           );
         }
+
+        if (
+          data.type === "SET_RECORD" ||
+          data.type === "LOAD_RECORD" ||
+          data.type === "SET_DATA" ||
+          data.type === "SET_CATALOGUE_RECORD" ||
+          data.type === "IMPORT_RECORD" ||
+          data.type === "PREFILL_RECORD" ||
+          data.type === "PREFILL" ||
+          data.action === "LOAD_RECORD"
+        ) {
+          const record = data.record || data.data || data.payload;
+          if (data.isPublished !== undefined) {
+            try {
+              window.sessionStorage.setItem("contexthub_is_published", String(Boolean(data.isPublished)));
+            } catch {}
+          }
+          if (record && typeof record === "object") {
+            try {
+              window.sessionStorage.setItem(
+                "contexthub_pending_record",
+                JSON.stringify(record)
+              );
+            } catch (storageErr) {
+              console.warn("Could not store pending record in sessionStorage:", storageErr);
+            }
+          }
+        }
       } catch (err) {
         console.warn("Error handling user context message:", err);
       }
@@ -35,14 +63,16 @@ function App() {
 
     window.addEventListener("message", handleMessage);
 
-    // If embedded, ask parent ContextHub window for the user context
+    // If embedded or opened as popup, ask ContextHub for user context and catalogue record
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({ type: "REQUEST_USER_CONTEXT" }, "*");
+      window.parent.postMessage({ type: "REQUEST_RECORD" }, "*");
     } else if (window.opener && window.opener !== window && !window.opener.closed) {
       try {
         window.opener.postMessage({ type: "REQUEST_USER_CONTEXT" }, "*");
+        window.opener.postMessage({ type: "REQUEST_RECORD" }, "*");
       } catch (err) {
-        console.warn("Could not request user context from opener:", err);
+        console.warn("Could not request user context or record from opener:", err);
       }
     }
 
