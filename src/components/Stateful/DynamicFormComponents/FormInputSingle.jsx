@@ -26,6 +26,8 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SyncIcon from "@mui/icons-material/Sync";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import SearchIcon from "@mui/icons-material/Search";
+import OrcidSearchDialog from "./OrcidSearchDialog";
 import { selectUserContext } from "../../../store/slices/userContextSlice";
 import {
   checkDuplicateContributorOrcid,
@@ -175,6 +177,74 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
 
   const [isFetchingName, setIsFetchingName] = useState(false);
   const [fetchFeedback, setFetchFeedback] = useState(null);
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+
+  const initialOrcidSearchQuery = useMemo(() => {
+    if (!isOrcidField) return "";
+    const siblingName = nameValuePath ? allFormValues?.[nameValuePath] : "";
+    if (typeof siblingName === "string" && siblingName.trim()) {
+      return siblingName.trim();
+    }
+    if (typeof value === "string" && value.trim() && !isValidOrcid(value)) {
+      return value.trim();
+    }
+    return "";
+  }, [isOrcidField, nameValuePath, allFormValues, value]);
+
+  const handleSelectOrcidFromSearch = useCallback(
+    async (selectedItem) => {
+      if (!selectedItem?.orcidId) return;
+      const targetOrcid = selectedItem.orcidId;
+
+      dispatch(setFieldValue({ path: valuePath, value: targetOrcid }));
+
+      if (selectedItem.displayName && nameValuePath) {
+        dispatch(
+          setFieldValue({ path: nameValuePath, value: selectedItem.displayName })
+        );
+        setFetchFeedback({
+          type: "success",
+          message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid} (${selectedItem.displayName})`,
+        });
+        setTimeout(() => setFetchFeedback(null), 5000);
+        return;
+      }
+
+      if (nameValuePath) {
+        setIsFetchingName(true);
+        try {
+          const res = await fetchOrcidPersonName(targetOrcid);
+          if (res?.name) {
+            dispatch(setFieldValue({ path: nameValuePath, value: res.name }));
+            setFetchFeedback({
+              type: "success",
+              message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid} (${res.name})`,
+            });
+          } else {
+            setFetchFeedback({
+              type: "success",
+              message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid}`,
+            });
+          }
+        } catch {
+          setFetchFeedback({
+            type: "success",
+            message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid}`,
+          });
+        } finally {
+          setIsFetchingName(false);
+          setTimeout(() => setFetchFeedback(null), 5000);
+        }
+      } else {
+        setFetchFeedback({
+          type: "success",
+          message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid}`,
+        });
+        setTimeout(() => setFetchFeedback(null), 5000);
+      }
+    },
+    [dispatch, valuePath, nameValuePath, t]
+  );
 
   const handleAddContextHubOrcid = useCallback(async () => {
     if (!userContext?.orcid) return;
@@ -971,7 +1041,31 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               ) : null}
 
               {isOrcidField && !readOnly && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => setIsSearchDialogOpen(true)}
+                    startIcon={<SearchIcon sx={{ fontSize: 15 }} />}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      color: "#1b3806",
+                      borderColor: "rgba(166, 206, 57, 0.85)",
+                      backgroundColor: "rgba(166, 206, 57, 0.14)",
+                      fontWeight: 600,
+                      py: 0.25,
+                      px: 1,
+                      minHeight: 0,
+                      "&:hover": {
+                        borderColor: "#93b831",
+                        backgroundColor: "rgba(166, 206, 57, 0.26)",
+                      },
+                    }}
+                  >
+                    {t("orcid.search_registry") || "Search ORCID Registry"}
+                  </Button>
+
                   <Button
                     size="small"
                     variant="text"
@@ -1017,6 +1111,16 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                       {fetchFeedback.message}
                     </Typography>
                   )}
+
+                  <OrcidSearchDialog
+                    open={isSearchDialogOpen}
+                    onClose={() => setIsSearchDialogOpen(false)}
+                    onSelectOrcid={handleSelectOrcidFromSearch}
+                    initialQuery={initialOrcidSearchQuery}
+                    currentOrcidValue={typeof value === "string" ? value : ""}
+                    allFormValues={allFormValues}
+                    valuePath={valuePath}
+                  />
                 </Box>
               )}
 

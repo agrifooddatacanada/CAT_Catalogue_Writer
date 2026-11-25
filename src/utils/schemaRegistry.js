@@ -328,3 +328,66 @@ export const getSchemaBySaid = (said) => {
   const match = allParsedSchemas.find((item) => item.said === said);
   return match?.json || null;
 };
+
+/**
+ * Returns full schema metadata + bundle info by SAID.
+ * @param {string} said
+ */
+export const getSchemaInfoBySaid = (said) => {
+  if (!said) return null;
+  const parsed = allParsedSchemas.find((item) => item.said === said) || null;
+  const manifestMeta = KNOWN_SCHEMA_MANIFEST[said] || null;
+  if (!parsed && !manifestMeta) return null;
+  return {
+    said,
+    name: parsed?.name || manifestMeta?.family || null,
+    family: manifestMeta?.family || parsed?.name || null,
+    version: manifestMeta?.version || "1.0.0",
+    status: manifestMeta?.status || "active",
+    filePath: parsed?.filePath || null,
+    json: parsed?.json || null,
+  };
+};
+
+/**
+ * Resolves the latest active schema plugin for a given schema family name or historical SAID.
+ * @param {string} familyOrSaid
+ */
+export const getLatestSchemaForFamily = (familyOrSaid) => {
+  if (!familyOrSaid) return null;
+
+  const manifestBySaid = KNOWN_SCHEMA_MANIFEST[familyOrSaid];
+  const familyName = manifestBySaid?.family || familyOrSaid;
+
+  const activeEntry = Object.entries(KNOWN_SCHEMA_MANIFEST).find(
+    ([, meta]) => meta.family === familyName && meta.status === "active"
+  );
+
+  if (activeEntry) {
+    const [activeSaid, activeMeta] = activeEntry;
+    const parsed = allParsedSchemas.find((item) => item.said === activeSaid) || null;
+    const schemaName = parsed?.name || activeMeta.family;
+    return {
+      said: activeSaid,
+      name: schemaName,
+      family: activeMeta.family,
+      version: activeMeta.version,
+      route: routeMapData[schemaName] || `/form/${slugify(schemaName)}`,
+      json: parsed?.json || null,
+    };
+  }
+
+  const visibleMatch = visibleSchemas.find((item) => item.name === familyName);
+  if (visibleMatch) {
+    return {
+      said: visibleMatch.said,
+      name: visibleMatch.name,
+      family: visibleMatch.name,
+      version: KNOWN_SCHEMA_MANIFEST[visibleMatch.said]?.version || "1.0.0",
+      route: routeMapData[visibleMatch.name] || `/form/${slugify(visibleMatch.name)}`,
+      json: visibleMatch.json,
+    };
+  }
+
+  return null;
+};

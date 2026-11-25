@@ -1,9 +1,13 @@
-import { FILE_MAP, getSchemaJsonByName } from "./schemaRegistry";
+import { FILE_MAP, getSchemaBySaid, getSchemaJsonByName } from "./schemaRegistry";
 
 export const fileMap = FILE_MAP;
 
-export async function extractJsonSchemaAsync(schema) {
+export async function extractJsonSchemaAsync(schema, options = {}) {
   try {
+    if (options?.exactSaid) {
+      const bySaid = getSchemaBySaid(options.exactSaid);
+      if (bySaid) return bySaid;
+    }
     return getSchemaJsonByName(schema) || getSchemaJsonByName("OpenAIRE");
   } catch (err) {
     console.error(`Failed to load schema for ${schema}:`, err);

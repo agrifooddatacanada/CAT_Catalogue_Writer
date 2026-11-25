@@ -8,6 +8,16 @@ const initialState = {
   versionNotes: "",
   schemaId: null,
   isPublished: false,
+  // Schema plugin upgrade metadata
+  isUpgradeMode: false,
+  sourceSchemaId: null,
+  sourceSchemaVersion: null,
+  targetSchemaId: null,
+  targetSchemaVersion: null,
+  targetFamily: null,
+  unmappedFields: [],
+  missingRequiredFields: [],
+  mappedFieldCount: 0,
 };
 
 const uploadFile = createSlice({
@@ -31,6 +41,39 @@ const uploadFile = createSlice({
       if (isVersionOf !== undefined) state.isVersionOf = isVersionOf;
       if (versionNotes !== undefined) state.versionNotes = versionNotes;
       if (schemaId !== undefined) state.schemaId = schemaId;
+    },
+    setUpgradeContext: (state, action) => {
+      const {
+        isUpgradeMode = true,
+        sourceSchemaId = null,
+        sourceSchemaVersion = null,
+        targetSchemaId = null,
+        targetSchemaVersion = null,
+        targetFamily = null,
+        unmappedFields = [],
+        missingRequiredFields = [],
+        mappedFieldCount = 0,
+      } = action.payload || {};
+      state.isUpgradeMode = Boolean(isUpgradeMode);
+      state.sourceSchemaId = sourceSchemaId;
+      state.sourceSchemaVersion = sourceSchemaVersion;
+      state.targetSchemaId = targetSchemaId;
+      state.targetSchemaVersion = targetSchemaVersion;
+      state.targetFamily = targetFamily;
+      state.unmappedFields = Array.isArray(unmappedFields) ? unmappedFields : [];
+      state.missingRequiredFields = Array.isArray(missingRequiredFields) ? missingRequiredFields : [];
+      state.mappedFieldCount = Number(mappedFieldCount) || 0;
+    },
+    clearUpgradeContext: (state) => {
+      state.isUpgradeMode = false;
+      state.sourceSchemaId = null;
+      state.sourceSchemaVersion = null;
+      state.targetSchemaId = null;
+      state.targetSchemaVersion = null;
+      state.targetFamily = null;
+      state.unmappedFields = [];
+      state.missingRequiredFields = [];
+      state.mappedFieldCount = 0;
     },
     setRecordVersion: (state, action) => {
       state.recordVersion = action.payload || "1.0.0";
@@ -56,6 +99,15 @@ const uploadFile = createSlice({
       state.versionNotes = initialState.versionNotes;
       state.schemaId = initialState.schemaId;
       state.isPublished = initialState.isPublished;
+      state.isUpgradeMode = initialState.isUpgradeMode;
+      state.sourceSchemaId = initialState.sourceSchemaId;
+      state.sourceSchemaVersion = initialState.sourceSchemaVersion;
+      state.targetSchemaId = initialState.targetSchemaId;
+      state.targetSchemaVersion = initialState.targetSchemaVersion;
+      state.targetFamily = initialState.targetFamily;
+      state.unmappedFields = initialState.unmappedFields;
+      state.missingRequiredFields = initialState.missingRequiredFields;
+      state.mappedFieldCount = initialState.mappedFieldCount;
     },
   },
 });
@@ -64,6 +116,8 @@ export const {
   setIsUploaded,
   toggleIsUploaded,
   setRecordMetadata,
+  setUpgradeContext,
+  clearUpgradeContext,
   setRecordVersion,
   setVersionNotes,
   setIsVersionOf,
@@ -81,3 +135,15 @@ export const selectIsVersionOf = (state) => state.uploadFile.isVersionOf;
 export const selectVersionNotes = (state) => state.uploadFile.versionNotes;
 export const selectLoadedSchemaId = (state) => state.uploadFile.schemaId;
 export const selectIsPublished = (state) => Boolean(state.uploadFile.isPublished);
+export const selectIsUpgradeMode = (state) => Boolean(state.uploadFile.isUpgradeMode);
+export const selectUpgradeContext = (state) => ({
+  isUpgradeMode: Boolean(state.uploadFile.isUpgradeMode),
+  sourceSchemaId: state.uploadFile.sourceSchemaId,
+  sourceSchemaVersion: state.uploadFile.sourceSchemaVersion,
+  targetSchemaId: state.uploadFile.targetSchemaId,
+  targetSchemaVersion: state.uploadFile.targetSchemaVersion,
+  targetFamily: state.uploadFile.targetFamily,
+  unmappedFields: state.uploadFile.unmappedFields || [],
+  missingRequiredFields: state.uploadFile.missingRequiredFields || [],
+  mappedFieldCount: state.uploadFile.mappedFieldCount || 0,
+});

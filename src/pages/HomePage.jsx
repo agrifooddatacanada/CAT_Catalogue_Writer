@@ -43,6 +43,7 @@ import {
   selectIsUploaded,
   setIsUploaded,
   setRecordMetadata,
+  setUpgradeContext,
 } from "../store/slices/uploadFileSlice";
 import { selectSchemaName } from "../store/selectors/formSelectors";
 import { setViewMode } from "../store/slices/formUiSlice";
@@ -52,9 +53,11 @@ import {
   ROUTE_MAP,
   SCHEMA_REGISTRY,
   getSchemaPluginOutdatedStatus,
+  getLatestSchemaForFamily,
 } from "../utils/schemaRegistry";
 import { escapeKey } from "../utils/pathEncoding";
 import { normalizeNestedFields } from "../utils/normalizeJson";
+import { migrateRecordToSchema } from "../utils/schemaMigration";
 
 // FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
   function flatten(obj, parentKey = "", result = {}) {
@@ -107,6 +110,7 @@ function HomePage() {
 
   const [schemaLocked, setSchemaLocked] = useState(false); // true when schema came from @schema_id
   const [outdatedSchemaInfo, setOutdatedSchemaInfo] = useState(null);
+  const [uploadedSchemaId, setUploadedSchemaId] = useState(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation(); // use translation function
@@ -137,6 +141,7 @@ function HomePage() {
     setUploadedFiles(null);
     setSchemaLocked(false);
     setOutdatedSchemaInfo(null);
+    setUploadedSchemaId(null);
 
     // Clear dataUrl
     window.sessionStorage.removeItem("dataUrl");
@@ -245,6 +250,7 @@ function HomePage() {
 
         // 1) Read `@schema_id` from the uploaded JSON-LD
         const schemaId = jsonData["@schema_id"];
+        setUploadedSchemaId(schemaId || null);
 
         // Check if the form questionnaire used for this record is outdated
         const outdatedInfo = getSchemaPluginOutdatedStatus(schemaId);
@@ -305,6 +311,7 @@ function HomePage() {
 
     setSchemaLocked(false);
     setOutdatedSchemaInfo(null);
+    setUploadedSchemaId(null);
   };
 
   // Form Routing
@@ -358,7 +365,11 @@ function HomePage() {
     }
 
     if (jsonContent) {
-      const jsonSchema = await extractJsonSchemaAsync(schema);
+      // Load the exact historical schema plugin SAID when viewing an older record
+      const jsonSchema = await extractJsonSchemaAsync(
+        schema,
+        uploadedSchemaId ? { exactSaid: uploadedSchemaId } : undefined
+      );
       const { fields, formatPatterns, depFormatPatterns } =
         extractAttributes(jsonSchema);
       // Enrich fields with paths BEFORE dispatching
@@ -382,6 +393,69 @@ function HomePage() {
       dispatch(setMode("view"));
       navigate("/view");
     }
+  };
+
+  const handleUpgradeClick = async () => {
+    if (!jsonContent || !outdatedSchemaInfo?.latestSaid) return;
+
+    const latest = getLatestSchemaForFamily(uploadedSchemaId || outdatedSchemaInfo.family);
+    const targetSaid = latest?.said || outdatedSchemaInfo.latestSaid;
+    const targetName = latest?.name || outdatedSchemaInfo.family || schema;
+
+    const jsonSchema = await extractJsonSchemaAsync(targetName, { exactSaid: targetSaid });
+    if (!jsonSchema) {
+      alert("Unable to load the latest schema plugin version.");
+      return;
+    }
+
+    const { fields, formatPatterns, depFormatPatterns } = extractAttributes(jsonSchema);
+    const enrichedFields = enrichFieldsWithPaths(fields);
+    const pages = extractPages(jsonSchema, enrichedFields);
+
+    const migration = migrateRecordToSchema(jsonContent, enrichedFields);
+
+    dispatch(setSchemaName(targetName));
+    dispatch(setInitialFormState(migration.formValues));
+    dispatch(setFields(enrichedFields));
+    dispatch(setPages(pages));
+    dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
+    dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
+    dispatch(setViewMode(getInitialViewMode(enrichedFields)));
+    dispatch(setAllInstanceCounts(migration.instanceCounts));
+    dispatch(setMode("edit"));
+
+    const loadedVersion =
+      jsonContent.dcterms?.version ||
+      jsonContent.version ||
+      jsonContent["dcterms:version"] ||
+      "1.0.0";
+    dispatch(
+      setRecordMetadata({
+        originalSaid: jsonContent.d || null,
+        recordVersion: loadedVersion,
+        isVersionOf: jsonContent.dcterms?.isVersionOf || jsonContent.d || null,
+        schemaId: uploadedSchemaId,
+        isPublished: Boolean(jsonContent.d),
+      })
+    );
+    dispatch(
+      setUpgradeContext({
+        isUpgradeMode: true,
+        sourceSchemaId: uploadedSchemaId,
+        sourceSchemaVersion: outdatedSchemaInfo.currentVersion,
+        targetSchemaId: targetSaid,
+        targetSchemaVersion: outdatedSchemaInfo.latestVersion,
+        targetFamily: outdatedSchemaInfo.family,
+        unmappedFields: migration.unmappedFields,
+        missingRequiredFields: migration.missingRequiredFields,
+        mappedFieldCount: migration.mappedCount,
+      })
+    );
+
+    const baseRoute = latest?.route || ROUTE_MAP[targetName] || "/form";
+    navigate(
+      `${baseRoute}?schema=${encodeURIComponent(targetName)}&mode=upgrade&targetSchemaId=${encodeURIComponent(targetSaid)}`
+    );
   };
 
   //
@@ -601,6 +675,23 @@ function HomePage() {
                   {outdatedSchemaInfo.currentVersion}). A newer version of the form (v
                   {outdatedSchemaInfo.latestVersion}) is available.
                 </Typography>
+                <Typography variant="caption" sx={{ display: "block", mt: 0.5, color: "text.secondary" }}>
+                  You can still view the record on its original version, or upgrade it to pre-fill matching fields in the latest form.
+                </Typography>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleUpgradeClick}
+                  sx={{
+                    mt: 1.25,
+                    backgroundColor: theme.primaryColor,
+                    "&:hover": { backgroundColor: theme.primaryColor },
+                    textTransform: "none",
+                    fontWeight: 600,
+                  }}
+                >
+                  Upgrade to v{outdatedSchemaInfo.latestVersion}
+                </Button>
               </Alert>
             )}
 
