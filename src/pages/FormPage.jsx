@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate, useSearchParams, useParams } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Box } from "@mui/system";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import DynamicForm from "../components/Stateful/DynamicForm";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
 import Footer from "../components/Stateless/Footer";
@@ -8,25 +10,17 @@ import PageHeaders from "../components/Stateless/PageHeaders";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectFields,
+  selectHasFormData,
+  selectLoadedSchemaMeta,
   selectSchemaName,
   selectPages,
 } from "../store/selectors/formSelectors";
 import {
-  setFields,
-  setFormatPatterns,
-  setDepFormatPatterns,
-  setSchemaName,
-  setPages,
-} from "../store/slices/fieldSchemaSlice";
-import { extractJsonSchemaAsync } from "../utils/extractJsonSchema";
-import { extractAttributes } from "../utils/extractAttributes";
-import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths";
-import { serializeRegexPatterns } from "../utils/regexUtils";
-import {
   Alert,
   Chip,
+  CircularProgress,
   Collapse,
-  Link,
+  Paper,
   Typography,
   Drawer,
   Button,
@@ -38,10 +32,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import theme from "../theme";
 import { setMode, selectMode } from "../store/slices/modeSlice";
-import { setViewMode } from "../store/slices/formUiSlice";
-import { getInitialViewMode } from "../utils/viewModeUtils";
 import FormSidebar from "../components/Stateful/FormSidebar";
-import { extractPages } from "../utils/extractPages";
 import { selectActivePage } from "../store/slices/activePageSlice";
 import { checkIsIframe } from "../utils/iframeUtils";
 import { setInitialFormState } from "../store/slices/formValueSlice";
@@ -54,7 +45,6 @@ import {
   clearUpgradeContext,
   selectUpgradeContext,
 } from "../store/slices/uploadFileSlice";
-import { escapeKey } from "../utils/pathEncoding";
 import { normalizeNestedFields } from "../utils/normalizeJson";
 import { migrateRecordToSchema } from "../utils/schemaMigration";
 import {
@@ -62,51 +52,28 @@ import {
   getSchemaPluginOutdatedStatus,
 } from "../utils/schemaRegistry";
 import { getSchemaId } from "../utils/schemaMapping";
-
-// FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
-function flatten(obj, parentKey = "", result = {}) {
-  if (Array.isArray(obj)) {
-    if (obj.length === 0) {
-      result[parentKey] = obj;
-    } else {
-      obj.forEach((item, index) => {
-        const newKey = `${parentKey}[${index}]`;
-        if (item !== null && typeof item === "object") {
-          flatten(item, newKey, result);
-        } else {
-          result[newKey] = item;
-        }
-      });
-    }
-    return result;
-  }
-  for (const key in obj) {
-    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
-
-    const value = obj[key];
-    const escapedKey = escapeKey(key);
-    const newKey = parentKey ? `${parentKey}.${escapedKey}` : escapedKey;
-
-    if (value !== null && typeof value === "object") {
-      flatten(value, newKey, result);
-    } else {
-      result[newKey] = value;
-    }
-  }
-  return result;
-}
+import { flattenFormData } from "../utils/formStateFlatten";
+import { loadSchemaIntoStore } from "../utils/loadSchemaIntoStore";
+import {
+  isAllowedOrigin,
+  isSafeDataUrl,
+  rememberVerifiedOrigin,
+  safePostMessage,
+  safeSessionGet,
+  safeSessionRemove,
+  safeSessionSet,
+} from "../utils/postMessageSecurity";
 
 function FormPage() {
-  const { t } = useTranslation(); // use translation function
-
+  const { t, lang } = useTranslation();
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
 
   const pages = useSelector(selectPages);
   const activePage = useSelector(selectActivePage);
-
   const childFormNavigation = useSelector((state) => state.childFormNavigation);
+  const hasFormData = useSelector(selectHasFormData);
+  const loadedSchemaMeta = useSelector(selectLoadedSchemaMeta);
 
   const activePageData = pages?.[activePage];
   const activePageLabel = childFormNavigation?.useGeneratedPage
@@ -120,22 +87,20 @@ function FormPage() {
   const { schemaSlug } = useParams();
 
   const isIframeMode = checkIsIframe(searchParams);
-
   const isSmallScreen = useMediaQuery("(max-width: 1024px)");
   const [sidebarDrawerOpen, setSidebarDrawerOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
-
   const isCollapsed = isSmallScreen || isDesktopCollapsed;
 
-  // Redux state
   const reduxSchema = useSelector(selectSchemaName);
   const fields = useSelector(selectFields);
   const mode = useSelector(selectMode);
   const upgradeContext = useSelector(selectUpgradeContext);
 
   const [showUnmappedDetails, setShowUnmappedDetails] = useState(false);
+  const [schemaLoadError, setSchemaLoadError] = useState(null);
+  const [retryToken, setRetryToken] = useState(0);
 
-  // Try URL search param first, then route param, then Redux
   const schemaFromUrl = searchParams.get("schema") || schemaSlug;
   const targetSchemaIdParam = searchParams.get("targetSchemaId");
   const sourceSchemaIdParam = searchParams.get("sourceSchemaId");
@@ -153,11 +118,28 @@ function FormPage() {
   const recordAppliedRef = useRef(false);
   const pendingRecordRef = useRef(null);
   const lastAppliedRecordJsonRef = useRef("");
+  const latestFieldsRef = useRef(fields);
+
+  useEffect(() => {
+    latestFieldsRef.current = fields;
+  }, [fields]);
+
+  // Warn before accidental browser refresh/close when form has unsaved data
+  useEffect(() => {
+    if (!hasFormData || mode === "view" || isIframeMode) return undefined;
+
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasFormData, mode, isIframeMode]);
 
   const applyRecordToForm = useCallback(
     (
       jsonData,
-      targetFields = fields,
+      targetFields = latestFieldsRef.current,
       published = isPublishedParam,
       versionOverride = null,
       options = {}
@@ -228,7 +210,7 @@ function FormPage() {
           );
         } else {
           const normalizedJson = normalizeNestedFields(jsonData, targetFields);
-          formValues = flatten(normalizedJson);
+          formValues = flattenFormData(normalizedJson);
           instanceCount = buildInstanceCountsFromValues(formValues);
           dispatch(clearUpgradeContext());
         }
@@ -255,7 +237,7 @@ function FormPage() {
 
         dispatch(
           setRecordMetadata({
-            originalSaid: published ? (jsonData.d || null) : null,
+            originalSaid: published ? jsonData.d || null : null,
             recordVersion: loadedVersion,
             isVersionOf: loadedIsVersionOf,
             schemaId: sourceSchemaId || jsonData["@schema_id"] || null,
@@ -265,17 +247,14 @@ function FormPage() {
         lastAppliedRecordJsonRef.current = jsonStr;
         recordAppliedRef.current = true;
         pendingRecordRef.current = null;
-        try {
-          window.sessionStorage.removeItem("contexthub_pending_record");
-          window.sessionStorage.removeItem("contexthub_pending_upgrade");
-        } catch {}
+        safeSessionRemove("contexthub_pending_record");
+        safeSessionRemove("contexthub_pending_upgrade");
       } catch (err) {
         console.error("Error applying record to form:", err);
       }
     },
     [
       dispatch,
-      fields,
       isPublishedParam,
       versionParam,
       isUpgradeFromUrl,
@@ -285,27 +264,17 @@ function FormPage() {
     ]
   );
 
-  // AUTO-LOAD RECORD from URL params, sessionStorage, or postMessage
+  // AUTO-LOAD RECORD from URL params, sessionStorage, or postMessage (no `fields` dep to prevent duplicate fetches)
   useEffect(() => {
-    // Clean up any stale dataUrl in sessionStorage that starts with "data:"
-    try {
-      const existingDataUrl = window.sessionStorage.getItem("dataUrl");
-      if (existingDataUrl && existingDataUrl.startsWith("data:")) {
-        window.sessionStorage.removeItem("dataUrl");
-      }
-    } catch {
-      // Ignore sessionStorage access errors
+    const existingDataUrl = safeSessionGet("dataUrl");
+    if (existingDataUrl && existingDataUrl.startsWith("data:")) {
+      safeSessionRemove("dataUrl");
     }
 
-    // 1. Check dataUrl from search params or sessionStorage
     const dataUrl = searchParams.get("dataUrl");
-    if (dataUrl) {
+    if (dataUrl && isSafeDataUrl(dataUrl)) {
       if (!dataUrl.startsWith("data:")) {
-        try {
-          window.sessionStorage.setItem("dataUrl", dataUrl);
-        } catch (e) {
-          console.warn("Could not save dataUrl to sessionStorage:", e);
-        }
+        safeSessionSet("dataUrl", dataUrl);
       }
       if (dataUrl.startsWith("data:application/json")) {
         try {
@@ -332,36 +301,34 @@ function FormPage() {
       }
     }
 
-    // 2. Check pending record / pending upgrade stored in sessionStorage by App.js.
-    //    Only consume it when explicitly in edit or upgrade mode; otherwise discard any stale record
-    //    from an earlier edit session in the same tab so new forms always start clean.
     const currentModeParam = searchParams.get("mode");
     try {
-      const storedPendingUpgrade = window.sessionStorage.getItem("contexthub_pending_upgrade");
-      window.sessionStorage.removeItem("contexthub_pending_upgrade");
+      const storedPendingUpgrade = safeSessionGet("contexthub_pending_upgrade");
+      safeSessionRemove("contexthub_pending_upgrade");
       if (currentModeParam === "upgrade" && storedPendingUpgrade) {
         const parsedUpgrade = JSON.parse(storedPendingUpgrade);
         if (parsedUpgrade?.record && typeof parsedUpgrade.record === "object") {
           applyRecordToForm(
             parsedUpgrade.record,
-            fields,
+            latestFieldsRef.current,
             parsedUpgrade.isPublished ?? isPublishedParam,
             parsedUpgrade.version || versionParam,
             {
               upgrade: true,
-              sourceSchemaId: parsedUpgrade.sourceSchemaId || parsedUpgrade.record["@schema_id"] || null,
+              sourceSchemaId:
+                parsedUpgrade.sourceSchemaId || parsedUpgrade.record["@schema_id"] || null,
               targetSchemaId: parsedUpgrade.targetSchemaId || targetSchemaIdParam || null,
             }
           );
         }
       }
 
-      const storedPending = window.sessionStorage.getItem("contexthub_pending_record");
-      window.sessionStorage.removeItem("contexthub_pending_record");
+      const storedPending = safeSessionGet("contexthub_pending_record");
+      safeSessionRemove("contexthub_pending_record");
       if ((currentModeParam === "edit" || currentModeParam === "upgrade") && storedPending) {
         const parsed = JSON.parse(storedPending);
         if (parsed && typeof parsed === "object") {
-          applyRecordToForm(parsed, fields, isPublishedParam, versionParam, {
+          applyRecordToForm(parsed, latestFieldsRef.current, isPublishedParam, versionParam, {
             upgrade: currentModeParam === "upgrade",
             sourceSchemaId: sourceSchemaIdParam || parsed["@schema_id"] || null,
             targetSchemaId: targetSchemaIdParam || null,
@@ -372,18 +339,18 @@ function FormPage() {
       console.warn("Could not parse sessionStorage pending record:", e);
     }
 
-    // 3. Listen for postMessage from parent (iframe) or opener (popup / new tab)
     const handleMessage = (event) => {
+      if (!isAllowedOrigin(event.origin)) return;
+      rememberVerifiedOrigin(event.origin);
+
       try {
         const msg = event.data;
         if (!msg || typeof msg !== "object") return;
 
         if (msg.type === "CLEAR_RECORD") {
-          try {
-            window.sessionStorage.removeItem("contexthub_pending_record");
-            window.sessionStorage.removeItem("contexthub_pending_upgrade");
-            window.sessionStorage.removeItem("contexthub_is_published");
-          } catch {}
+          safeSessionRemove("contexthub_pending_record");
+          safeSessionRemove("contexthub_pending_upgrade");
+          safeSessionRemove("contexthub_is_published");
           pendingRecordRef.current = null;
           recordAppliedRef.current = false;
           lastAppliedRecordJsonRef.current = "";
@@ -416,13 +383,12 @@ function FormPage() {
             msg.type === "UPGRADE_RECORD" ||
             Boolean(msg.upgrade) ||
             currentModeParam === "upgrade";
-          try {
-            window.sessionStorage.setItem("contexthub_is_published", String(msgPublished));
-          } catch {}
+          safeSessionSet("contexthub_is_published", String(msgPublished));
           if (record && typeof record === "object") {
-            applyRecordToForm(record, fields, msgPublished, msgVersion, {
+            applyRecordToForm(record, latestFieldsRef.current, msgPublished, msgVersion, {
               upgrade: isUpgradeMsg,
-              sourceSchemaId: msg.sourceSchemaId || sourceSchemaIdParam || record["@schema_id"] || null,
+              sourceSchemaId:
+                msg.sourceSchemaId || sourceSchemaIdParam || record["@schema_id"] || null,
               targetSchemaId: msg.targetSchemaId || targetSchemaIdParam || null,
             });
           }
@@ -434,18 +400,13 @@ function FormPage() {
 
     window.addEventListener("message", handleMessage);
 
-    // 4. Request record from parent (iframe) and opener (new tab)
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "REQUEST_RECORD" }, "*");
-      window.parent.postMessage({ type: "REQUEST_USER_CONTEXT" }, "*");
+      safePostMessage(window.parent, { type: "REQUEST_RECORD" }, { allowWildcardFallback: true });
+      safePostMessage(window.parent, { type: "REQUEST_USER_CONTEXT" }, { allowWildcardFallback: true });
     }
     if (window.opener && window.opener !== window && !window.opener.closed) {
-      try {
-        window.opener.postMessage({ type: "REQUEST_RECORD" }, "*");
-        window.opener.postMessage({ type: "REQUEST_USER_CONTEXT" }, "*");
-      } catch (e) {
-        console.warn("Could not request record from opener:", e);
-      }
+      safePostMessage(window.opener, { type: "REQUEST_RECORD" }, { allowWildcardFallback: true });
+      safePostMessage(window.opener, { type: "REQUEST_USER_CONTEXT" }, { allowWildcardFallback: true });
     }
 
     return () => window.removeEventListener("message", handleMessage);
@@ -453,43 +414,39 @@ function FormPage() {
     searchParams,
     applyRecordToForm,
     dispatch,
-    fields,
     isPublishedParam,
     versionParam,
     sourceSchemaIdParam,
     targetSchemaIdParam,
   ]);
 
-  // AUTO-LOAD SCHEMA
+  // AUTO-LOAD SCHEMA & RE-EXTRACT ON LANGUAGE CHANGE (preserving user formValues & UI state)
   useEffect(() => {
+    if (!schema) return undefined;
+
+    const alreadyLoaded = Array.isArray(fields) && fields.length > 0;
+    const needsLanguageReload =
+      alreadyLoaded && loadedSchemaMeta?.lang && loadedSchemaMeta.lang !== lang;
+
+    if (alreadyLoaded && !needsLanguageReload) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    setSchemaLoadError(null);
+
     const loadSchema = async () => {
-      if (!schema || Array.isArray(fields)) return; // already loaded
-
       try {
-        const jsonSchema = await extractJsonSchemaAsync(
+        const { enrichedFields } = await loadSchemaIntoStore(dispatch, {
           schema,
-          targetSchemaIdParam ? { exactSaid: targetSchemaIdParam } : undefined
-        );
-        if (!jsonSchema) throw new Error("Schema fetch failed");
+          exactSaid: targetSchemaIdParam || loadedSchemaMeta?.exactSaid || null,
+          lang,
+          preserveUiState: needsLanguageReload,
+        });
 
-        dispatch(setSchemaName(schema));
-        const {
-          fields: rawFields,
-          formatPatterns,
-          depFormatPatterns,
-        } = extractAttributes(jsonSchema);
-        const enrichedFields = enrichFieldsWithPaths(rawFields);
-        const pages = extractPages(jsonSchema, enrichedFields);
+        if (cancelled) return;
 
-        dispatch(setPages(pages));
-        dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
-        dispatch(
-          setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)),
-        );
-        dispatch(setViewMode(getInitialViewMode(enrichedFields)));
-        dispatch(setFields(enrichedFields));
-
-        if (pendingRecordRef.current) {
+        if (!needsLanguageReload && pendingRecordRef.current) {
           const pending = pendingRecordRef.current;
           if (pending && pending.jsonData) {
             applyRecordToForm(
@@ -505,33 +462,97 @@ function FormPage() {
         }
       } catch (error) {
         console.error("Schema load failed:", error);
+        if (!cancelled) {
+          setSchemaLoadError(error?.message || "Schema load failed");
+        }
       }
     };
 
     loadSchema();
-  }, [schema, dispatch, fields, fields?.length, applyRecordToForm, targetSchemaIdParam]); // deps: schema changes or fields empty
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    schema,
+    lang,
+    dispatch,
+    fields,
+    loadedSchemaMeta?.lang,
+    loadedSchemaMeta?.exactSaid,
+    applyRecordToForm,
+    targetSchemaIdParam,
+    retryToken,
+  ]);
 
-  // Loading states
   if (!schema) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        <Typography>
-          No schema selected. <Link href="/">Go to Home</Link>
-        </Typography>
-      </div>
+      <Box component="main" sx={{ textAlign: "center", p: 6 }}>
+        <Typography sx={{ mb: 2 }}>{t("formpage.no_schema")}</Typography>
+        <Button component={RouterLink} to="/" variant="contained" sx={{ backgroundColor: theme.primaryColor }}>
+          {t("formpage.go_home")}
+        </Button>
+      </Box>
+    );
+  }
+
+  if (schemaLoadError) {
+    return (
+      <Box component="main" sx={{ maxWidth: 520, mx: "auto", p: 5, textAlign: "center" }}>
+        <Paper elevation={2} sx={{ p: 4, borderRadius: 2 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
+            {t("formpage.schema_error_title")}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {t("formpage.schema_error_body")} ({schema})
+          </Typography>
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 1.5 }}>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setSchemaLoadError(null);
+                setRetryToken((n) => n + 1);
+              }}
+              sx={{
+                backgroundColor: theme.primaryColor,
+                "&:hover": { backgroundColor: theme.primaryColor, filter: "brightness(0.93)" },
+              }}
+            >
+              {t("formpage.retry")}
+            </Button>
+            <Button component={RouterLink} to="/" variant="outlined">
+              {t("formpage.go_home")}
+            </Button>
+          </Box>
+        </Paper>
+      </Box>
     );
   }
 
   if (!Array.isArray(fields) || !Array.isArray(pages)) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        <Typography>Loading {schema} schema...</Typography>
-      </div>
+      <Box
+        component="main"
+        role="status"
+        aria-live="polite"
+        sx={{
+          textAlign: "center",
+          p: 6,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <CircularProgress />
+        <Typography>
+          {t("formpage.loading_schema")}: {schema}...
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="FormPage" style={{ maxWidth: "100%", overflowX: "hidden" }}>
+    <div className="FormPage" style={{ maxWidth: "100%", overflowX: "clip" }}>
       <PageHeaders
         page_heading={
           isEditMode ? t("formpage.edit_header") : t("formpage.write_header")
@@ -542,7 +563,6 @@ function FormPage() {
         help_button_redirect={() => navigate("/form-help")}
       />
 
-      {/* Slide-over Drawer for Collapsed Sidebar - always in front of form content */}
       <Drawer
         anchor="left"
         open={sidebarDrawerOpen}
@@ -594,6 +614,7 @@ function FormPage() {
 
         <Box
           component="main"
+          id="main-content"
           sx={{
             flexGrow: 1,
             minWidth: 0,
@@ -606,7 +627,6 @@ function FormPage() {
               margin: isCollapsed ? "0 auto" : 0,
             }}
           >
-            {/* Top Bar for Section Navigation when Sidebar is Collapsed (Option A) */}
             {isCollapsed && (
               <Box
                 sx={{
@@ -633,14 +653,16 @@ function FormPage() {
                       fontWeight: 600,
                       textTransform: "none",
                       boxShadow: "none",
+                      transition: "filter 0.15s ease",
                       "&:hover": {
                         backgroundColor: theme.primaryColor,
+                        filter: "brightness(0.93)",
                         boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
                       },
                       flexShrink: 0,
                     }}
                   >
-                    Sections
+                    {t("formpage.sections")}
                   </Button>
                   {!isSmallScreen && isDesktopCollapsed && (
                     <Button
@@ -652,7 +674,7 @@ function FormPage() {
                         color: "text.secondary",
                       }}
                     >
-                      Dock Sidebar
+                      {t("formpage.dock_sidebar")}
                     </Button>
                   )}
                 </Box>
@@ -668,14 +690,16 @@ function FormPage() {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {activePageLabel || "Section Navigation"}
+                    {activePageLabel || t("formpage.section_navigation")}
                   </Typography>
                   {pages && pages.length > 0 && (
                     <Typography
                       variant="caption"
                       sx={{ color: "text.secondary", display: "block" }}
                     >
-                      Section {(activePage ?? 0) + 1} of {pages.length}
+                      {t("formpage.section_of")
+                        .replace("{{current}}", String((activePage ?? 0) + 1))
+                        .replace("{{total}}", String(pages.length))}
                     </Typography>
                   )}
                 </Box>
@@ -703,34 +727,53 @@ function FormPage() {
                     mb: 0.75,
                   }}
                 >
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1e3a8a" }}>
-                    Upgrading Form Questionnaire
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 700, color: "#1e3a8a" }}
+                  >
+                    {t("formpage.upgrading_title")}
                   </Typography>
                   {upgradeContext.sourceSchemaVersion && (
                     <Chip
-                      label={`From v${upgradeContext.sourceSchemaVersion}`}
+                      label={`${t("formpage.upgrading_from")} v${upgradeContext.sourceSchemaVersion}`}
                       size="small"
                       sx={{ fontFamily: "monospace", fontSize: "0.72rem", height: 22 }}
                     />
                   )}
                   {upgradeContext.targetSchemaVersion && (
                     <Chip
-                      label={`To v${upgradeContext.targetSchemaVersion}`}
+                      label={`${t("formpage.upgrading_to")} v${upgradeContext.targetSchemaVersion}`}
                       size="small"
                       color="primary"
                       sx={{ fontFamily: "monospace", fontSize: "0.72rem", height: 22 }}
                     />
                   )}
                 </Box>
-                <Typography variant="body2" sx={{ fontSize: "0.85rem", color: "#1e40af" }}>
-                  Matching fields from your previous catalogue record ({upgradeContext.mappedFieldCount} values)
-                  have been pre-filled automatically. Please review and manually enter any new or changed fields.
+                <Typography
+                  variant="body2"
+                  sx={{ fontSize: "0.85rem", color: "#1e40af" }}
+                >
+                  {t("formpage.upgrading_desc").replace(
+                    "{{count}}",
+                    String(upgradeContext.mappedFieldCount)
+                  )}
                 </Typography>
 
                 {upgradeContext.missingRequiredFields.length > 0 && (
                   <Box sx={{ mt: 1 }}>
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: "#9a3412", display: "block", mb: 0.5 }}>
-                      Required fields needing manual input ({upgradeContext.missingRequiredFields.length}):
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#9a3412",
+                        display: "block",
+                        mb: 0.5,
+                      }}
+                    >
+                      {t("formpage.upgrading_missing_required").replace(
+                        "{{count}}",
+                        String(upgradeContext.missingRequiredFields.length)
+                      )}
                     </Typography>
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {upgradeContext.missingRequiredFields.map((f) => (
@@ -740,7 +783,11 @@ function FormPage() {
                           size="small"
                           color="warning"
                           variant="outlined"
-                          sx={{ fontSize: "0.72rem", height: 22, backgroundColor: "#fffbeb" }}
+                          sx={{
+                            fontSize: "0.72rem",
+                            height: 22,
+                            backgroundColor: "#fffbeb",
+                          }}
                         />
                       ))}
                     </Box>
@@ -752,7 +799,13 @@ function FormPage() {
                     <Button
                       size="small"
                       onClick={() => setShowUnmappedDetails((prev) => !prev)}
-                      endIcon={showUnmappedDetails ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      endIcon={
+                        showUnmappedDetails ? (
+                          <ExpandLessIcon />
+                        ) : (
+                          <ExpandMoreIcon />
+                        )
+                      }
                       sx={{
                         textTransform: "none",
                         fontSize: "0.78rem",
@@ -761,8 +814,10 @@ function FormPage() {
                         color: "#1d4ed8",
                       }}
                     >
-                      {showUnmappedDetails ? "Hide" : "Show"} {upgradeContext.unmappedFields.length} unmapped
-                      {upgradeContext.unmappedFields.length === 1 ? " value" : " values"} from the previous version
+                      {(showUnmappedDetails
+                        ? t("formpage.upgrading_hide_unmapped")
+                        : t("formpage.upgrading_show_unmapped")
+                      ).replace("{{count}}", String(upgradeContext.unmappedFields.length))}
                     </Button>
                     <Collapse in={showUnmappedDetails}>
                       <Box
@@ -776,8 +831,11 @@ function FormPage() {
                           overflowY: "auto",
                         }}
                       >
-                        <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.75 }}>
-                          These fields did not match the new schema structure and were omitted from the upgraded record. Copy any values you still need into the new form fields:
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "text.secondary", display: "block", mb: 0.75 }}
+                        >
+                          {t("formpage.upgrading_unmapped_hint")}
                         </Typography>
                         {upgradeContext.unmappedFields.map((entry, idx) => (
                           <Box
@@ -818,22 +876,24 @@ function FormPage() {
             )}
 
             {activePageLabel && (
-              <Typography variant="h5" sx={{ mb: 2 }}>
+              <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
                 {activePageLabel}
               </Typography>
             )}
-            <DynamicForm isEditMode={isEditMode} />
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              localeText={{
+                fieldDayPlaceholder: () => "DD",
+                fieldMonthPlaceholder: () => "MM",
+                fieldYearPlaceholder: () => "YYYY",
+              }}
+            >
+              <DynamicForm isEditMode={isEditMode} />
+            </LocalizationProvider>
           </Box>
         </Box>
       </Box>
 
-      {/* <pre>{JSON.stringify(fields, null, 2)}</pre> */}
-      {/* <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
-        <DynamicForm
-          language={lang}
-          isEditMode={isEditMode} // TRUE when editing existing data
-        />
-      </Box> */}
       <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />
     </div>
   );

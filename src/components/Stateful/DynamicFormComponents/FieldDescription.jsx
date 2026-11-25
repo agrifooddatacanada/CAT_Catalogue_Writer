@@ -7,13 +7,12 @@ import { selectFieldByPath } from "../../../store/selectors/formSelectors";
 import { removeIndices } from "../../../utils/removeIndices";
 import { selectMode } from "../../../store/slices/modeSlice";
 
-const FieldDescription = ({ valuePath }) => {
-  const { t } = useTranslation(); // use translation function
+const FieldDescription = ({ valuePath, id }) => {
+  const { t } = useTranslation();
 
   const fieldPath = removeIndices(valuePath);
   const field = useSelector(selectFieldByPath(fieldPath));
-
-  const { description } = field;
+  const description = field?.description || "";
 
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
@@ -21,45 +20,42 @@ const FieldDescription = ({ valuePath }) => {
   const lines = 2;
 
   const [expanded, setExpanded] = useState(false);
-  const [isClamped, setIsClamped] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
   const descriptionRef = useRef(null);
 
-  // Function to check if text is clamped
-  const checkIfClamped = useCallback(() => {
-    if (descriptionRef.current && description) {
-      const element = descriptionRef.current;
-      setIsClamped(element.scrollHeight > element.clientHeight);
+  // Only measure overflow while collapsed so expanded state never loses "Show less"
+  const checkOverflow = useCallback(() => {
+    const element = descriptionRef.current;
+    if (element && description && !expanded) {
+      setHasOverflow(element.scrollHeight > element.clientHeight + 1);
     }
+  }, [description, expanded]);
+
+  useEffect(() => {
+    setExpanded(false);
   }, [description]);
 
-  // Check on mount and when description changes
   useEffect(() => {
-    checkIfClamped();
-    setExpanded(false);
-  }, [description, checkIfClamped]);
+    checkOverflow();
+  }, [checkOverflow]);
 
-  // Use ResizeObserver to detect when the element's size changes (including window resize)
   useEffect(() => {
-    if (!descriptionRef.current) return;
+    const element = descriptionRef.current;
+    if (!element || !description || typeof ResizeObserver === "undefined") {
+      return undefined;
+    }
 
     const resizeObserver = new ResizeObserver(() => {
-      checkIfClamped();
+      checkOverflow();
     });
 
-    resizeObserver.observe(descriptionRef.current);
+    resizeObserver.observe(element);
+    return () => resizeObserver.disconnect();
+  }, [checkOverflow, description]);
 
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [checkIfClamped]);
-
-  // Check if text is clamped (overflows 2 lines)
-  useEffect(() => {
-    if (descriptionRef.current && description) {
-      const element = descriptionRef.current;
-      setIsClamped(element.scrollHeight > element.clientHeight);
-    }
-  }, [description]);
+  if (readOnly || !description) {
+    return null;
+  }
 
   const clampSx = expanded
     ? {}
@@ -72,58 +68,53 @@ const FieldDescription = ({ valuePath }) => {
       };
 
   return (
-    <Box>
-      {!readOnly && (
-        <Box sx={{ position: "relative", mb: 0.5 }}>
-          <Typography
-            ref={descriptionRef}
-            component="div"
+    <Box id={id} sx={{ position: "relative", mb: 0.5 }}>
+      <Typography
+        ref={descriptionRef}
+        component="div"
+        sx={{
+          fontSize: 13,
+          color: theme.descriptionColor,
+          pr: hasOverflow && !expanded ? 12 : 0,
+          ...clampSx,
+        }}
+      >
+        {description}
+        {hasOverflow && !expanded && (
+          <Box
             sx={{
-              fontSize: 13,
-              color: theme.descriptionColor,
-              pr: isClamped && !expanded ? 12 : 0,
-              ...clampSx,
+              position: "absolute",
+              right: 0,
+              bottom: 0,
+              display: "flex",
+              alignItems: "center",
+              pl: 2,
+              background: theme.linearGradient,
             }}
           >
-            {description}
-            {isClamped && !expanded && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  right: 0,
-                  bottom: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  pl: 2,
-                  // fade so the button blends over truncated text
-                  background: theme.linearGradient,
-                }}
-              >
-                <Link
-                  component="button"
-                  type="button"
-                  onClick={() => setExpanded((v) => !v)}
-                  underline="none"
-                >
-                  {t("forminputsingle.show_more")}
-                </Link>
-              </Box>
-            )}
-            {!isClamped && expanded && (
-              <Box>
-                <Link
-                  component="button"
-                  type="button"
-                  onClick={() => setExpanded((v) => !v)}
-                  underline="none"
-                >
-                  {t("forminputsingle.show_less")}
-                </Link>
-              </Box>
-            )}
-          </Typography>
-        </Box>
-      )}
+            <Link
+              component="button"
+              type="button"
+              onClick={() => setExpanded(true)}
+              underline="hover"
+            >
+              {t("forminputsingle.show_more")}
+            </Link>
+          </Box>
+        )}
+        {hasOverflow && expanded && (
+          <Box sx={{ mt: 0.25 }}>
+            <Link
+              component="button"
+              type="button"
+              onClick={() => setExpanded(false)}
+              underline="hover"
+            >
+              {t("forminputsingle.show_less")}
+            </Link>
+          </Box>
+        )}
+      </Typography>
     </Box>
   );
 };

@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createSelector } from "@reduxjs/toolkit";
 
 const initialState = {
   isUploaded: false,
@@ -136,14 +136,19 @@ export const selectVersionNotes = (state) => state.uploadFile.versionNotes;
 export const selectLoadedSchemaId = (state) => state.uploadFile.schemaId;
 export const selectIsPublished = (state) => Boolean(state.uploadFile.isPublished);
 export const selectIsUpgradeMode = (state) => Boolean(state.uploadFile.isUpgradeMode);
-export const selectUpgradeContext = (state) => ({
-  isUpgradeMode: Boolean(state.uploadFile.isUpgradeMode),
-  sourceSchemaId: state.uploadFile.sourceSchemaId,
-  sourceSchemaVersion: state.uploadFile.sourceSchemaVersion,
-  targetSchemaId: state.uploadFile.targetSchemaId,
-  targetSchemaVersion: state.uploadFile.targetSchemaVersion,
-  targetFamily: state.uploadFile.targetFamily,
-  unmappedFields: state.uploadFile.unmappedFields || [],
-  missingRequiredFields: state.uploadFile.missingRequiredFields || [],
-  mappedFieldCount: state.uploadFile.mappedFieldCount || 0,
-});
+const selectUploadFileState = (state) => state.uploadFile;
+
+export const selectUpgradeContext = createSelector(
+  [selectUploadFileState],
+  (uf) => ({
+    isUpgradeMode: Boolean(uf.isUpgradeMode),
+    sourceSchemaId: uf.sourceSchemaId,
+    sourceSchemaVersion: uf.sourceSchemaVersion,
+    targetSchemaId: uf.targetSchemaId,
+    targetSchemaVersion: uf.targetSchemaVersion,
+    targetFamily: uf.targetFamily,
+    unmappedFields: uf.unmappedFields || [],
+    missingRequiredFields: uf.missingRequiredFields || [],
+    mappedFieldCount: uf.mappedFieldCount || 0,
+  })
+);

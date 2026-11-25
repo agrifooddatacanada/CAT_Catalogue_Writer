@@ -1,5 +1,37 @@
 // config-overrides.js
+const fs = require("fs");
+const path = require("path");
 const webpack = require("webpack");
+
+function buildSchemaIndex() {
+  const readDirSchemas = (relativeDir, filePrefix) => {
+    const absDir = path.resolve(__dirname, relativeDir);
+    if (!fs.existsSync(absDir)) return [];
+    return fs
+      .readdirSync(absDir)
+      .filter((file) => file.endsWith(".json"))
+      .map((file) => {
+        try {
+          const raw = fs.readFileSync(path.join(absDir, file), "utf8");
+          const data = JSON.parse(raw);
+          return {
+            name: data?.oca_bundle?.bundle?.overlays?.meta?.[0]?.name || null,
+            said: data?.d || null,
+            filePath: `${filePrefix}${file}`,
+          };
+        } catch (err) {
+          console.warn(`Failed to index schema ${file}:`, err.message);
+          return null;
+        }
+      })
+      .filter(Boolean);
+  };
+
+  return {
+    visible: readDirSchemas("public/schemas", "./schemas/"),
+    hidden: readDirSchemas("public/schemas/hidden", "./schemas/hidden/"),
+  };
+}
 
 module.exports = {
   webpack: function override(config) {
@@ -24,11 +56,17 @@ module.exports = {
       },
     });
 
+    // Inject lightweight schema metadata index so schemas can be fetched lazily on demand
+    const schemaIndex = buildSchemaIndex();
+
     // Inject globals
     config.plugins = (config.plugins || []).concat(
       new webpack.ProvidePlugin({
         process: "process/browser",
         Buffer: ["buffer", "Buffer"],
+      }),
+      new webpack.DefinePlugin({
+        __SCHEMA_INDEX__: JSON.stringify(schemaIndex),
       })
     );
 
@@ -57,5 +95,28 @@ module.exports = {
 
       return config;
     };
+  },
+
+  jest: function (config) {
+    config.moduleNameMapper = {
+      ...(config.moduleNameMapper || {}),
+      "^react-router/dom$": path.join(
+        __dirname,
+        "node_modules/react-router/dist/development/dom-export.js"
+      ),
+      "^react-router$": path.join(
+        __dirname,
+        "node_modules/react-router/dist/development/index.js"
+      ),
+      "^react-router-dom$": path.join(
+        __dirname,
+        "node_modules/react-router-dom/dist/index.js"
+      ),
+    };
+    config.transformIgnorePatterns = [
+      "[/\\\\]node_modules[/\\\\](?!date-fns[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+      "^.+\\.module\\.(css|sass|scss)$",
+    ];
+    return config;
   },
 };

@@ -11,10 +11,11 @@ function Footer({ powered_by, supported_by }) {
   }
 
   return (
-    <div className="Footer">
+    <footer className="Footer">
       <hr
         style={{
           maxWidth: "100%",
+          border: 0,
           borderTop: "1px rgba(220, 220, 220, 1) solid",
           marginTop: "20px",
           marginBottom: "3px",
@@ -25,11 +26,12 @@ function Footer({ powered_by, supported_by }) {
         <a
           href="https://agrifooddatacanada.ca/"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           <img
             src="/assets/images/agri-logo.png"
-            alt="Agri-Food Data Canada at UoG Logo"
+            alt="Agri-Food Data Canada at University of Guelph Logo"
+            loading="lazy"
             style={{ width: "200px", marginBottom: "15px" }}
           />
         </a>
@@ -37,16 +39,17 @@ function Footer({ powered_by, supported_by }) {
         <a
           href="https://www.cfref-apogee.gc.ca/home-accueil-eng.aspx"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           <img
             src="/assets/images/research-excellent-fund.png"
             alt="Canada First Research Excellence Fund Logo"
+            loading="lazy"
             style={{ height: "120px" }}
           />
         </a>
       </div>
-    </div>
+    </footer>
   );
 }
 

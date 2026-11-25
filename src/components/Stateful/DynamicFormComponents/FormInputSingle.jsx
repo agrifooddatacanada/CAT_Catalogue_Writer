@@ -1,6 +1,9 @@
 import React, {
+  Suspense,
+  lazy,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -15,7 +18,6 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  // Link,
   MenuItem,
   Radio,
   RadioGroup,
@@ -27,7 +29,6 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SyncIcon from "@mui/icons-material/Sync";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import SearchIcon from "@mui/icons-material/Search";
-import OrcidSearchDialog from "./OrcidSearchDialog";
 import { selectUserContext } from "../../../store/slices/userContextSlice";
 import {
   checkDuplicateContributorOrcid,
@@ -38,64 +39,114 @@ import {
   isValidOrcid,
 } from "../../../utils/orcidUtils";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useTranslation } from "../../../utils/OpenAIRE/TranslationContext";
 import theme from "../../../theme";
 import { useDispatch, useSelector } from "react-redux";
-import { setFieldValue } from "../../../store/slices/formValueSlice";
+import {
+  setFieldValue,
+  removeFieldValue,
+} from "../../../store/slices/formValueSlice";
 import {
   selectDepFormatPatterns,
   selectFieldByPath,
   selectFieldValue,
   selectFormatPatterns,
-  selectFormState,
-  selectFormValueByPrefix,
+  makeSelectFormValueByPrefix,
   selectInstanceCount,
 } from "../../../store/selectors/formSelectors";
 import { removeIndices } from "../../../utils/removeIndices";
-import { getValidationError, getMaxLengthFromPattern } from "../../../utils/validationUtils";
+import {
+  getValidationError,
+  getMaxLengthFromPattern,
+} from "../../../utils/validationUtils";
 import { selectMode } from "../../../store/slices/modeSlice";
 import {
   incrementInstanceCount,
   decrementInstanceCount,
 } from "../../../store/slices/instanceCountsSlice";
-import { removeFieldValue } from "../../../store/slices/formValueSlice";
 import FieldDescription from "./FieldDescription";
 
+const OrcidSearchDialog = lazy(() => import("./OrcidSearchDialog"));
+
+function parseStoredDateValue(val, placeholder) {
+  if (!val || typeof val !== "string") return null;
+  if (placeholder === "YYYY") {
+    const yearNum = Number(val);
+    return Number.isFinite(yearNum) && yearNum > 0 ? new Date(yearNum, 0, 1) : null;
+  }
+  const parts = val.split(/[-/]/);
+  if (parts.length === 3) {
+    let year;
+    let month;
+    let day;
+    if (parts[0].length === 4) {
+      // yyyy-MM-dd
+      year = Number(parts[0]);
+      month = Number(parts[1]) - 1;
+      day = Number(parts[2]);
+    } else if (parts[2].length === 4) {
+      // dd-MM-yyyy
+      day = Number(parts[0]);
+      month = Number(parts[1]) - 1;
+      year = Number(parts[2]);
+    } else {
+      const parsed = new Date(val);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    const candidate = new Date(year, month, day);
+    return Number.isNaN(candidate.getTime()) ? null : candidate;
+  }
+  const fallback = new Date(val);
+  return Number.isNaN(fallback.getTime()) ? null : fallback;
+}
+
+const EMPTY_OBJECT = {};
+
 const FormInputSingle = ({ valuePath, depth = 0 }) => {
-  const { t } = useTranslation(); // use translation function
+  const { t } = useTranslation();
   const dispatch = useDispatch();
+
+  const inputId = useId();
+  const descId = useId();
+  const errorId = useId();
 
   const fieldPath = removeIndices(valuePath);
   const field = useSelector(selectFieldByPath(fieldPath));
 
-  const {
-    name,
-    label,
-    placeholder,
-    description,
-    type,
-    options,
-    required,
-    multiple,
-    categories,
-  } = field;
+  const name = field?.name || "";
+  const label = field?.label || "";
+  const placeholder = field?.placeholder || "";
+  const type = field?.type || "";
+  const options = field?.options || null;
+  const required = Boolean(field?.required);
+  const multiple = Boolean(field?.multiple);
+  const categories = field?.categories || null;
 
+  const isMultiCategory = Boolean(multiple && categories && categories.length > 0);
   const instanceCount = useSelector(selectInstanceCount(valuePath)) || 0;
-  const fieldValues = useSelector(selectFormValueByPrefix(valuePath));
 
-  // Compute existing values (same exact logic)
-  const existingValues = Array.from({ length: instanceCount }).map(
-    (_, index) => {
-      const key = `${valuePath}[${index}]`;
-      return fieldValues[key];
-    },
+  // Memoize prefix selector and skip scanning formState when not needed
+  const selectPrefixedValues = useMemo(
+    () =>
+      isMultiCategory
+        ? makeSelectFormValueByPrefix(valuePath)
+        : () => EMPTY_OBJECT,
+    [isMultiCategory, valuePath],
+  );
+  const fieldValues = useSelector(selectPrefixedValues);
+
+  const existingValues = useMemo(
+    () =>
+      isMultiCategory
+        ? Array.from({ length: instanceCount }).map(
+            (_, index) => fieldValues[`${valuePath}[${index}]`],
+          )
+        : [],
+    [isMultiCategory, instanceCount, fieldValues, valuePath],
   );
 
   const handleDelete = useCallback(
     (indexToDelete) => {
-      // EXACT SAME LOGIC as FormInputMultiple
       for (let i = indexToDelete + 1; i < instanceCount; i++) {
         const fromKey = `${valuePath}[${i}]`;
         const toKey = `${valuePath}[${i - 1}]`;
@@ -115,7 +166,6 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     [dispatch, valuePath, fieldValues, instanceCount],
   );
 
-  // const value = useSelector(selectFieldValue(valuePath)) || "";
   const rawValue = useSelector(selectFieldValue(valuePath));
   const value = useMemo(() => {
     if (rawValue === undefined || rawValue === null) {
@@ -127,28 +177,23 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     return rawValue;
   }, [rawValue, multiple]);
 
-  const formatPatterns = useSelector(selectFormatPatterns); // Get format patterns
+  const formatPatterns = useSelector(selectFormatPatterns);
   const depFormatPatterns = useSelector(selectDepFormatPatterns);
-
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
-
   const userContext = useSelector(selectUserContext);
 
-  const isOrcidField = useMemo(() => {
-    return isQualifiedAttributionOrcidField(field, fieldPath);
-  }, [field, fieldPath]);
+  const isOrcidField = useMemo(
+    () => isQualifiedAttributionOrcidField(field, fieldPath),
+    [field, fieldPath],
+  );
 
   const parentPath = useMemo(() => {
     const parts = fieldPath.split(".");
     return parts.length > 1 ? parts.slice(0, -1).join(".") : null;
   }, [fieldPath]);
 
-  const parentFieldSelector = useMemo(
-    () => (parentPath ? selectFieldByPath(parentPath) : () => null),
-    [parentPath]
-  );
-  const parentField = useSelector(parentFieldSelector);
+  const parentField = useSelector(selectFieldByPath(parentPath));
 
   const nameValuePath = useMemo(() => {
     if (!isOrcidField) return null;
@@ -159,11 +204,15 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     return instancePrefix ? `${instancePrefix}.${siblingKey}` : siblingKey;
   }, [isOrcidField, parentField, valuePath]);
 
-  const allFormValues = useSelector(selectFormState);
+  // Only subscribe to full formState on ORCID fields so typing in one field never re-renders unrelated fields
+  const allFormValues = useSelector((state) =>
+    isOrcidField ? state.formValues.formState : null,
+  );
 
-  const cleanUserOrcid = useMemo(() => {
-    return extractCleanOrcid(userContext?.orcid);
-  }, [userContext?.orcid]);
+  const cleanUserOrcid = useMemo(
+    () => extractCleanOrcid(userContext?.orcid),
+    [userContext?.orcid],
+  );
 
   const isUserOrcidUsedElsewhere = useMemo(() => {
     if (!cleanUserOrcid || !allFormValues || !isOrcidField) return false;
@@ -178,6 +227,29 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
   const [isFetchingName, setIsFetchingName] = useState(false);
   const [fetchFeedback, setFetchFeedback] = useState(null);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+  const feedbackTimerRef = useRef(null);
+
+  const showTransientFeedback = useCallback((feedback, durationMs = 5000) => {
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = null;
+    }
+    setFetchFeedback(feedback);
+    if (feedback && durationMs > 0) {
+      feedbackTimerRef.current = setTimeout(() => {
+        setFetchFeedback(null);
+        feedbackTimerRef.current = null;
+      }, durationMs);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+      }
+    };
+  }, []);
 
   const initialOrcidSearchQuery = useMemo(() => {
     if (!isOrcidField) return "";
@@ -200,13 +272,12 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
 
       if (selectedItem.displayName && nameValuePath) {
         dispatch(
-          setFieldValue({ path: nameValuePath, value: selectedItem.displayName })
+          setFieldValue({ path: nameValuePath, value: selectedItem.displayName }),
         );
-        setFetchFeedback({
+        showTransientFeedback({
           type: "success",
-          message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid} (${selectedItem.displayName})`,
+          message: `${t("orcid.selected_orcid_feedback")}${targetOrcid} (${selectedItem.displayName})`,
         });
-        setTimeout(() => setFetchFeedback(null), 5000);
         return;
       }
 
@@ -216,44 +287,40 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
           const res = await fetchOrcidPersonName(targetOrcid);
           if (res?.name) {
             dispatch(setFieldValue({ path: nameValuePath, value: res.name }));
-            setFetchFeedback({
+            showTransientFeedback({
               type: "success",
-              message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid} (${res.name})`,
+              message: `${t("orcid.selected_orcid_feedback")}${targetOrcid} (${res.name})`,
             });
           } else {
-            setFetchFeedback({
+            showTransientFeedback({
               type: "success",
-              message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid}`,
+              message: `${t("orcid.selected_orcid_feedback")}${targetOrcid}`,
             });
           }
         } catch {
-          setFetchFeedback({
+          showTransientFeedback({
             type: "success",
-            message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid}`,
+            message: `${t("orcid.selected_orcid_feedback")}${targetOrcid}`,
           });
         } finally {
           setIsFetchingName(false);
-          setTimeout(() => setFetchFeedback(null), 5000);
         }
       } else {
-        setFetchFeedback({
+        showTransientFeedback({
           type: "success",
-          message: `${t("orcid.selected_orcid_feedback") || "Selected ORCID: "}${targetOrcid}`,
+          message: `${t("orcid.selected_orcid_feedback")}${targetOrcid}`,
         });
-        setTimeout(() => setFetchFeedback(null), 5000);
       }
     },
-    [dispatch, valuePath, nameValuePath, t]
+    [dispatch, valuePath, nameValuePath, t, showTransientFeedback],
   );
 
   const handleAddContextHubOrcid = useCallback(async () => {
     if (!userContext?.orcid) return;
     const targetOrcid = userContext.orcid;
 
-    // Set the ORCID in this field
     dispatch(setFieldValue({ path: valuePath, value: targetOrcid }));
 
-    // If we have ContextHub user's name, immediately set it into sibling contributor name
     let appliedContextHubName = false;
     if (nameValuePath && userContext.name) {
       dispatch(setFieldValue({ path: nameValuePath, value: userContext.name }));
@@ -261,96 +328,116 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     }
 
     setIsFetchingName(true);
-    setFetchFeedback({
-      type: "info",
-      message: t("orcid.adding_orcid") || "Adding ORCID & fetching details...",
-    });
+    showTransientFeedback(
+      {
+        type: "info",
+        message: t("orcid.adding_orcid"),
+      },
+      0,
+    );
 
     try {
       const res = await fetchOrcidPersonName(targetOrcid);
       if (res?.name && nameValuePath) {
         dispatch(setFieldValue({ path: nameValuePath, value: res.name }));
-        setFetchFeedback({
+        showTransientFeedback({
           type: "success",
-          message: `${t("orcid.name_fetched") || "Name fetched: "}${res.name}`,
+          message: `${t("orcid.name_fetched")}${res.name}`,
         });
       } else if (appliedContextHubName) {
-        setFetchFeedback({
+        showTransientFeedback({
           type: "success",
-          message: `${t("orcid.name_set_contexthub") || "Name set from ContextHub: "}${userContext.name}`,
+          message: `${t("orcid.name_set_contexthub")}${userContext.name}`,
         });
       } else {
-        setFetchFeedback({
+        showTransientFeedback({
           type: "success",
-          message: `${t("orcid.added_orcid") || "Added verified ORCID: "}${targetOrcid}`,
+          message: `${t("orcid.added_orcid")}${targetOrcid}`,
         });
       }
     } catch {
       if (appliedContextHubName) {
-        setFetchFeedback({
+        showTransientFeedback({
           type: "success",
-          message: `${t("orcid.name_set_contexthub") || "Name set from ContextHub: "}${userContext.name}`,
+          message: `${t("orcid.name_set_contexthub")}${userContext.name}`,
         });
       } else {
-        setFetchFeedback({
+        showTransientFeedback({
           type: "info",
-          message: `${t("orcid.added_orcid") || "Added verified ORCID: "}${targetOrcid}`,
+          message: `${t("orcid.added_orcid")}${targetOrcid}`,
         });
       }
     } finally {
       setIsFetchingName(false);
-      setTimeout(() => setFetchFeedback(null), 5000);
     }
-  }, [userContext, valuePath, nameValuePath, dispatch, t]);
+  }, [userContext, valuePath, nameValuePath, dispatch, t, showTransientFeedback]);
 
   const handleFetchNameDirectlyFromOrcid = useCallback(async () => {
     const rawVal = value || userContext?.orcid || "";
     const clean = extractCleanOrcid(rawVal);
     if (!clean) {
-      setFetchFeedback({
-        type: "error",
-        message: "Please enter a valid ORCID (e.g. 0000-0002-1825-0097)",
-      });
-      setTimeout(() => setFetchFeedback(null), 4000);
+      showTransientFeedback(
+        {
+          type: "error",
+          message: t("orcid.invalid_orcid_prompt"),
+        },
+        4000,
+      );
       return;
     }
 
     setIsFetchingName(true);
-    setFetchFeedback({
-      type: "info",
-      message: t("orcid.fetching_name") || "Fetching name from ORCID...",
-    });
+    showTransientFeedback(
+      {
+        type: "info",
+        message: t("orcid.fetching_name"),
+      },
+      0,
+    );
 
     try {
       const res = await fetchOrcidPersonName(clean);
       if (res?.name && nameValuePath) {
         dispatch(setFieldValue({ path: nameValuePath, value: res.name }));
-        setFetchFeedback({
-          type: "success",
-          message: `${t("orcid.name_fetched") || "Name fetched from ORCID: "}${res.name}`,
-        });
+        showTransientFeedback(
+          {
+            type: "success",
+            message: `${t("orcid.name_fetched")}${res.name}`,
+          },
+          6000,
+        );
       } else {
-        setFetchFeedback({
-          type: "error",
-          message: res?.error || "No public name visible on this ORCID record",
-        });
+        showTransientFeedback(
+          {
+            type: "error",
+            message: res?.error || t("orcid.no_public_name"),
+          },
+          6000,
+        );
       }
     } catch {
-      setFetchFeedback({
-        type: "error",
-        message: "Failed to connect to ORCID API",
-      });
+      showTransientFeedback(
+        {
+          type: "error",
+          message: t("orcid.api_connect_failed"),
+        },
+        6000,
+      );
     } finally {
       setIsFetchingName(false);
-      setTimeout(() => setFetchFeedback(null), 6000);
     }
-  }, [value, userContext, nameValuePath, dispatch, t]);
+  }, [value, userContext, nameValuePath, dispatch, t, showTransientFeedback]);
 
   const [touched, setTouched] = useState(false);
 
   const duplicateOrcidInfo = useMemo(() => {
     if (!isOrcidField || !value || !allFormValues) {
-      return { isDuplicate: false, duplicateOrcid: null, duplicateName: null, duplicateIndex: null };
+      return {
+        isDuplicate: false,
+        duplicateOrcid: null,
+        duplicateName: null,
+        duplicateIndex: null,
+      };
     }
     return checkDuplicateContributorOrcid(allFormValues, valuePath, value);
   }, [isOrcidField, value, allFormValues, valuePath]);
@@ -366,11 +453,20 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
         formatPatterns,
         depFormatPatterns,
         allFormValues,
+        t,
       }),
-    [field, valuePath, value, readOnly, formatPatterns, depFormatPatterns, allFormValues],
+    [
+      field,
+      valuePath,
+      value,
+      readOnly,
+      formatPatterns,
+      depFormatPatterns,
+      allFormValues,
+      t,
+    ],
   );
 
-  // Show error text after touched, or immediately if duplicate contributor ORCID detected
   const showError = (touched || duplicateOrcidInfo.isDuplicate) && !!validationError;
 
   const fieldNameForMax = fieldPath.split(".").pop() || name;
@@ -379,77 +475,35 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
       getMaxLengthFromPattern(
         fieldNameForMax,
         formatPatterns,
-        depFormatPatterns
+        depFormatPatterns,
+        field?.captureBase,
       ),
-    [fieldNameForMax, formatPatterns, depFormatPatterns]
+    [fieldNameForMax, formatPatterns, depFormatPatterns, field?.captureBase],
   );
-
-  const fieldErrorProps = showError ? { error: true } : {};
-  // const textErrorProps = showError
-  //   ? { error: true, helperText: validationError }
-  //   : {};
-
-  // const lines = 2;
-
-  // const [expanded, setExpanded] = useState(false);
-  // const [isClamped, setIsClamped] = useState(false);
-  const descriptionRef = useRef(null);
 
   const handleBlur = () => {
     if (!touched) setTouched(true);
   };
 
-  // CHANGE HANDLER
   const onChange = (path, newValue) => {
     dispatch(setFieldValue({ path, value: newValue }));
   };
 
-  // Function to check if text is clamped
-  const checkIfClamped = useCallback(() => {
-    if (descriptionRef.current && description) {
-      // const element = descriptionRef.current;
-      // setIsClamped(element.scrollHeight > element.clientHeight);
-    }
-  }, [description]);
+  if (!field) {
+    return null;
+  }
 
-  // Check on mount and when description changes
-  useEffect(() => {
-    checkIfClamped();
-    // setExpanded(false);
-  }, [description, checkIfClamped]);
+  const fieldErrorProps = showError ? { error: true } : {};
+  const displayName = label || name;
+  const isEmptyValue =
+    value === undefined ||
+    value === null ||
+    value === "" ||
+    (Array.isArray(value) && value.length === 0);
 
-  // Use ResizeObserver to detect when the element's size changes (including window resize)
-  useEffect(() => {
-    if (!descriptionRef.current) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      checkIfClamped();
-    });
-
-    resizeObserver.observe(descriptionRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [checkIfClamped]);
-
-  // Check if text is clamped (overflows 2 lines)
-  useEffect(() => {
-    if (descriptionRef.current && description) {
-      // const element = descriptionRef.current;
-      // setIsClamped(element.scrollHeight > element.clientHeight);
-    }
-  }, [description]);
-
-  // const clampSx = expanded
-  //   ? {}
-  //   : {
-  //       display: "-webkit-box",
-  //       WebkitBoxOrient: "vertical",
-  //       WebkitLineClamp: lines,
-  //       overflow: "hidden",
-  //       textOverflow: "ellipsis",
-  //     };
+  const describedBy = [field.description ? descId : null, showError ? errorId : null]
+    .filter(Boolean)
+    .join(" ") || undefined;
 
   return (
     <Box>
@@ -458,20 +512,19 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
           <Typography
             variant="subtitle1"
             component="label"
+            htmlFor={inputId}
             sx={{ display: "block", fontWeight: 600 }}
           >
-            {label || name}
+            {displayName}
             {required && !readOnly && (
-              <span style={{ color: "red", marginLeft: 4 }}>*</span>
+              <span aria-hidden="true" style={{ color: "red", marginLeft: 4 }}>*</span>
             )}
           </Typography>
         </Box>
       )}
 
-      {/* <FieldDescription valuePath={valuePath} /> */}
-
-      {multiple && type.includes("Text") ? null : (
-        <FieldDescription valuePath={valuePath} />
+      {multiple && typeof type === "string" && type.includes("Text") ? null : (
+        <FieldDescription valuePath={valuePath} id={descId} />
       )}
 
       {/* ContextHub Verified ORCID Option Banner */}
@@ -480,120 +533,125 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
         userContext?.orcidVerified &&
         userContext?.orcid &&
         !isUserOrcidUsedElsewhere && (
-        <Box
-          sx={{
-            my: 1.5,
-            p: 1.5,
-            borderRadius: "8px",
-            background:
-              "linear-gradient(135deg, rgba(166, 206, 57, 0.12) 0%, rgba(166, 206, 57, 0.04) 100%)",
-            border: "1px solid rgba(166, 206, 57, 0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 1.5,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-            <Box
-              component="span"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                backgroundColor: "#A6CE39",
-                color: "#fff",
-                fontSize: "13px",
-                fontWeight: 700,
-                fontFamily: "sans-serif",
-                flexShrink: 0,
-                boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
-              }}
-            >
-              iD
-            </Box>
-            <Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ fontWeight: 600, color: "#2e7d32", fontSize: "0.85rem" }}
-                >
-                  {t("orcid.verified_available") || "ContextHub Verified ORCID Available"}
-                </Typography>
-                <Chip
-                  size="small"
-                  label="Verified"
-                  color="success"
-                  variant="filled"
-                  sx={{ height: 18, fontSize: "0.68rem", fontWeight: 600 }}
-                />
-              </Box>
-              <Typography
-                variant="caption"
-                sx={{ color: "text.secondary", display: "block", mt: 0.25 }}
-              >
-                {userContext.orcid}
-                {userContext.name ? ` • ${userContext.name}` : ""}
-              </Typography>
-            </Box>
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {value && extractCleanOrcid(value) === extractCleanOrcid(userContext.orcid) ? (
-              <Chip
-                icon={<CheckCircleIcon sx={{ fontSize: 16, color: "#2e7d32 !important" }} />}
-                label={t("orcid.orcid_added") || "Added to field"}
-                size="small"
-                variant="outlined"
+          <Box
+            sx={{
+              my: 1.5,
+              p: 1.5,
+              borderRadius: "8px",
+              background:
+                "linear-gradient(135deg, rgba(166, 206, 57, 0.12) 0%, rgba(166, 206, 57, 0.04) 100%)",
+              border: "1px solid rgba(166, 206, 57, 0.45)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 1.5,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+              <Box
+                component="span"
+                aria-hidden="true"
                 sx={{
-                  borderColor: "#A6CE39",
-                  color: "#2e7d32",
-                  fontWeight: 600,
-                  backgroundColor: "rgba(166, 206, 57, 0.12)",
-                }}
-              />
-            ) : (
-              <Button
-                size="small"
-                variant="contained"
-                disabled={isFetchingName}
-                onClick={handleAddContextHubOrcid}
-                startIcon={
-                  isFetchingName ? (
-                    <CircularProgress size={14} color="inherit" />
-                  ) : (
-                    <CheckCircleIcon sx={{ fontSize: 16 }} />
-                  )
-                }
-                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
                   backgroundColor: "#A6CE39",
-                  color: "#1b3806",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  fontSize: "0.8rem",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-                  "&:hover": {
-                    backgroundColor: "#93b831",
-                  },
+                  color: "#fff",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  fontFamily: "sans-serif",
+                  flexShrink: 0,
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
                 }}
               >
-                {isFetchingName
-                  ? t("orcid.adding_orcid") || "Adding..."
-                  : t("orcid.add_verified_orcid") || "Use My Verified ORCID"}
-              </Button>
-            )}
+                iD
+              </Box>
+              <Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: "#2e7d32", fontSize: "0.85rem" }}
+                  >
+                    {t("orcid.verified_available")}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    label={t("orcid.verified_badge")}
+                    color="success"
+                    variant="filled"
+                    sx={{ height: 18, fontSize: "0.68rem", fontWeight: 600 }}
+                  />
+                </Box>
+                <Typography
+                  variant="caption"
+                  sx={{ color: "text.secondary", display: "block", mt: 0.25 }}
+                >
+                  {userContext.orcid}
+                  {userContext.name ? ` • ${userContext.name}` : ""}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              {value &&
+              extractCleanOrcid(value) === extractCleanOrcid(userContext.orcid) ? (
+                <Chip
+                  icon={
+                    <CheckCircleIcon
+                      sx={{ fontSize: 16, color: "#2e7d32 !important" }}
+                    />
+                  }
+                  label={t("orcid.orcid_added")}
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    borderColor: "#A6CE39",
+                    color: "#2e7d32",
+                    fontWeight: 600,
+                    backgroundColor: "rgba(166, 206, 57, 0.12)",
+                  }}
+                />
+              ) : (
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={isFetchingName}
+                  onClick={handleAddContextHubOrcid}
+                  startIcon={
+                    isFetchingName ? (
+                      <CircularProgress size={14} color="inherit" />
+                    ) : (
+                      <CheckCircleIcon sx={{ fontSize: 16 }} />
+                    )
+                  }
+                  sx={{
+                    backgroundColor: "#A6CE39",
+                    color: "#1b3806",
+                    fontWeight: 600,
+                    textTransform: "none",
+                    fontSize: "0.8rem",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                    "&:hover": {
+                      backgroundColor: "#93b831",
+                    },
+                  }}
+                >
+                  {isFetchingName
+                    ? t("orcid.adding_orcid")
+                    : t("orcid.add_verified_orcid")}
+                </Button>
+              )}
+            </Box>
           </Box>
-        </Box>
-      )}
+        )}
 
       {categories && categories.length > 0 ? (
         !multiple ? (
-          readOnly &&
-          (value.length === 0 || (Array.isArray(value) && value.length > 0)) ? (
+          readOnly && isEmptyValue ? (
             <Box
               sx={{
                 display: "flex",
@@ -604,26 +662,32 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                 py: 1.5,
               }}
             >
-              {t("no_data")} {label || name}
+              {t("no_data")} {displayName}
             </Box>
           ) : (
             <FormControl fullWidth size="small" {...fieldErrorProps}>
               <Select
+                id={inputId}
                 disabled={readOnly}
+                inputProps={{
+                  "aria-label": displayName,
+                  "aria-describedby": describedBy,
+                  "aria-invalid": showError || undefined,
+                }}
                 sx={
                   readOnly
                     ? {
                         "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "white", // border color always white
+                          borderColor: "white",
                         },
                         "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "white", // prevent hover changing border color
+                          borderColor: "white",
                         },
                         "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "white", // disabled state border color white
+                          borderColor: "white",
                         },
                         "& .MuiSelect-select.Mui-disabled": {
-                          WebkitTextFillColor: "black", // disabled text color
+                          WebkitTextFillColor: "black",
                         },
                       }
                     : {}
@@ -632,14 +696,12 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                 displayEmpty
                 onChange={(e) => onChange(valuePath, e.target.value)}
                 onBlur={handleBlur}
-                // {...errorProps}
-                // multiple={isMulti}
                 renderValue={(selected) => {
                   if (!Array.isArray(selected)) {
                     return (
                       selected || (
                         <em>
-                          {t("forminputsingle.select")} {label}
+                          {t("forminputsingle.select")} {displayName}
                         </em>
                       )
                     );
@@ -647,7 +709,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                   if (selected.length === 0) {
                     return (
                       <em>
-                        {t("forminputsingle.select")} {label}
+                        {t("forminputsingle.select")} {displayName}
                       </em>
                     );
                   }
@@ -677,13 +739,13 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
 
               {showError && (
                 <Typography
+                  id={errorId}
                   variant="caption"
                   color="error"
                   sx={{ mt: 0.5, ml: 1 }}
                 >
                   {validationError}
                 </Typography>
-                // <FormHelperText error>{validationError}</FormHelperText>
               )}
             </FormControl>
           )
@@ -698,7 +760,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               color: theme.descriptionColor,
             }}
           >
-            {t("no_data")} {label || name}
+            {t("no_data")} {displayName}
           </Box>
         ) : (
           <Box sx={{ mt: depth === 0 ? 1 : 0 }}>
@@ -709,11 +771,9 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                 {...fieldErrorProps}
                 sx={{ p: 1 }}
               >
-                <FormGroup>
+                <FormGroup aria-label={displayName}>
                   {categories.map((option) => {
                     const code = option.split(" (")[0];
-
-                    // Check if ANY instance has this code
                     const isChecked = existingValues.includes(code);
 
                     return (
@@ -724,9 +784,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                             checked={isChecked}
                             onChange={(e) => {
                               const checked = e.target.checked;
-
                               if (checked) {
-                                // ADD: new instance with this code
                                 const newIndex = instanceCount;
                                 const newPath = `${valuePath}[${newIndex}]`;
                                 dispatch(
@@ -734,9 +792,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                                 );
                                 dispatch(incrementInstanceCount(valuePath));
                               } else {
-                                // REMOVE: find & delete instance with this code
-                                const indexToDelete =
-                                  existingValues.indexOf(code);
+                                const indexToDelete = existingValues.indexOf(code);
                                 if (indexToDelete !== -1) {
                                   handleDelete(indexToDelete);
                                 }
@@ -760,6 +816,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
 
                 {showError && (
                   <Typography
+                    id={errorId}
                     variant="caption"
                     color="error"
                     sx={{ mt: 0.5, ml: 1 }}
@@ -770,7 +827,6 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               </FormControl>
             )}
 
-            {/* Read-only: Show selected chips */}
             {readOnly && existingValues.length > 0 && (
               <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                 {existingValues.map((val, index) => (
@@ -780,8 +836,9 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
             )}
           </Box>
         )
-      ) : type === "Boolean" || type.includes("Boolean") ? (
-        readOnly && (!value || value.length === 0) ? (
+      ) : type === "Boolean" || (typeof type === "string" && type.includes("Boolean")) ? (
+        // Boolean `false` is a valid value; only treat null/undefined/"" as empty
+        readOnly && isEmptyValue ? (
           <Box
             sx={{
               display: "flex",
@@ -792,18 +849,27 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               color: theme.descriptionColor,
             }}
           >
-            {t("no_data")} {label || name}
+            {t("no_data")} {displayName}
           </Box>
         ) : (
-          <FormControl component="fieldset" {...fieldErrorProps} sx={{ mt: depth === 0 ? 1 : 0, p: 1, width: "100%" }}>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
+          <FormControl
+            component="fieldset"
+            {...fieldErrorProps}
+            sx={{ mt: depth === 0 ? 1 : 0, p: 1, width: "100%" }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
               <RadioGroup
                 row
+                aria-label={displayName}
                 value={
                   typeof value === "boolean"
                     ? value
-                      ? (options ? options[0] : "True")
-                      : (options ? options[1] : "False")
+                      ? options
+                        ? options[0]
+                        : "True"
+                      : options
+                        ? options[1]
+                        : "False"
                     : value || ""
                 }
                 onChange={(e) => {
@@ -832,19 +898,25 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                   />
                 ))}
               </RadioGroup>
-              {!readOnly && value !== "" && value !== null && value !== undefined && (
+              {!readOnly && !isEmptyValue && (
                 <Button
                   size="small"
                   variant="outlined"
                   onClick={() => onChange(valuePath, "")}
-                  sx={{ ml: 5, textTransform: "none", color: "error.main", borderColor: "error.main"}}
+                  sx={{
+                    ml: { xs: 0, sm: 3 },
+                    textTransform: "none",
+                    color: "error.main",
+                    borderColor: "error.main",
+                  }}
                 >
-                  {t("Clear Response") || "Clear Response"}
+                  {t("forminputsingle.clear_response")}
                 </Button>
               )}
             </Box>
             {showError && (
               <Typography
+                id={errorId}
                 variant="caption"
                 color="error"
                 sx={{ mt: 0.5, ml: 1 }}
@@ -854,9 +926,8 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
             )}
           </FormControl>
         )
-      ) : type.includes("DateTime") ? (
-        readOnly &&
-        (value.length === 0 || (Array.isArray(value) && value.length === 0)) ? (
+      ) : typeof type === "string" && type.includes("DateTime") ? (
+        readOnly && isEmptyValue ? (
           <Box
             sx={{
               display: "inline-block",
@@ -867,14 +938,15 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               color: theme.descriptionColor,
             }}
           >
-            {t("no_data")} {label || name}
+            {t("no_data")} {displayName}
           </Box>
         ) : readOnly ? (
-          // Show formatted date text in readOnly mode instead of DatePicker
           <TextareaAutosize
+            id={inputId}
             disabled
             value={value}
-            placeholder={placeholder || `Enter ${label}`}
+            aria-label={displayName}
+            placeholder={placeholder || `${t("forminputsingle.enter")} ${displayName}`}
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -889,67 +961,43 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
             }}
           />
         ) : (
-          // Show interactive DatePicker when not readOnly
-          <LocalizationProvider
-            dateAdapter={AdapterDateFns}
-            localeText={{
-              fieldDayPlaceholder: () => "DD",
-              fieldMonthPlaceholder: () => "MM",
-              fieldYearPlaceholder: () => "YYYY",
-            }}
-          >
-            <DatePicker
-              views={placeholder === "YYYY" ? ["year"] : undefined}
-              value={
-                value
-                  ? placeholder === "YYYY"
-                    ? new Date(Number(value), 0, 1)
-                    : (() => {
-                        // Parse yyyy-MM-dd as local date to avoid timezone shift
-                        const parts = value.split("-");
-                        if (parts.length === 3) {
-                          // Handle both yyyy-MM-dd AND dd-MM-yyyy
-                          const year =
-                            parts[0].length === 4 ? parts[0] : parts[2];
-                          const month =
-                            parts[1].length === 2
-                              ? Number(parts[1]) - 1
-                              : Number(parts[0]) - 1;
-                          const day =
-                            parts[1].length === 2
-                              ? Number(parts[2])
-                              : Number(parts[1]);
-                          return new Date(year, month, day);
-                        }
-                        return new Date(value); // fallback
-                      })()
-                  : null
+          <DatePicker
+            views={placeholder === "YYYY" ? ["year"] : undefined}
+            value={parseStoredDateValue(value, placeholder)}
+            onChange={(date) => {
+              if (!date) {
+                onChange(valuePath, "");
+                return;
               }
-              onChange={(date) => {
-                if (date) {
-                  if (placeholder === "YYYY") {
-                    onChange(valuePath, date.getFullYear().toString());
-                  } else {
-                    // Store in yyyy-MM-dd format
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, "0");
-                    const day = String(date.getDate()).padStart(2, "0");
-                    onChange(valuePath, `${year}-${month}-${day}`);
-                  }
-                } else {
-                  onChange(valuePath, "");
-                }
-              }}
-              onBlur={handleBlur}
-              format={placeholder === "YYYY" ? "yyyy" : "yyyy/MM/dd"}
-              slotProps={{
-                textField: { size: "small", error: !!validationError },
-              }}
-            />
-          </LocalizationProvider>
+              if (Number.isNaN(date.getTime())) {
+                return; // Ignore incomplete/invalid intermediate typing
+              }
+              if (placeholder === "YYYY") {
+                onChange(valuePath, date.getFullYear().toString());
+              } else {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+                onChange(valuePath, `${year}-${month}-${day}`);
+              }
+            }}
+            format={placeholder === "YYYY" ? "yyyy" : "yyyy/MM/dd"}
+            slotProps={{
+              textField: {
+                id: inputId,
+                size: "small",
+                error: showError,
+                helperText: showError ? validationError : undefined,
+                onBlur: handleBlur,
+                inputProps: {
+                  "aria-describedby": describedBy,
+                  "aria-invalid": showError || undefined,
+                },
+              },
+            }}
+          />
         )
-      ) : readOnly &&
-        (value.length === 0 || (Array.isArray(value) && value.length === 0)) ? (
+      ) : readOnly && isEmptyValue ? (
         <Box
           sx={{
             display: "inline-block",
@@ -960,7 +1008,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
             color: theme.descriptionColor,
           }}
         >
-          {t("no_data")} {label || name}
+          {t("no_data")} {displayName}
         </Box>
       ) : (
         <Box sx={{ position: "relative", width: "100%" }}>
@@ -974,22 +1022,33 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                 backgroundColor: "rgba(255, 152, 0, 0.08)",
               }}
             >
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#e65100" }}>
-                {t("orcid.contributor_already_added") || "Contributor Already Added"}
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, color: "#e65100" }}
+              >
+                {t("orcid.contributor_already_added")}
               </Typography>
-              <Typography variant="caption" sx={{ color: "text.primary", display: "block", mt: 0.25 }}>
+              <Typography
+                variant="caption"
+                sx={{ color: "text.primary", display: "block", mt: 0.25 }}
+              >
                 {duplicateOrcidInfo.duplicateName
                   ? `${duplicateOrcidInfo.duplicateName} (${duplicateOrcidInfo.duplicateOrcid})`
                   : duplicateOrcidInfo.duplicateOrcid}{" "}
-                {t("orcid.duplicate_warning_text") ||
-                  "has already been added as a contributor to this record. Contributors cannot be repeated."}
+                {t("orcid.duplicate_warning_text")}
               </Typography>
             </Alert>
           )}
 
           <TextareaAutosize
+            id={inputId}
+            className="form-textarea-input"
             disabled={readOnly}
             minRows={1}
+            aria-label={multiple ? displayName : undefined}
+            aria-describedby={describedBy}
+            aria-invalid={showError || undefined}
+            aria-required={required || undefined}
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -997,6 +1056,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               fontFamily: "inherit",
               fontSize: "inherit",
               resize: readOnly ? "none" : "vertical",
+              border: "1px solid",
               borderColor: duplicateOrcidInfo.isDuplicate
                 ? "#ed6c02"
                 : showError
@@ -1007,11 +1067,10 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               borderRadius: "4px",
               color: readOnly ? "black" : "inherit",
               WebkitTextFillColor: readOnly ? "black" : "inherit",
-              outline: "none",
             }}
             value={value}
             placeholder={
-              placeholder || `${t("forminputsingle.enter")} ${label}`
+              placeholder || `${t("forminputsingle.enter")} ${displayName}`
             }
             onChange={(e) => onChange(valuePath, e.target.value)}
             onBlur={handleBlur}
@@ -1027,9 +1086,17 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               gap: 0.5,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                flexWrap: "wrap",
+              }}
+            >
               {showError ? (
                 <Typography
+                  id={errorId}
                   variant="caption"
                   color={duplicateOrcidInfo.isDuplicate ? "warning.main" : "error"}
                   sx={{
@@ -1041,7 +1108,14 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               ) : null}
 
               {isOrcidField && !readOnly && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    flexWrap: "wrap",
+                  }}
+                >
                   <Button
                     size="small"
                     variant="outlined"
@@ -1063,7 +1137,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                       },
                     }}
                   >
-                    {t("orcid.search_registry") || "Search ORCID Registry"}
+                    {t("orcid.search_registry")}
                   </Button>
 
                   <Button
@@ -1091,13 +1165,15 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                     }}
                   >
                     {isFetchingName
-                      ? t("orcid.fetching_name") || "Fetching name..."
-                      : t("orcid.fetch_name_from_orcid") || "Fetch Name from ORCID"}
+                      ? t("orcid.fetching_name")
+                      : t("orcid.fetch_name_from_orcid")}
                   </Button>
 
                   {fetchFeedback && (
                     <Typography
                       variant="caption"
+                      role="status"
+                      aria-live="polite"
                       sx={{
                         color:
                           fetchFeedback.type === "success"
@@ -1112,15 +1188,19 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                     </Typography>
                   )}
 
-                  <OrcidSearchDialog
-                    open={isSearchDialogOpen}
-                    onClose={() => setIsSearchDialogOpen(false)}
-                    onSelectOrcid={handleSelectOrcidFromSearch}
-                    initialQuery={initialOrcidSearchQuery}
-                    currentOrcidValue={typeof value === "string" ? value : ""}
-                    allFormValues={allFormValues}
-                    valuePath={valuePath}
-                  />
+                  {isSearchDialogOpen && (
+                    <Suspense fallback={null}>
+                      <OrcidSearchDialog
+                        open={isSearchDialogOpen}
+                        onClose={() => setIsSearchDialogOpen(false)}
+                        onSelectOrcid={handleSelectOrcidFromSearch}
+                        initialQuery={initialOrcidSearchQuery}
+                        currentOrcidValue={typeof value === "string" ? value : ""}
+                        allFormValues={allFormValues}
+                        valuePath={valuePath}
+                      />
+                    </Suspense>
+                  )}
                 </Box>
               )}
 
@@ -1141,7 +1221,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                     "&:hover": { textDecoration: "underline" },
                   }}
                 >
-                  <span>View ORCID profile</span>
+                  <span>{t("orcid.view_orcid_profile")}</span>
                   <OpenInNewIcon sx={{ fontSize: 13 }} />
                 </Box>
               )}
@@ -1158,9 +1238,6 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
           </Box>
         </Box>
       )}
-      {/* {validationError && !readOnly && (
-        <FormHelperText error>{validationError}</FormHelperText>
-      )} */}
     </Box>
   );
 };

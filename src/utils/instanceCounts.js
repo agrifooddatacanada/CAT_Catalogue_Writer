@@ -1,23 +1,18 @@
 export function buildInstanceCountsFromValues(flatValues) {
   const counts = {};
+  if (!flatValues || typeof flatValues !== "object") return counts;
 
   Object.keys(flatValues).forEach((path) => {
-    // Match any [number] in the path
+    // Record EVERY [number] segment in nested paths so parent array counts are
+    // never missed when an instance only contains nested array children.
     const regex = /\[(\d+)\]/g;
     let match;
-    let lastIndex = -1;
-    let parentPath = path;
 
-    // Find the last index and its parent path
     while ((match = regex.exec(path)) !== null) {
-      lastIndex = parseInt(match[1], 10);
-      parentPath = path.slice(0, match.index); // up to the '[' of this index
-    }
-
-    if (lastIndex >= 0) {
-      const current = counts[parentPath] || 0;
-      const needed = lastIndex + 1; // indices are 0-based → count = maxIndex + 1
-      if (needed > current) {
+      const idx = parseInt(match[1], 10);
+      const parentPath = path.slice(0, match.index);
+      const needed = idx + 1; // 0-based index -> count = maxIndex + 1
+      if (needed > (counts[parentPath] || 0)) {
         counts[parentPath] = needed;
       }
     }

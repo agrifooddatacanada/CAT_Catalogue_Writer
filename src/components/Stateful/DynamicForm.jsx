@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Pagination, Typography, Fab } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Pagination,
+  Typography,
+  Fab,
+} from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 import theme from "../../theme";
 import canonicalize from "../../utils/canonicalize";
@@ -13,20 +23,24 @@ import { setAllInstanceCounts } from "../../store/slices/instanceCountsSlice";
 import {
   selectAllFormValues,
   selectFields,
+  selectPages,
 } from "../../store/selectors/formSelectors";
 import FieldChecker from "./DynamicFormComponents/FieldChecker";
-import { selectIsRootFormValid } from "../../store/selectors/popupValidationSelectors";
+import {
+  selectIsRootFormValid,
+  selectValidationSummary,
+} from "../../store/selectors/popupValidationSelectors";
 import { selectMode, setMode } from "../../store/slices/modeSlice";
 import { setCurrentPage } from "../../store/slices/formUiSlice";
-import { selectActivePage } from "../../store/slices/activePageSlice";
-import { selectPages } from "../../store/selectors/formSelectors";
+import {
+  selectActivePage,
+  setActivePage,
+} from "../../store/slices/activePageSlice";
 import NestedChildFormContent from "./DynamicFormComponents/NestedChildFormContent";
 import {
   clearChildFormNavigation,
   setChildFormNavigation,
 } from "../../store/slices/childFormNavigationSlice";
-import { setActivePage } from "../../store/slices/activePageSlice";
-
 import { filterFieldsByViewMode } from "../../utils/viewModeUtils";
 
 const getValueByPath = (obj, path) => {
@@ -34,21 +48,19 @@ const getValueByPath = (obj, path) => {
   try {
     const parts = path.replace(/\[(\w+)\]/g, ".$1").split(".");
     let current = obj;
-    for (let part of parts) {
+    for (const part of parts) {
       if (current === null || current === undefined) return undefined;
       current = current[part];
     }
     return current;
-  } catch (e) {
+  } catch {
     return undefined;
   }
 };
 
-// COMPONENT STATE
 function DynamicForm({ isEditMode: propIsEditMode }) {
-  const { t } = useTranslation(); // use translation function
+  const { t } = useTranslation();
   const navigate = useNavigate();
-
   const [showTopBtn, setShowTopBtn] = useState(false);
 
   useEffect(() => {
@@ -73,21 +85,17 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
       behavior: "smooth",
     });
   };
+
   const dispatch = useDispatch();
   const formState = useSelector(selectAllFormValues);
   const fields = useSelector(selectFields);
-
   const pages = useSelector(selectPages);
   const activePage = useSelector(selectActivePage);
-
   const childFormNavigation = useSelector((state) => state.childFormNavigation);
-
   const childPagesMeta = useSelector((state) => state.fieldSchema.childPages);
 
   const hasActiveChildSession = !!childFormNavigation?.nextValuePath;
-
   const hasSchemaPages = Array.isArray(pages) && pages.length > 0;
-
   const activePageData = pages?.[activePage];
 
   const isGeneratedChildPage =
@@ -98,34 +106,14 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
     childFormNavigation?.childPageIndex !== null &&
     childFormNavigation?.childPageIndex === activePage;
 
-  // Collect all page indices registered as children (at any level)
-  // const allChildPageIndices = new Set(
-  //   Object.entries(childPagesMeta || {}).map(([pageIndex]) =>
-  //     Number(pageIndex),
-  //   ),
-  // );
-
   const safePages = Array.isArray(pages) ? pages : [];
   const basePageIndices = safePages
     .map((_, i) => i)
     .filter((i) => !safePages[i]?.isChildPage);
 
-  // console.log("childPagesMeta:", childPagesMeta);
-  // console.log("allChildPageIndices:", [...allChildPageIndices]);
-  // console.log("basePageIndices:", basePageIndices);
-
   const isCurrentPageAChildPage = !!safePages[activePage]?.isChildPage;
-
   const currentBasePagePosition = basePageIndices.indexOf(activePage);
-
   const isNestedChildPage = isGeneratedChildPage || isSchemaBackedChildPage;
-
-  // const isLastBasePage =
-  //   !isCurrentPageAChildPage &&
-  //   pages
-  //     .map((_, i) => i)
-  //     .filter((i) => !childPagesMeta?.[i]) // only base pages
-  //     .at(-1) === activePage;
 
   const showNextButton =
     hasSchemaPages &&
@@ -140,6 +128,7 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
     currentBasePagePosition > 0;
 
   const rootIsValid = useSelector(selectIsRootFormValid);
+  const validationSummary = useSelector(selectValidationSummary);
 
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
@@ -150,10 +139,16 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
     if (!hasSchemaPages) return [];
     if (readOnly) {
       return basePageIndices.flatMap((idx) =>
-        (pages[idx]?.items || []).map(item => ({ ...item, _sourcePageIndex: idx }))
+        (pages[idx]?.items || []).map((item) => ({
+          ...item,
+          _sourcePageIndex: idx,
+        })),
       );
     }
-    return (activePageData?.items || []).map(item => ({ ...item, _sourcePageIndex: activePage }));
+    return (activePageData?.items || []).map((item) => ({
+      ...item,
+      _sourcePageIndex: activePage,
+    }));
   };
 
   const activeItems = getActiveItems();
@@ -161,8 +156,11 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
   const sourceFields = hasSchemaPages
     ? activeItems.flatMap((item) =>
         item.type === "section"
-          ? (item.fields || []).map(f => ({ ...f, _sourcePageIndex: item._sourcePageIndex }))
-          : [{ ...item.field, _sourcePageIndex: item._sourcePageIndex }]
+          ? (item.fields || []).map((f) => ({
+              ...f,
+              _sourcePageIndex: item._sourcePageIndex,
+            }))
+          : [{ ...item.field, _sourcePageIndex: item._sourcePageIndex }],
       )
     : fields;
 
@@ -181,21 +179,31 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
 
   const displayedFields = filterFieldsByViewMode(sourceFields, viewMode);
 
-
   const displayedItems = hasSchemaPages
     ? activeItems
         .map((item) => {
           if (item.type === "field") {
             const filtered = filterFieldsByViewMode([item.field], viewMode);
             return filtered.length > 0
-              ? { type: "field", field: filtered[0], _sourcePageIndex: item._sourcePageIndex }
+              ? {
+                  type: "field",
+                  field: filtered[0],
+                  _sourcePageIndex: item._sourcePageIndex,
+                }
               : null;
           }
 
           if (item.type === "section") {
-            const filteredFields = filterFieldsByViewMode(item.fields || [], viewMode);
+            const filteredFields = filterFieldsByViewMode(
+              item.fields || [],
+              viewMode,
+            );
             return filteredFields.length > 0
-              ? { ...item, fields: filteredFields, _sourcePageIndex: item._sourcePageIndex }
+              ? {
+                  ...item,
+                  fields: filteredFields,
+                  _sourcePageIndex: item._sourcePageIndex,
+                }
               : null;
           }
 
@@ -204,7 +212,6 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
         .filter(Boolean)
     : [];
 
-  // Calculate Pagination
   const startIndex = (currentPage - 1) * fieldsPerPage;
   const endIndex = startIndex + fieldsPerPage;
 
@@ -217,24 +224,20 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
       : displayedFields.slice(startIndex, endIndex)
     : [];
 
-  // Reset to first page when switching between Mandatory/Complete view
   useEffect(() => {
     dispatch(setCurrentPage(1));
   }, [activePage, viewMode, hasSchemaPages, dispatch]);
 
-  //
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!rootIsValid) return;
 
     const nestedState = { ...formState };
-
-    // Clean up any existing metadata fields (optional, for consistency)
     const cleanKeys = ["catalogue_id", "d", "@context"];
     cleanKeys.forEach((key) => {
       if (key in nestedState) delete nestedState[key];
     });
 
-    // ADD CANONICALISATION HERE
     const canonicalizedState = canonicalize(nestedState);
     const cleanFormData = JSON.parse(canonicalizedState);
 
@@ -248,10 +251,10 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
     });
   };
 
-  const hasAsterisk = (fields) => {
-    if (!Array.isArray(fields)) return false;
+  const hasAsterisk = (fieldList) => {
+    if (!Array.isArray(fieldList)) return false;
 
-    for (const field of fields) {
+    for (const field of fieldList) {
       if (
         field.required ||
         (Array.isArray(field.children) &&
@@ -275,11 +278,16 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
     Array.isArray(displayedFields) &&
     displayedFields.length > 0;
 
-  // RECURSIVE RENDERER (INDIVIDUAL INPUTS)
   const renderInput = (field, depth = 0, key) => {
     const { path, _sourcePageIndex } = field;
-
-    return <FieldChecker key={key} valuePath={path} depth={depth} parentPageIndex={_sourcePageIndex} />;
+    return (
+      <FieldChecker
+        key={key}
+        valuePath={path}
+        depth={depth}
+        parentPageIndex={_sourcePageIndex}
+      />
+    );
   };
 
   if (isNestedChildPage) {
@@ -297,17 +305,16 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
 
       while (currIdx !== null && currIdx !== undefined) {
         const meta = childPagesMeta?.[currIdx];
-        if (!meta) break; // Base page reached
+        if (!meta) break;
 
         const val = getValueByPath(formState, currPath);
         const derivedIsEdit = val !== undefined && val !== null;
 
-        // Prepend so the deepest child is at the end of the array
         activeChildSessions.unshift({
           pageIndex: currIdx,
           path: currPath,
           parentPageIndex: meta.parentPageIndex,
-          meta: meta,
+          meta,
           isEdit: derivedIsEdit,
         });
 
@@ -317,7 +324,6 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
           lastDotIndex !== -1 ? currPath.substring(0, lastDotIndex) : currPath;
       }
 
-      // Override the deepest active descendant with the exact navigated state
       if (activeChildSessions.length > 0) {
         activeChildSessions[activeChildSessions.length - 1].isEdit =
           childFormNavigation.isEdit;
@@ -336,7 +342,6 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
             <Box key={key} sx={{ display: isLast ? "block" : "none" }}>
               <NestedChildFormContent
                 nextValuePath={session.path}
-                isOpen={true}
                 isEdit={session.isEdit}
                 pageIndex={session.pageIndex}
                 isGenerated={session.isGenerated}
@@ -389,118 +394,8 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
     );
   }
 
-  // RETURN JSX
   return (
     <>
-      {/* <Box sx={{ mb: 2, display: "flex", gap: 2, justifyContent: "center" }}>
-        {Array.isArray(sourceFields) && (
-          <>
-            {hasMandatoryFields(sourceFields) && (
-              <Button
-                variant="contained"
-                onClick={() => dispatch(setViewMode("mandatory"))}
-                sx={{
-                  backgroundColor:
-                    viewMode === "mandatory"
-                      ? theme.primaryColor
-                      : theme.backgroundColor,
-                  color:
-                    viewMode === "mandatory"
-                      ? theme.backgroundColor
-                      : theme.primaryColor,
-                  borderColor:
-                    viewMode === "mandatory"
-                      ? theme.backgroundColor
-                      : theme.primaryColor,
-                  border:
-                    viewMode === "mandatory"
-                      ? "1px solid transparent"
-                      : "1px solid currentColor",
-                  "&:hover": {
-                    backgroundColor:
-                      viewMode === "mandatory"
-                        ? theme.primaryColor
-                        : theme.hoverUnselectedBgColor,
-                    borderColor: theme.primaryColor,
-                  },
-                }}
-              >
-                {t("dynamicform.mandatory")}
-              </Button>
-            )}
-
-            {hasRecommendedFields(sourceFields) && (
-              <Button
-                variant="contained"
-                onClick={() => dispatch(setViewMode("recommended"))}
-                sx={{
-                  backgroundColor:
-                    viewMode === "recommended"
-                      ? theme.primaryColor
-                      : theme.backgroundColor,
-                  color:
-                    viewMode === "recommended"
-                      ? theme.backgroundColor
-                      : theme.primaryColor,
-                  borderColor:
-                    viewMode === "recommended"
-                      ? theme.backgroundColor
-                      : theme.primaryColor,
-                  border:
-                    viewMode === "recommended"
-                      ? "1px solid transparent"
-                      : "1px solid currentColor",
-                  "&:hover": {
-                    backgroundColor:
-                      viewMode === "recommended"
-                        ? theme.primaryColor
-                        : theme.hoverUnselectedBgColor,
-                    borderColor: theme.primaryColor,
-                  },
-                }}
-              >
-                {t("dynamicform.recommended")}
-              </Button>
-            )}
-
-            {hasOptionalFields(sourceFields) && (
-              <Button
-                variant="contained"
-                onClick={() => dispatch(setViewMode("complete"))}
-                sx={{
-                  backgroundColor:
-                    viewMode === "complete"
-                      ? theme.primaryColor
-                      : theme.backgroundColor,
-                  color:
-                    viewMode === "complete"
-                      ? theme.backgroundColor
-                      : theme.primaryColor,
-                  borderColor:
-                    viewMode === "complete"
-                      ? theme.backgroundColor
-                      : theme.primaryColor,
-                  border:
-                    viewMode === "complete"
-                      ? "1px solid transparent"
-                      : "1px solid currentColor",
-                  "&:hover": {
-                    backgroundColor:
-                      viewMode === "complete"
-                        ? theme.primaryColor
-                        : theme.hoverUnselectedBgColor,
-                    borderColor: theme.primaryColor,
-                  },
-                }}
-              >
-                {t("dynamicform.complete")}
-              </Button>
-            )}
-          </>
-        )}
-      </Box> */}
-
-      {/* Add loading state ABOVE the buttons */}
       {!Array.isArray(fields) && !Array.isArray(pages) && (
         <Box sx={{ textAlign: "center", py: 4 }}>
           <Typography>{t("dynamicform.loading")}</Typography>
@@ -515,12 +410,69 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
         </Typography>
       )}
 
-      {/* Hide pagination + page indicator when no fields */}
       {(hasDisplayedSchemaItems || hasDisplayedFlatFields) && (
-        <>
-          {/* PAGE INDICATOR */}
-          {/* {!hasSchemaPages && (
-            <Box sx={{ mb: 3, textAlign: "center" }}>
+        <form onSubmit={handleSubmit}>
+          {hasSchemaPages
+            ? displayedItems.map((item, index) => {
+                if (item.type === "section") {
+                  return (
+                    <Box
+                      key={item.id}
+                      sx={{
+                        mt: 4,
+                        mb: 2,
+                        p: 3,
+                        border: "1px solid",
+                        borderColor: "divider",
+                        borderRadius: 2,
+                        backgroundColor: "background.paper",
+                        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
+                      }}
+                    >
+                      <Typography variant="h6" sx={{ mb: 0.5 }}>
+                        {item.label}
+                      </Typography>
+
+                      {item.description && (
+                        <Typography
+                          variant="body2"
+                          sx={{ mt: 0.5, mb: 0, color: "text.secondary" }}
+                        >
+                          {item.description}
+                        </Typography>
+                      )}
+
+                      {item.fields.map((field, fieldIndex) =>
+                        renderInput(
+                          { ...field, _sourcePageIndex: item._sourcePageIndex },
+                          0,
+                          `${item.id}-${field.name}-${fieldIndex}`,
+                        ),
+                      )}
+                    </Box>
+                  );
+                }
+
+                if (item.type === "field") {
+                  return renderInput(
+                    { ...item.field, _sourcePageIndex: item._sourcePageIndex },
+                    0,
+                    `field-${item.field.name}-${index}`,
+                  );
+                }
+
+                return null;
+              })
+            : currentPageFields.map((field, index) =>
+                renderInput(
+                  { ...field },
+                  0,
+                  `${field.name}-${startIndex + index}`,
+                ),
+              )}
+
+          {!hasSchemaPages && !readOnly && (
+            <Box sx={{ mt: 3, textAlign: "center" }}>
               <Typography variant="body2" color="textSecondary">
                 {t("dynamicform.page")} {currentPage} {t("dynamicform.of")}{" "}
                 {totalPages} ({startIndex + 1}-
@@ -529,250 +481,187 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
                 {t("dynamicform.fields")})
               </Typography>
             </Box>
-          )} */}
+          )}
 
-          {/* GENERATED FORM (RECURSICE INPUT RENDERING + SUBMIT BUTTON) */}
-          <form onSubmit={handleSubmit}>
-            {hasSchemaPages
-              ? displayedItems.map((item, index) => {
-                  if (item.type === "section") {
-                    return (
-                      <Box
-                        key={item.id}
-                        sx={{
-                          mt: 4,
-                          mb: 2,
-                          p: 3,
-                          border: "1px solid",
-                          borderColor: "divider",
-                          borderRadius: 2,
-                          backgroundColor: "background.paper",
-                          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
-                        }}
-                      >
-                        <Typography variant="h6" sx={{ mb: 0.5 }}>
-                          {item.label}
-                        </Typography>
-
-                        {item.description && (
-                          <Typography
-                            variant="body2"
-                            sx={{ mt: 0.5, mb: 0, color: "text.secondary" }}
-                          >
-                            {item.description}
-                          </Typography>
-                        )}
-
-                        {item.fields.map((field, fieldIndex) =>
-                          renderInput(
-                            { ...field, _sourcePageIndex: item._sourcePageIndex },
-                            0,
-                            `${item.id}-${field.name}-${fieldIndex}`,
-                          ),
-                        )}
-                      </Box>
-                    );
-                  }
-
-                  if (item.type === "field") {
-                    return renderInput(
-                      { ...item.field, _sourcePageIndex: item._sourcePageIndex },
-                      0,
-                      `field-${item.field.name}-${index}`,
-                    );
-                  }
-
-                  return null;
-                })
-              : currentPageFields.map((field, index) =>
-                  renderInput(
-                    { ...field },
-                    0,
-                    `${field.name}-${startIndex + index}`,
-                  ),
-                )}
-            {/* {currentPageFields.map((field, index) =>
-              renderInput(
-                { ...field },
-                0,
-                `${field.name}-${startIndex + index}`,
-              ),
-            )} */}
-
-            {/* PAGE INDICATOR */}
-            {!hasSchemaPages && !readOnly && (
-              <Box sx={{ mt: 3, textAlign: "center" }}>
-                <Typography variant="body2" color="textSecondary">
-                  {t("dynamicform.page")} {currentPage} {t("dynamicform.of")}{" "}
-                  {totalPages} ({startIndex + 1}-
-                  {Math.min(endIndex, displayedFields.length)}{" "}
-                  {t("dynamicform.of")} {displayedFields.length}{" "}
-                  {t("dynamicform.fields")})
-                </Typography>
-              </Box>
-            )}
-
-            {/*PAGINATION CONTROLS */}
-            {!hasSchemaPages && totalPages > 1 && !readOnly && (
-              <Box
+          {!hasSchemaPages && totalPages > 1 && !readOnly && (
+            <Box
+              sx={{
+                mt: 2,
+                mb: 2,
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(e, page) => dispatch(setCurrentPage(page))}
+                size="large"
                 sx={{
-                  mt: 2,
-                  mb: 2,
-                  display: "flex",
-                  justifyContent: "center",
+                  "& .MuiPaginationItem-root": {
+                    color: theme.primaryColor,
+                  },
+                  "& .MuiPaginationItem-root.Mui-selected": {
+                    backgroundColor: theme.primaryColor,
+                    color: theme.backgroundColor,
+                    "&:hover": {
+                      backgroundColor: theme.primaryColor,
+                      filter: "brightness(0.93)",
+                    },
+                  },
+                  "& .MuiPaginationItem-root:hover": {
+                    backgroundColor: theme.secondaryColor,
+                  },
                 }}
-              >
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={(e, page) => dispatch(setCurrentPage(page))}
-                  size="large"
+              />
+            </Box>
+          )}
+
+          {/* Validation Summary when Submit/Review is blocked on the final step */}
+          {!readOnly && !showNextButton && !rootIsValid && (
+            <Alert severity="info" sx={{ mt: 3, borderRadius: 2 }}>
+              {validationSummary.isEmptyForm &&
+              validationSummary.issues.length === 0 ? (
+                <Typography variant="body2">
+                  {t("dynamicform.submit_blocked_empty")}
+                </Typography>
+              ) : (
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, mb: 0.75 }}
+                  >
+                    {t("dynamicform.submit_blocked_title")}
+                  </Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                    {validationSummary.issues.slice(0, 12).map((issue) => {
+                      const reasonLabel =
+                        issue.reason === "missing"
+                          ? t("dynamicform.issue_missing")
+                          : t("dynamicform.issue_invalid");
+                      const chipLabel = issue.pageLabel
+                        ? `${issue.fieldLabel} (${issue.pageLabel} · ${reasonLabel})`
+                        : `${issue.fieldLabel} (${reasonLabel})`;
+                      const canJump =
+                        hasSchemaPages &&
+                        issue.pageIndex !== null &&
+                        issue.pageIndex !== undefined;
+
+                      return (
+                        <Chip
+                          key={issue.fieldPath}
+                          size="small"
+                          variant="outlined"
+                          color={issue.reason === "missing" ? "warning" : "error"}
+                          label={chipLabel}
+                          clickable={canJump}
+                          onClick={
+                            canJump
+                              ? () => {
+                                  dispatch(setActivePage(issue.pageIndex));
+                                  dispatch(clearChildFormNavigation());
+                                  dispatch(setCurrentPage(1));
+                                }
+                              : undefined
+                          }
+                          sx={{ fontSize: "0.78rem" }}
+                        />
+                      );
+                    })}
+                  </Box>
+                </Box>
+              )}
+            </Alert>
+          )}
+
+          {/* Standard LTR Navigation Bar: Back on left, Next / Review on right */}
+          {!readOnly && (
+            <Box
+              sx={{
+                mt: 3,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: showBackButton ? "space-between" : "flex-end",
+                gap: 2,
+                flexWrap: "wrap",
+              }}
+            >
+              {showBackButton && (
+                <Button
+                  type="button"
+                  variant="outlined"
+                  startIcon={<ArrowBackIcon />}
+                  onClick={() => {
+                    const prevBaseIndex =
+                      basePageIndices[currentBasePagePosition - 1];
+                    dispatch(setActivePage(prevBaseIndex));
+                    dispatch(setCurrentPage(1));
+                  }}
                   sx={{
-                    "& .MuiPaginationItem-root": {
-                      color: theme.primaryColor,
-                    },
-                    "& .MuiPaginationItem-root.Mui-selected": {
-                      backgroundColor: theme.primaryColor,
-                      color: theme.backgroundColor,
-                      "&:hover": {
-                        backgroundColor: theme.primaryColor,
-                      },
-                    },
-                    "& .MuiPaginationItem-root:hover": {
-                      backgroundColor: theme.secondaryColor,
+                    color: theme.primaryColor,
+                    borderColor: theme.primaryColor,
+                    "&:hover": {
+                      borderColor: theme.primaryColor,
+                      backgroundColor: theme.hoverUnselectedBgColor,
                     },
                   }}
-                />
-              </Box>
-            )}
+                >
+                  {t("dynamicform.back")}
+                </Button>
+              )}
 
-            {/* {totalPages > 1 && (
-              <Box
-                sx={{ mt: 2, mb: 2, display: "flex", justifyContent: "center" }}
-              >
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={(e, page) => dispatch(setCurrentPage(page))}
-                  size="large"
+              {showNextButton ? (
+                <Button
+                  type="button"
+                  variant="outlined"
+                  endIcon={<ArrowForwardIcon />}
+                  onClick={() => {
+                    const nextBaseIndex =
+                      basePageIndices[currentBasePagePosition + 1];
+                    dispatch(setActivePage(nextBaseIndex));
+                    dispatch(setCurrentPage(1));
+                  }}
                   sx={{
-                    "& .MuiPaginationItem-root": {
-                      color: theme.primaryColor,
-                    },
-                    "& .MuiPaginationItem-root.Mui-selected": {
-                      backgroundColor: theme.primaryColor,
-                      color: theme.backgroundColor,
-                      "&:hover": {
-                        backgroundColor: theme.primaryColor,
-                      },
-                    },
-                    "& .MuiPaginationItem-root:hover": {
-                      backgroundColor: theme.secondaryColor, // Light hover effect
+                    color: theme.primaryColor,
+                    borderColor: theme.primaryColor,
+                    "&:hover": {
+                      borderColor: theme.primaryColor,
+                      backgroundColor: theme.hoverUnselectedBgColor,
                     },
                   }}
-                />
-              </Box>
-            )} */}
-
-            {!readOnly && (
-              <>
-                {!showNextButton && (
-                  <Button
-                    variant="contained"
-                    type="submit"
-                    disabled={!rootIsValid}
-                    sx={{
-                      mt: 3,
+                >
+                  {t("dynamicform.next")}
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  type="submit"
+                  disabled={!rootIsValid}
+                  sx={{
+                    backgroundColor: theme.primaryColor,
+                    transition: "filter 0.15s ease",
+                    "&:hover": {
                       backgroundColor: theme.primaryColor,
-                      "&:hover": {
-                        backgroundColor: theme.primaryColor,
-                      },
-                    }}
-                    endIcon={<SendIcon />}
-                  >
-                    {isEditMode
-                      ? t("dynamicform.update_review")
-                      : t("dynamicform.review")}
-                  </Button>
-                )}
-
-                {showNextButton && (
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      const nextBaseIndex =
-                        basePageIndices[currentBasePagePosition + 1];
-                      dispatch(setActivePage(nextBaseIndex));
-                      dispatch(setCurrentPage(1));
-                    }}
-                    sx={{
-                      mt: 3,
-                      color: theme.primaryColor,
-                      borderColor: theme.primaryColor,
-                      "&:hover": {
-                        borderColor: theme.primaryColor,
-                        backgroundColor: theme.backgroundColor,
-                      },
-                    }}
-                  >
-                    Next
-                  </Button>
-                )}
-
-                {showBackButton && (
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      const prevBaseIndex =
-                        basePageIndices[currentBasePagePosition - 1];
-                      dispatch(setActivePage(prevBaseIndex));
-                      dispatch(setCurrentPage(1));
-                    }}
-                    sx={{
-                      mt: 3,
-                      ml: 2,
-                      color: theme.primaryColor,
-                      borderColor: theme.primaryColor,
-                      "&:hover": {
-                        borderColor: theme.primaryColor,
-                        backgroundColor: theme.backgroundColor,
-                      },
-                    }}
-                  >
-                    Back
-                  </Button>
-                )}
-              </>
-            )}
-          </form>
-        </>
+                      filter: "brightness(0.93)",
+                    },
+                  }}
+                  endIcon={<SendIcon />}
+                >
+                  {isEditMode
+                    ? t("dynamicform.update_review")
+                    : t("dynamicform.review")}
+                </Button>
+              )}
+            </Box>
+          )}
+        </form>
       )}
-
-      {/* DEBUG PANEL SHOWING EXTRACTED FIELDS JSON FOR VERIFICATION */}
-      {/* <Box
-        sx={{
-          mt: 4,
-          p: 2,
-          border: "1px solid #ccc",
-          backgroundColor: "#fafafa",
-          whiteSpace: "pre-wrap",
-          fontSize: "0.875rem",
-        }}
-      >
-        <Typography variant="h6" gutterBottom>
-          FormState:
-        </Typography>
-        <pre>{JSON.stringify(formState, null, 2)}</pre>
-        <Typography variant="h6" gutterBottom>
-          Extracted Fields (for verification):
-        </Typography>
-        <pre>{JSON.stringify(fields, null, 2)}</pre>
-      </Box> */}
 
       {showTopBtn && (
         <Fab
           color="primary"
           size="medium"
+          aria-label={t("dynamicform.scroll_to_top")}
           onClick={goToTop}
           sx={{
             position: "fixed",
@@ -780,8 +669,11 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
             right: 32,
             zIndex: 1000,
             backgroundColor: theme.primaryColor,
+            transition: "filter 0.15s ease, transform 0.15s ease",
             "&:hover": {
-              backgroundColor: theme.secondaryColor,
+              backgroundColor: theme.primaryColor,
+              filter: "brightness(0.9)",
+              transform: "translateY(-2px)",
             },
           }}
         >

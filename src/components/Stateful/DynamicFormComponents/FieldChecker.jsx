@@ -1,166 +1,94 @@
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import FormInputMultiple from "./FormInputMultiple";
-// import FormInputGroup from "./FormInputGroup";
 import FormInputSingle from "./FormInputSingle";
 import { Box, Typography } from "@mui/material";
 import FormInputMultipleChildren from "./FormInputMultipleChildren";
 import { removeIndices } from "../../../utils/removeIndices";
-import { useSelector } from "react-redux";
-import { selectFieldByPath } from "../../../store/selectors/formSelectors";
+import { useSelector, useDispatch } from "react-redux";
+import { selectFieldByPath, selectPages } from "../../../store/selectors/formSelectors";
 import { selectMode } from "../../../store/slices/modeSlice";
-// import { Button } from "@mui/material";
-// import AddIcon from "@mui/icons-material/Add";
-import { useDispatch } from "react-redux";
-import {
-  selectActivePage,
-  // setActivePage,
-} from "../../../store/slices/activePageSlice";
-// import { setCurrentPage } from "../../../store/slices/formUiSlice";
-import { selectPages } from "../../../store/selectors/formSelectors";
-// import theme from "../../../theme";
-// import { setChildFormNavigation } from "../../../store/slices/childFormNavigationSlice";
+import { selectActivePage } from "../../../store/slices/activePageSlice";
 import { upsertChildPageMeta } from "../../../store/slices/fieldSchemaSlice";
 import FieldDescription from "./FieldDescription";
-import FormInputChildren from "./FormInputChildren";
+import { findLinkedChildPageIndex } from "../../../utils/fieldTreeUtils";
 
 const FieldChecker = ({ valuePath, depth = 0, parentPageIndex }) => {
   const dispatch = useDispatch();
 
   const fieldPath = removeIndices(valuePath);
   const field = useSelector(selectFieldByPath(fieldPath));
-
   const pages = useSelector(selectPages);
-
   const mode = useSelector(selectMode);
-  const readOnly = mode === "view";
-
-  const { name, label, required, multiple, children, categories } = field;
-
-  const childFieldNames = (field.children || [])
-    .map((child) => child.name)
-    .sort();
-
   const activePage = useSelector(selectActivePage);
-  const resolvedParentPageIndex = parentPageIndex !== undefined ? parentPageIndex : activePage;
 
-  const linkedChildPageIndex =
-    childFieldNames.length > 0
-      ? pages.findIndex((page) => {
-          const pageFieldNames = (page.items || [])
-            .flatMap((item) => {
-              if (item.type === "section") {
-                return (item.fields || []).map((f) => f.name);
-              }
-              if (item.type === "field" && item.field) {
-                return [item.field.name];
-              }
-              return [];
-            })
-            .sort();
+  const readOnly = mode === "view";
+  const resolvedParentPageIndex =
+    parentPageIndex !== undefined ? parentPageIndex : activePage;
 
-          return (
-            pageFieldNames.length === childFieldNames.length &&
-            pageFieldNames.every((name, idx) => name === childFieldNames[idx])
-          );
-        })
-      : -1;
+  const linkedChildPageIndex = useMemo(
+    () => findLinkedChildPageIndex(field, pages),
+    [field, pages],
+  );
 
-  // const handleOpenChildPage = () => {
-  //   dispatch(
-  //     setChildFormNavigation({
-  //       nextValuePath: valuePath,
-  //       parentPageIndex: activePage,
-  //       childPageIndex: linkedChildPageIndex >= 0 ? linkedChildPageIndex : null,
-  //       isEdit: true,
-  //       fallbackLabel: label || name,
-  //       fallbackFieldPath: fieldPath,
-  //       useGeneratedPage: linkedChildPageIndex < 0,
-  //     }),
-  //   );
+  const name = field?.name;
+  const label = field?.label;
 
-  //   if (linkedChildPageIndex >= 0) {
-  //     dispatch(setActivePage(linkedChildPageIndex));
-  //   }
-
-  //   dispatch(setCurrentPage(1));
-  // };
-
-  React.useEffect(() => {
-    if (linkedChildPageIndex >= 0) {
+  useEffect(() => {
+    if (linkedChildPageIndex >= 0 && field) {
       dispatch(
         upsertChildPageMeta({
           childPageIndex: linkedChildPageIndex,
-          parentFieldPath: fieldPath, // here you probably want removeIndices(valuePath)
+          parentFieldPath: fieldPath,
           parentPageIndex: resolvedParentPageIndex,
           label: label || name,
         }),
       );
     }
-  }, [linkedChildPageIndex, fieldPath, resolvedParentPageIndex, label, name, dispatch]);
+  }, [linkedChildPageIndex, field, fieldPath, resolvedParentPageIndex, label, name, dispatch]);
 
-  // multiple + has children → composite multiple
-  if (
-    // multiple &&
-    children &&
-    children.length > 0
-  ) {
-    // console.log("Came to FIMC for:", name, "at", fieldPath, "|", valuePath);
-    return (
-      <>
-        <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
-          <Typography
-            variant="subtitle1"
-            component="label"
-            sx={{ display: "block", fontWeight: 600 }}
-          >
-            {label || name}
-            {required && !readOnly && (
-              <span style={{ color: "red", marginLeft: 4 }}>*</span>
-            )}
-          </Typography>
-        </Box>
-        <FormInputMultipleChildren valuePath={valuePath} parentPageIndex={resolvedParentPageIndex} />
-      </>
-    );
+  if (!field) {
+    return null;
   }
 
-  // not multiple, but has children → nested group
+  const { required, multiple, children, categories } = field;
+
+  // Composite object children (preserving existing card/sub-page flow for all schemas)
   if (children && children.length > 0) {
-    // console.log("FIC");
     return (
       <>
         <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
           <Typography
             variant="subtitle1"
-            component="label"
+            component="div"
             sx={{ display: "block", fontWeight: 600 }}
           >
             {label || name}
             {required && !readOnly && (
-              <span style={{ color: "red", marginLeft: 4 }}>*</span>
+              <span aria-hidden="true" style={{ color: "red", marginLeft: 4 }}>*</span>
             )}
           </Typography>
-
-          <FormInputChildren valuePath={valuePath} parentPageIndex={resolvedParentPageIndex} />
         </Box>
-        {/* <FormInputGroup valuePath={valuePath} /> */}
+        <FormInputMultipleChildren
+          valuePath={valuePath}
+          parentPageIndex={resolvedParentPageIndex}
+        />
       </>
     );
   }
 
-  // multiple, categories → multi select checkbox
+  // Multiple categories -> multi-select checkbox group
   if (multiple && categories && categories.length > 0) {
     return (
       <>
         <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
           <Typography
             variant="subtitle1"
-            component="label"
+            component="div"
             sx={{ display: "block", fontWeight: 600 }}
           >
             {label || name}
             {required && !readOnly && (
-              <span style={{ color: "red", marginLeft: 4 }}>*</span>
+              <span aria-hidden="true" style={{ color: "red", marginLeft: 4 }}>*</span>
             )}
           </Typography>
         </Box>
@@ -170,36 +98,30 @@ const FieldChecker = ({ valuePath, depth = 0, parentPageIndex }) => {
     );
   }
 
-  // multiple, no children → list of simple values
+  // Multiple primitive values -> repeatable list using indexed valuePath so nested parents never collide
   if (multiple) {
-    // console.log("Came to FIM for:", name, "at", fieldPath);
     return (
       <>
         <Box sx={readOnly ? { mt: 1 } : { mt: depth === 0 ? 3 : 1 }}>
           <Typography
             variant="subtitle1"
-            component="label"
+            component="div"
             sx={{ display: "block", fontWeight: 600 }}
           >
             {label || name}
             {required && !readOnly && (
-              <span style={{ color: "red", marginLeft: 4 }}>*</span>
+              <span aria-hidden="true" style={{ color: "red", marginLeft: 4 }}>*</span>
             )}
           </Typography>
         </Box>
         <FieldDescription valuePath={valuePath} />
-        <FormInputMultiple valuePath={fieldPath} depth={depth} />
+        <FormInputMultiple valuePath={valuePath} depth={depth} />
       </>
     );
   }
 
-  // leaf field
-  // console.log("Came to FIS for:", name, "at", fieldPath, "|", valuePath);
-  return (
-    <>
-      <FormInputSingle valuePath={valuePath} depth={depth} />
-    </>
-  );
+  // Leaf field
+  return <FormInputSingle valuePath={valuePath} depth={depth} />;
 };
 
 export default FieldChecker;

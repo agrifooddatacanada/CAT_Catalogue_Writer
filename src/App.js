@@ -1,19 +1,52 @@
-import React, { useEffect } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setUserContext } from "./store/slices/userContextSlice";
-import HomePage from "./pages/HomePage";
-import FormPage from "./pages/FormPage";
-import ViewPage from "./pages/ViewPage";
-import ViewHelpPage from "./pages/ViewHelpPage";
-import FormHelpPage from "./pages/FormHelpPage";
+import { Box, CircularProgress } from "@mui/material";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { setUserContext } from "./store/slices/userContextSlice";
 import { TranslationProvider } from "./utils/OpenAIRE/TranslationContext";
+import { NotificationProvider } from "./components/Stateless/NotificationContext";
+import ErrorBoundary from "./components/Stateless/ErrorBoundary";
+import HomePage from "./pages/HomePage";
+import {
+  isAllowedOrigin,
+  rememberVerifiedOrigin,
+  safePostMessage,
+  safeSessionRemove,
+  safeSessionSet,
+} from "./utils/postMessageSecurity";
+
+const FormPage = lazy(() => import("./pages/FormPage"));
+const ViewPage = lazy(() => import("./pages/ViewPage"));
+const ViewHelpPage = lazy(() => import("./pages/ViewHelpPage"));
+const FormHelpPage = lazy(() => import("./pages/FormHelpPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+
+function RouteFallback() {
+  return (
+    <Box
+      sx={{
+        minHeight: "50vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 4,
+      }}
+      role="status"
+      aria-live="polite"
+    >
+      <CircularProgress />
+    </Box>
+  );
+}
 
 function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
     const handleMessage = (event) => {
+      if (!isAllowedOrigin(event.origin)) return;
+      rememberVerifiedOrigin(event.origin);
+
       try {
         const data = event.data;
         if (!data || typeof data !== "object") return;
@@ -30,36 +63,28 @@ function App() {
         }
 
         if (data.type === "CLEAR_RECORD") {
-          try {
-            window.sessionStorage.removeItem("contexthub_pending_record");
-            window.sessionStorage.removeItem("contexthub_pending_upgrade");
-            window.sessionStorage.removeItem("contexthub_is_published");
-          } catch {}
+          safeSessionRemove("contexthub_pending_record");
+          safeSessionRemove("contexthub_pending_upgrade");
+          safeSessionRemove("contexthub_is_published");
           return;
         }
 
         if (data.type === "UPGRADE_RECORD" || data.upgrade === true) {
           const record = data.record || data.data || data.payload;
           if (data.isPublished !== undefined) {
-            try {
-              window.sessionStorage.setItem("contexthub_is_published", String(Boolean(data.isPublished)));
-            } catch {}
+            safeSessionSet("contexthub_is_published", String(Boolean(data.isPublished)));
           }
           if (record && typeof record === "object") {
-            try {
-              window.sessionStorage.setItem(
-                "contexthub_pending_upgrade",
-                JSON.stringify({
-                  record,
-                  sourceSchemaId: data.sourceSchemaId || record["@schema_id"] || null,
-                  targetSchemaId: data.targetSchemaId || null,
-                  isPublished: data.isPublished !== undefined ? Boolean(data.isPublished) : true,
-                  version: data.version || null,
-                })
-              );
-            } catch (storageErr) {
-              console.warn("Could not store pending upgrade record in sessionStorage:", storageErr);
-            }
+            safeSessionSet(
+              "contexthub_pending_upgrade",
+              JSON.stringify({
+                record,
+                sourceSchemaId: data.sourceSchemaId || record["@schema_id"] || null,
+                targetSchemaId: data.targetSchemaId || null,
+                isPublished: data.isPublished !== undefined ? Boolean(data.isPublished) : true,
+                version: data.version || null,
+              })
+            );
           }
           return;
         }
@@ -76,19 +101,10 @@ function App() {
         ) {
           const record = data.record || data.data || data.payload;
           if (data.isPublished !== undefined) {
-            try {
-              window.sessionStorage.setItem("contexthub_is_published", String(Boolean(data.isPublished)));
-            } catch {}
+            safeSessionSet("contexthub_is_published", String(Boolean(data.isPublished)));
           }
           if (record && typeof record === "object") {
-            try {
-              window.sessionStorage.setItem(
-                "contexthub_pending_record",
-                JSON.stringify(record)
-              );
-            } catch (storageErr) {
-              console.warn("Could not store pending record in sessionStorage:", storageErr);
-            }
+            safeSessionSet("contexthub_pending_record", JSON.stringify(record));
           }
         }
       } catch (err) {
@@ -98,43 +114,38 @@ function App() {
 
     window.addEventListener("message", handleMessage);
 
-    // If embedded or opened as popup, ask ContextHub for user context and catalogue record
+    // Non-sensitive handshake requests to ContextHub host window
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "REQUEST_USER_CONTEXT" }, "*");
-      window.parent.postMessage({ type: "REQUEST_RECORD" }, "*");
+      safePostMessage(window.parent, { type: "REQUEST_USER_CONTEXT" }, { allowWildcardFallback: true });
+      safePostMessage(window.parent, { type: "REQUEST_RECORD" }, { allowWildcardFallback: true });
     } else if (window.opener && window.opener !== window && !window.opener.closed) {
-      try {
-        window.opener.postMessage({ type: "REQUEST_USER_CONTEXT" }, "*");
-        window.opener.postMessage({ type: "REQUEST_RECORD" }, "*");
-      } catch (err) {
-        console.warn("Could not request user context or record from opener:", err);
-      }
+      safePostMessage(window.opener, { type: "REQUEST_USER_CONTEXT" }, { allowWildcardFallback: true });
+      safePostMessage(window.opener, { type: "REQUEST_RECORD" }, { allowWildcardFallback: true });
     }
 
     return () => window.removeEventListener("message", handleMessage);
   }, [dispatch]);
 
   return (
-    <TranslationProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/form" element={<FormPage />} />
-          <Route path="/form/:schemaSlug" element={<FormPage />} />
-          {/* <Route path="/form-q-test" element={<FormPage />} />
-          <Route path="/form-schema-cat-rec" element={<FormPage />} />
-          <Route path="/form-dublincore-repository" element={<FormPage />} />
-          <Route path="/form-dublincore-project" element={<FormPage />} />
-          <Route path="/form-datacite" element={<FormPage />} />
-          <Route path="/form-dcat-demo" element={<FormPage />} />
-          <Route path="/form-project-minimal" element={<FormPage />} />
-          <Route path="/form-raid-project" element={<FormPage />} /> */}
-          <Route path="/view" element={<ViewPage />} />
-          <Route path="/view-help" element={<ViewHelpPage />} />
-          <Route path="/form-help" element={<FormHelpPage />} />
-        </Routes>
-      </Router>
-    </TranslationProvider>
+    <ErrorBoundary>
+      <TranslationProvider>
+        <NotificationProvider>
+          <Router>
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/form" element={<FormPage />} />
+                <Route path="/form/:schemaSlug" element={<FormPage />} />
+                <Route path="/view" element={<ViewPage />} />
+                <Route path="/view-help" element={<ViewHelpPage />} />
+                <Route path="/form-help" element={<FormHelpPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
+          </Router>
+        </NotificationProvider>
+      </TranslationProvider>
+    </ErrorBoundary>
   );
 }
 

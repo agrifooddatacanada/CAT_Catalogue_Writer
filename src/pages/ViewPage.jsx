@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Box } from "@mui/system";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Button,
   TextField,
@@ -24,6 +24,7 @@ import {
   selectHasFormData,
   selectFields,
   selectAllFormValues,
+  selectLoadedSchemaMeta,
   selectSchemaName,
 } from "../store/selectors/formSelectors";
 import { setMode } from "../store/slices/modeSlice";
@@ -39,16 +40,25 @@ import {
 } from "../store/slices/uploadFileSlice";
 import {
   KNOWN_SCHEMA_MANIFEST,
+  ROUTE_MAP,
   getSchemaPluginOutdatedStatus,
   normalizeVersion,
 } from "../utils/schemaRegistry";
 import canonicalize from "../utils/canonicalize";
 import { getContextUrl, getSchemaId } from "../utils/schemaMapping";
-import { unescapeKey } from "../utils/pathEncoding";
 import { checkIsIframe } from "../utils/iframeUtils";
+import { deepClone, unflattenFormData } from "../utils/formStateFlatten";
+import { loadSchemaIntoStore } from "../utils/loadSchemaIntoStore";
+import {
+  isSafeDataUrl,
+  safePostMessage,
+  safeSessionGet,
+} from "../utils/postMessageSecurity";
+import { useNotification } from "../components/Stateless/NotificationContext";
 
 function ViewPage() {
   const { t, lang } = useTranslation();
+  const { notify } = useNotification();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
@@ -60,8 +70,9 @@ function ViewPage() {
   const schema = useSelector(selectSchemaName);
   const isUploadedJson = useSelector(selectHasFormData);
   const flatFormState = useSelector(selectAllFormValues);
+  const jsonSchema = useSelector(selectFields);
+  const loadedSchemaMeta = useSelector(selectLoadedSchemaMeta);
 
-  // Lineage & Version Redux State
   const originalSaid = useSelector(selectOriginalSaid);
   const savedRecordVersion = useSelector(selectRecordVersion);
   const isVersionOfPrior = useSelector(selectIsVersionOf);
@@ -71,29 +82,39 @@ function ViewPage() {
   const upgradeContext = useSelector(selectUpgradeContext);
 
   const isPublishedFromParam = searchParams.get("isPublished");
-  const isPublishedSession = (() => {
-    try {
-      return window.sessionStorage.getItem("contexthub_is_published");
-    } catch {
-      return null;
-    }
-  })();
+  const isPublishedSession = safeSessionGet("contexthub_is_published");
 
-  const isPublished = isPublishedFromParam !== null
-    ? isPublishedFromParam === "true"
-    : isPublishedSession !== null
-      ? isPublishedSession === "true"
-      : Boolean(isPublishedRedux);
+  const isPublished =
+    isPublishedFromParam !== null
+      ? isPublishedFromParam === "true"
+      : isPublishedSession !== null
+        ? isPublishedSession === "true"
+        : Boolean(isPublishedRedux);
 
-  // The catalogue record version ALWAYS inherits the version of the resource it describes
   const resourceVersion = savedRecordVersion || "1.0.0";
   const isDataset =
     schema === "dataset_catalogue_record" ||
     schema === "ContextHub_dataset_catalogue_record" ||
     String(schema || "").toLowerCase().includes("dataset");
-  const [currentNotes, setCurrentNotesState] = useState(
-    savedVersionNotes || ""
-  );
+  const [currentNotes, setCurrentNotesState] = useState(savedVersionNotes || "");
+
+  // Re-extract schema labels/pages if user switches EN/FR while on ViewPage
+  useEffect(() => {
+    if (
+      !schema ||
+      !Array.isArray(jsonSchema) ||
+      !loadedSchemaMeta?.lang ||
+      loadedSchemaMeta.lang === lang
+    ) {
+      return;
+    }
+    loadSchemaIntoStore(dispatch, {
+      schema,
+      exactSaid: loadedSchemaMeta.exactSaid || loadedSchemaId || null,
+      lang,
+      preserveUiState: true,
+    }).catch((err) => console.warn("Could not re-localize schema:", err));
+  }, [schema, jsonSchema, loadedSchemaMeta?.lang, loadedSchemaMeta?.exactSaid, loadedSchemaId, lang, dispatch]);
 
   const handleNotesChange = (e) => {
     const val = e.target.value;
@@ -101,77 +122,19 @@ function ViewPage() {
     dispatch(setVersionNotes(val));
   };
 
-  function unflatten(flatObject) {
-    const result = {};
-    for (const [key, value] of Object.entries(flatObject)) {
-      const path = parsePath(key);
-      let current = result;
-      for (let i = 0; i < path.length; i++) {
-        const segment = path[i];
-        const isLast = i === path.length - 1;
-        const nextSegment = path[i + 1];
-        if (isLast) {
-          current[segment] = deepClone(value);
-        } else {
-          const isNextArrayIndex = typeof nextSegment === "number";
-          if (typeof segment === "number") {
-            if (!Array.isArray(current)) {
-              current = [];
-            }
-            ensureIndex(current, segment);
-            if (current[segment] == null) {
-              current[segment] = isNextArrayIndex ? [] : {};
-            }
-            current = current[segment];
-          } else {
-            if (current[segment] == null) {
-              current[segment] = isNextArrayIndex ? [] : {};
-            }
-            current = current[segment];
-          }
-        }
-      }
-    }
-    return result;
-  }
+  // Memoize unflatten so typing in Revision Notes doesn't recompute the entire tree every keystroke
+  const formState = useMemo(
+    () => unflattenFormData(flatFormState),
+    [flatFormState]
+  );
 
-  function deepClone(value) {
-    if (value === null || typeof value !== "object") {
-      return value;
-    }
-    if (Array.isArray(value)) {
-      return value.map(deepClone);
-    }
-    const cloned = {};
-    for (const key in value) {
-      if (Object.prototype.hasOwnProperty.call(value, key)) {
-        cloned[key] = deepClone(value[key]);
-      }
-    }
-    return cloned;
-  }
-
-  function ensureIndex(arr, index) {
-    while (arr.length <= index) {
-      arr.push(null);
-    }
-  }
-
-  function parsePath(path) {
-    if (!path) return [];
-    return path
-      .split(/\.|\[/)
-      .filter(Boolean)
-      .map((segment) => {
-        segment = segment.replace(/]$/, "");
-        return /^\d+$/.test(segment)
-          ? parseInt(segment, 10)
-          : unescapeKey(segment);
-      });
-  }
-
-  const formState = unflatten(flatFormState);
-  const jsonSchema = useSelector(selectFields);
+  const storedDataUrl = safeSessionGet("dataUrl");
+  const canPostToDataUrl =
+    !isIframeMode &&
+    !buttonLabelParam &&
+    Boolean(storedDataUrl) &&
+    !storedDataUrl.startsWith("data:") &&
+    isSafeDataUrl(storedDataUrl);
 
   const injectDcatNamespace = (context) => {
     const dcatNamespace = { dcat: "http://www.w3.org/ns/dcat#" };
@@ -190,15 +153,9 @@ function ViewPage() {
     return [context, dcatNamespace];
   };
 
-  /**
-   * Generates a deterministic, immutable catalogue record with SAID.
-   * Preserves lineage by injecting dcterms:isVersionOf, dcterms:version,
-   * adms:versionNotes, and dcterms:modified.
-   */
   const generateCatalogueRecord = (jsonData) => {
     const dataForSaid = deepClone(jsonData);
 
-    // Clean existing identifiers & schema version headers that should not be hashed or overwritten by spread
     const cleanKeys = [
       "catalogue_id",
       "d",
@@ -211,17 +168,14 @@ function ViewPage() {
       if (key in dataForSaid) delete dataForSaid[key];
     });
 
-    // Canonicalize
     const canonicalizedState = canonicalize(dataForSaid);
     const formData = JSON.parse(canonicalizedState);
 
-    // Determine version (dataset descriptions depend on external dataset release versions, e.g. 2024.1, v2, Draft-B)
     const semVer = isDataset
-      ? (resourceVersion || "1.0.0")
+      ? resourceVersion || "1.0.0"
       : normalizeVersion(resourceVersion, "1.0.0");
     const timestamp = new Date().toISOString();
 
-    // Preserve and enrich Dublin Core terms
     const existingDcterms =
       formData.dcterms && typeof formData.dcterms === "object"
         ? formData.dcterms
@@ -233,7 +187,6 @@ function ViewPage() {
       modified: timestamp,
     };
 
-    // Append-only revision tracking: Point to previous SAID if revising a published record
     if (isPublished && originalSaid) {
       updatedDcterms.isVersionOf = originalSaid;
     } else if (isPublished && isVersionOfPrior) {
@@ -250,7 +203,6 @@ function ViewPage() {
       formData.version = semVer;
     }
 
-    // Get context and schema ID (prefer explicit targetSchemaId during upgrade)
     const contextUrl = getContextUrl(schema);
     const schemaId =
       (upgradeContext.isUpgradeMode && upgradeContext.targetSchemaId) ||
@@ -262,9 +214,6 @@ function ViewPage() {
       "1.0.0";
     const finalContext = injectDcatNamespace(contextUrl);
 
-    // Build standard DCAT CatalogRecord structure
-    // Embeds the schema plugin version so the system knows the form questionnaire version
-    // without altering the content of the schema plugin file itself.
     const formDataWithId = {
       "@context": finalContext,
       "@type": "dcat:CatalogRecord",
@@ -274,7 +223,6 @@ function ViewPage() {
       ...formData,
     };
 
-    // Deterministically calculate new SAID
     const [, objWithSaid] = saidifyUrn(formDataWithId, "d");
     return objWithSaid;
   };
@@ -305,20 +253,18 @@ function ViewPage() {
 
     let delivered = false;
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage(payload, "*");
-      delivered = true;
+      delivered = safePostMessage(window.parent, payload, {
+        allowWildcardFallback: false,
+      });
     } else if (window.opener && !window.opener.closed) {
-      try {
-        window.opener.postMessage(payload, "*");
-        delivered = true;
-      } catch (err) {
-        console.warn("Failed to post message to window.opener:", err);
-      }
+      delivered = safePostMessage(window.opener, payload, {
+        allowWildcardFallback: false,
+      });
     }
 
     if (delivered) {
       if (window.opener && window.opener !== window) {
-        alert("Catalogue record updated in ContextHub! You can close this tab.");
+        notify(t("viewpage.updated_in_contexthub_tab"), "success");
         try {
           window.close();
         } catch {
@@ -326,9 +272,7 @@ function ViewPage() {
         }
       }
     } else {
-      alert(
-        "Could not directly update ContextHub because the parent window could not be reached. The catalogue record file will now be downloaded so you can upload it to ContextHub."
-      );
+      notify(t("viewpage.contexthub_fallback_download"), "warning", 7000);
       downloadJson(jsonData);
     }
   };
@@ -336,9 +280,9 @@ function ViewPage() {
   const updateContextHub = async (jsonData) => {
     setUpdating(true);
     try {
-      const dataUrl = window.sessionStorage.getItem("dataUrl");
-      if (!dataUrl) {
-        throw new Error("No ContextHub data source URL found in session.");
+      const dataUrl = safeSessionGet("dataUrl");
+      if (!dataUrl || !isSafeDataUrl(dataUrl)) {
+        throw new Error("No valid ContextHub data source URL found in session.");
       }
 
       const objWithSaid = generateCatalogueRecord(jsonData);
@@ -359,21 +303,37 @@ function ViewPage() {
         );
       }
 
-      alert("Catalogue updated successfully on ContextHub as a new revision!");
+      notify(t("viewpage.contexthub_update_success"), "success");
     } catch (err) {
       console.error("Failed to update ContextHub:", err);
-      alert(`Failed to update ContextHub: ${err.message}`);
+      notify(`${t("viewpage.contexthub_update_failed")} ${err.message}`, "error");
     } finally {
       setUpdating(false);
     }
   };
 
   if (!jsonSchema) {
-    return <div>{t("viewpage.loading")}</div>;
+    return (
+      <Box component="main" sx={{ textAlign: "center", p: 6 }}>
+        <Typography>{t("viewpage.loading")}</Typography>
+      </Box>
+    );
   }
 
   if (!isUploadedJson) {
-    return <p>{t("viewpage.no_catalogue")}</p>;
+    return (
+      <Box component="main" sx={{ textAlign: "center", p: 6 }}>
+        <Typography sx={{ mb: 2 }}>{t("viewpage.no_catalogue")}</Typography>
+        <Button
+          component={RouterLink}
+          to="/"
+          variant="contained"
+          sx={{ backgroundColor: theme.primaryColor }}
+        >
+          {t("formpage.go_home")}
+        </Button>
+      </Box>
+    );
   }
 
   const handleEditClick = () => {
@@ -382,11 +342,17 @@ function ViewPage() {
     if (!params.get("schema") && schema) {
       params.set("schema", schema);
     }
+    const baseRoute = ROUTE_MAP[schema] || "/form";
     navigate({
-      pathname: "/form",
+      pathname: baseRoute,
       search: params.toString() ? `?${params.toString()}` : "",
     });
   };
+
+  const currentSchemaId = loadedSchemaId || getSchemaId(schema);
+  const outdatedInfo = upgradeContext.isUpgradeMode
+    ? null
+    : getSchemaPluginOutdatedStatus(currentSchemaId);
 
   return (
     <div className="ViewPage">
@@ -402,7 +368,11 @@ function ViewPage() {
         help_button_redirect={() => navigate("/view-help")}
       />
 
-      <Box sx={{ maxWidth: 1000, margin: "auto", padding: 5 }}>
+      <Box
+        component="main"
+        id="main-content"
+        sx={{ maxWidth: 1000, margin: "auto", padding: { xs: 2, sm: 4, md: 5 } }}
+      >
         {/* Versioning & Revision Lineage Control Panel */}
         <Box
           sx={{
@@ -414,44 +384,35 @@ function ViewPage() {
             boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
-          {(() => {
-            if (upgradeContext.isUpgradeMode) {
-              return (
-                <Alert severity="success" sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                    Schema Plugin Upgraded
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
-                    This catalogue record has been upgraded from{" "}
-                    <strong>
-                      {upgradeContext.targetFamily || schema} (v{upgradeContext.sourceSchemaVersion || "1.0.0"})
-                    </strong>{" "}
-                    to <strong>v{upgradeContext.targetSchemaVersion || "latest"}</strong>.
-                    {originalSaid && " Its lineage links to the previous published record via dcterms:isVersionOf."}
-                  </Typography>
-                </Alert>
-              );
-            }
-            const currentSchemaId = loadedSchemaId || getSchemaId(schema);
-            const outdatedInfo = getSchemaPluginOutdatedStatus(currentSchemaId);
-            if (!outdatedInfo.isOutdated) return null;
-            return (
-              <Alert
-                severity="warning"
-                sx={{ mb: 2 }}
-              >
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  Form Questionnaire Outdated
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
-                  This catalogue record was created using an earlier version of the{" "}
-                  <strong>{outdatedInfo.family}</strong> form questionnaire (v
-                  {outdatedInfo.currentVersion}). A newer version of the form (v
-                  {outdatedInfo.latestVersion}) is available.
-                </Typography>
-              </Alert>
-            );
-          })()}
+          {upgradeContext.isUpgradeMode ? (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                {t("viewpage.upgraded_title")}
+              </Typography>
+              <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
+                {t("viewpage.upgraded_body_prefix")}{" "}
+                <strong>
+                  {upgradeContext.targetFamily || schema} (v
+                  {upgradeContext.sourceSchemaVersion || "1.0.0"})
+                </strong>{" "}
+                {t("viewpage.upgraded_body_to")}{" "}
+                <strong>v{upgradeContext.targetSchemaVersion || "latest"}</strong>.
+                {originalSaid && ` ${t("viewpage.upgraded_lineage_note")}`}
+              </Typography>
+            </Alert>
+          ) : outdatedInfo?.isOutdated ? (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                {t("homepage.outdated_title")}
+              </Typography>
+              <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
+                {t("homepage.outdated_body_prefix")}{" "}
+                <strong>{outdatedInfo.family}</strong>{" "}
+                {t("homepage.outdated_body_mid")} (v{outdatedInfo.currentVersion}).{" "}
+                {t("homepage.outdated_body_suffix")} v{outdatedInfo.latestVersion}.
+              </Typography>
+            </Alert>
+          ) : null}
 
           <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -465,22 +426,29 @@ function ViewPage() {
                 variant="subtitle1"
                 sx={{ fontWeight: 600, color: theme.primaryColor }}
               >
-                {isPublished ? "Catalogue Record Lineage & Version" : "Catalogue Record Version"}
+                {isPublished
+                  ? t("viewpage.lineage_version_title")
+                  : t("viewpage.version_title")}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Catalogue record versions inherit the version of the resource they describe.
+                {t("viewpage.version_subtitle")}
               </Typography>
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
-                Resource Version:
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, color: "text.secondary" }}
+              >
+                {t("viewpage.resource_version")}
               </Typography>
               <Chip
                 label={
                   isDataset
-                    ? (resourceVersion || "1.0.0")
-                    : (resourceVersion?.startsWith("v") ? resourceVersion : `v${resourceVersion}`)
+                    ? resourceVersion || "1.0.0"
+                    : resourceVersion?.startsWith("v")
+                      ? resourceVersion
+                      : `v${resourceVersion}`
                 }
                 size="small"
                 color="primary"
@@ -489,18 +457,18 @@ function ViewPage() {
             </Box>
           </Stack>
 
-          {/* Lineage & Schema Badges (Only shown when revising a published record) */}
           {isPublished && (
             <Stack
               direction="row"
               spacing={1.5}
               alignItems="center"
               flexWrap="wrap"
+              useFlexGap
               sx={{ mb: 1.5 }}
             >
               {originalSaid ? (
                 <Chip
-                  label={`Revises: ${originalSaid.slice(0, 24)}...`}
+                  label={`${t("viewpage.revises")} ${originalSaid.slice(0, 24)}...`}
                   color="info"
                   variant="outlined"
                   size="small"
@@ -508,7 +476,7 @@ function ViewPage() {
                 />
               ) : (
                 <Chip
-                  label="Initial Record (v1.0.0 or v0.1.0)"
+                  label={t("viewpage.initial_record")}
                   color="success"
                   variant="outlined"
                   size="small"
@@ -516,7 +484,7 @@ function ViewPage() {
               )}
 
               <Chip
-                label={`Schema: ${schema || "Default"} (${(getSchemaId(schema) || "").slice(0, 16)}...)`}
+                label={`${t("viewpage.schema_label")} ${schema || "Default"} (${(getSchemaId(schema) || "").slice(0, 16)}...)`}
                 variant="outlined"
                 size="small"
               />
@@ -525,20 +493,18 @@ function ViewPage() {
 
           {isPublished && originalSaid && (
             <Alert severity="info" sx={{ mb: 1.5, py: 0.5, fontSize: "0.85rem" }}>
-              Editing creates an immutable new revision linked via{" "}
-              <code>dcterms:isVersionOf</code>. The original record remains unchanged.
+              {t("viewpage.immutable_revision_notice")}
             </Alert>
           )}
 
-          {/* Version Notes */}
           <TextField
             fullWidth
             size="small"
-            label="Revision Notes (optional)"
-            placeholder="e.g. Initial draft 0.1.0, or corrected author description"
+            label={t("viewpage.revision_notes_label")}
+            placeholder={t("viewpage.revision_notes_placeholder")}
             value={currentNotes}
             onChange={handleNotesChange}
-            helperText="Stored in the catalogue record JSON under dcterms['adms:versionNotes'] and synced to the Neo4j database as cat.versionNotes"
+            helperText={t("viewpage.revision_notes_helper")}
             FormHelperTextProps={{
               sx: { fontSize: "0.78rem", color: "text.secondary", mt: 0.5 },
             }}
@@ -548,15 +514,22 @@ function ViewPage() {
 
         <DynamicForm language={lang} />
 
-        <Box sx={{ mt: 3 }}>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          useFlexGap
+          flexWrap="wrap"
+          sx={{ mt: 3 }}
+        >
           <Button
             variant="contained"
             sx={{
               backgroundColor: theme.primaryColor,
+              transition: "filter 0.15s ease",
               "&:hover": {
                 backgroundColor: theme.primaryColor,
+                filter: "brightness(0.93)",
               },
-              mr: "10px",
             }}
             onClick={handleEditClick}
             startIcon={<EditIcon />}
@@ -568,10 +541,11 @@ function ViewPage() {
             variant="contained"
             sx={{
               backgroundColor: theme.primaryColor,
+              transition: "filter 0.15s ease",
               "&:hover": {
                 backgroundColor: theme.primaryColor,
+                filter: "brightness(0.93)",
               },
-              mr: "10px",
             }}
             onClick={() => downloadJson(formState)}
             startIcon={<FileDownloadIcon />}
@@ -584,39 +558,38 @@ function ViewPage() {
               variant="contained"
               sx={{
                 backgroundColor: theme.primaryColor,
+                transition: "filter 0.15s ease",
                 "&:hover": {
                   backgroundColor: theme.primaryColor,
+                  filter: "brightness(0.93)",
                 },
-                mr: "10px",
               }}
               onClick={() => postMessageToParent(formState)}
               startIcon={<SendIcon />}
             >
-              {buttonLabelParam || "UPDATE TO CONTEXTHUB"}
+              {buttonLabelParam || t("viewpage.update_to_contexthub")}
             </Button>
           )}
 
-          {!isIframeMode &&
-            !buttonLabelParam &&
-            window.sessionStorage.getItem("dataUrl") &&
-            !window.sessionStorage.getItem("dataUrl")?.startsWith("data:") && (
+          {canPostToDataUrl && (
             <Button
               variant="contained"
               disabled={updating}
               sx={{
                 backgroundColor: theme.primaryColor,
+                transition: "filter 0.15s ease",
                 "&:hover": {
                   backgroundColor: theme.primaryColor,
+                  filter: "brightness(0.93)",
                 },
-                mr: "10px",
               }}
               onClick={() => updateContextHub(formState)}
               startIcon={updating ? null : <SaveIcon />}
             >
-              {updating ? "Updating..." : "Update ContextHub"}
+              {updating ? t("viewpage.updating") : t("viewpage.update_contexthub")}
             </Button>
           )}
-        </Box>
+        </Stack>
       </Box>
       <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />
     </div>

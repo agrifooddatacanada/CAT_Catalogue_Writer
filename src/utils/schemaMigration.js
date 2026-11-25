@@ -1,6 +1,7 @@
-import { escapeKey, unescapeKey } from "./pathEncoding";
+import { unescapeKey } from "./pathEncoding";
 import { normalizeNestedFields } from "./normalizeJson";
 import { buildInstanceCountsFromValues } from "./instanceCounts";
+import { flattenFormData } from "./formStateFlatten";
 
 const ENVELOPE_KEYS = new Set([
   "@context",
@@ -20,37 +21,7 @@ const SYSTEM_DCTERMS_KEYS = new Set([
 /**
  * Flattens a nested record object into dot/bracket notation keys matching Redux formValueSlice.
  */
-export function flattenRecord(obj, parentKey = "", result = {}) {
-  if (Array.isArray(obj)) {
-    if (obj.length === 0) {
-      result[parentKey] = obj;
-    } else {
-      obj.forEach((item, index) => {
-        const newKey = `${parentKey}[${index}]`;
-        if (item !== null && typeof item === "object") {
-          flattenRecord(item, newKey, result);
-        } else {
-          result[newKey] = item;
-        }
-      });
-    }
-    return result;
-  }
-
-  for (const key in obj) {
-    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
-    const value = obj[key];
-    const escapedKey = escapeKey(key);
-    const newKey = parentKey ? `${parentKey}.${escapedKey}` : escapedKey;
-
-    if (value !== null && typeof value === "object") {
-      flattenRecord(value, newKey, result);
-    } else {
-      result[newKey] = value;
-    }
-  }
-  return result;
-}
+export const flattenRecord = flattenFormData;
 
 function isNonEmptyValue(val) {
   if (val === undefined || val === null) return false;

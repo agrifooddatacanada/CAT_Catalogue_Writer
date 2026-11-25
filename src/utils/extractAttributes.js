@@ -3,13 +3,14 @@ import { escapeKey } from "./pathEncoding.js";
 // PULL TOP-LEVEL ATTRIBUTE LABELS FROM MAIN BUNDLE OVERLAYS
 function extractBundleLabelsByLanguage(jsonData, lang) {
   const labelOverlays = jsonData?.oca_bundle?.bundle?.overlays?.label;
-  if (!labelOverlays || !Array.isArray(labelOverlays)) return {};
+  if (!labelOverlays || !Array.isArray(labelOverlays) || labelOverlays.length === 0) {
+    return {};
+  }
 
-  // Find the overlay with matching language
   const overlayForLang = labelOverlays.find(
     (overlay) => overlay.language === lang,
   );
-  if (!overlayForLang) return labelOverlays[0].attribute_labels || {};
+  if (!overlayForLang) return labelOverlays[0]?.attribute_labels || {};
 
   return overlayForLang.attribute_labels || {};
 }
@@ -17,33 +18,38 @@ function extractBundleLabelsByLanguage(jsonData, lang) {
 // PULL ATTRIBUTE LABELS FROM SPECIFIC DEPENDENCY OVERLAY
 function extractLabelsFromDependency(dependency, lang) {
   const labelOverlays = dependency?.overlays?.label;
-  if (!labelOverlays || !Array.isArray(labelOverlays)) return {};
+  if (!labelOverlays || !Array.isArray(labelOverlays) || labelOverlays.length === 0) {
+    return {};
+  }
 
-  // Find the overlay with matching language
   const overlayForLang = labelOverlays.find(
     (overlay) => overlay.language === lang,
   );
-  if (!overlayForLang) return labelOverlays[0].attribute_labels || {};
+  if (!overlayForLang) return labelOverlays[0]?.attribute_labels || {};
 
   return overlayForLang.attribute_labels || {};
 }
 
-//
+function getFormOverlaysForLang(forms, lang) {
+  if (!Array.isArray(forms) || forms.length === 0) return [];
+  const matching = forms.filter((form) => form.language === lang);
+  if (matching.length > 0) return matching;
+  // Fallback to English or first available overlay so labels/descriptions don't vanish in French
+  const eng = forms.filter((form) => form.language === "eng");
+  return eng.length > 0 ? eng : [forms[0]];
+}
+
 function extractPlaceholdersFromFormExtension(extensions, lang) {
   const placeholders = {};
-
-  // extensions.adc is an object keyed by IDs
   const adcExtensions = extensions?.adc || {};
 
   for (const key in adcExtensions) {
     const overlays = adcExtensions[key]?.overlays;
     if (!overlays?.form) continue;
 
-    const forms = overlays.form;
+    const forms = getFormOverlaysForLang(overlays.form, lang);
     for (const form of forms) {
-      // Match only the form corresponding to the specified language
-      if (form.language !== lang) continue;
-      if (!form.interaction) continue;
+      if (!form?.interaction) continue;
 
       for (const interactionKey of form.interaction) {
         if (!interactionKey.arguments) continue;
@@ -61,35 +67,12 @@ function extractPlaceholdersFromFormExtension(extensions, lang) {
   return placeholders;
 }
 
-// IDENTIFY PREFERRED ATTRIBUTE ORDERING FROM EXTENSIONS
-// function getAttributeOrdering(jsonData) {
-//   const adcExtensions = jsonData?.extensions?.adc || [];
-//   for (const ext of Object.values(adcExtensions)) {
-//     const ordering = ext?.overlays?.ordering;
-//     if (ordering && ordering.attribute_ordering) {
-//       return ordering.attribute_ordering;
-//     }
-//   }
-//   return [];
-// }
-
 function getAttributeOrderingForCaptureBase(extensions, captureBaseDigest) {
   return (
     extensions?.adc?.[captureBaseDigest]?.overlays?.ordering
       ?.attribute_ordering || []
   );
 }
-
-// function getAttributeOrderingFromNode(node) {
-//   const adcExtensions = node?.extensions?.adc || {};
-//   for (const ext of Object.values(adcExtensions)) {
-//     const ordering = ext?.overlays?.ordering;
-//     if (ordering?.attribute_ordering?.length) {
-//       return ordering.attribute_ordering;
-//     }
-//   }
-//   return [];
-// }
 
 // REORDER THE EXTRACTED FIELDS
 function sortFieldsByOrdering(fields, ordering) {
@@ -108,19 +91,15 @@ function sortFieldsByOrdering(fields, ordering) {
 
 // PULL ENTRY VALUES (HUMAN-READABLE) FROM MAIN BUNDLE OVERLAYS
 function extractLocalizedEntryValues(jsonData, lang) {
-  // Access overlays in bundle
   const overlays = jsonData?.oca_bundle?.bundle?.overlays;
   if (!overlays) return {};
 
-  // 'entry' overlays is an array, need to find one matching the language
   const entryOverlays = Array.isArray(overlays.entry) ? overlays.entry : [];
 
-  // Find the overlay with matching language
   let overlayForLang = entryOverlays.find(
     (overlay) => overlay.language === lang,
   );
 
-  // If no overlay for requested lang, fallback to first available overlay
   if (!overlayForLang && entryOverlays.length > 0) {
     overlayForLang = entryOverlays[0];
   }
@@ -130,10 +109,8 @@ function extractLocalizedEntryValues(jsonData, lang) {
   const attributeEntries = overlayForLang.attribute_entries || {};
   const entryValuesMap = {};
 
-  // Iterate over each attribute in attribute_entries
   for (const attrName in attributeEntries) {
     const entriesObj = attributeEntries[attrName];
-    // Extract the values which are the human-readable labels
     entryValuesMap[attrName] = Object.entries(entriesObj).map(
       ([code, label]) => `${code} (${label})`,
     );
@@ -146,12 +123,10 @@ function extractEntriesFromDependency(dependency, lang) {
   const entryOverlays = dependency?.overlays?.entry;
   if (!entryOverlays || !Array.isArray(entryOverlays)) return {};
 
-  // Find the overlay with matching language
   let overlayForLang = entryOverlays.find(
     (overlay) => overlay.language === lang,
   );
 
-  // If no overlay for requested lang, fallback to first available overlay
   if (!overlayForLang && entryOverlays.length > 0) {
     overlayForLang = entryOverlays[0];
   }
@@ -214,14 +189,14 @@ function extractAttributesFromCaptureBase(
 
     const refString = getRefString(value);
 
-    // RESOLVE REFERENCES
+    // RESOLVE REFERENCES (use per-branch Set so siblings referencing the same dependency both expand)
     if (refString && refString.includes("refs:")) {
       const refKey = refString.replace("refs:", "");
       if (!visitedRefs.has(refKey)) {
-        visitedRefs.add(refKey);
-        const dep = dependencies.find((dep) => dep.d === refKey);
+        const branchVisited = new Set(visitedRefs);
+        branchVisited.add(refKey);
+        const dep = dependencies.find((d) => d.d === refKey);
         if (dep && dep.capture_base) {
-          // EXTRACT OVERLAYS FROM DEPENDENCY
           const depLabels = extractLabelsFromDependency(dep, lang);
           const depEntries = extractEntriesFromDependency(dep, lang);
           const depConformances =
@@ -233,11 +208,10 @@ function extractAttributesFromCaptureBase(
             dep.capture_base?.d,
           );
 
-          // ATTACH CHILDREN
           children = extractAttributesFromCaptureBase(
             dep.capture_base,
             dependencies,
-            visitedRefs,
+            branchVisited,
             lang,
             depLabels,
             depEntries,
@@ -256,7 +230,7 @@ function extractAttributesFromCaptureBase(
 
     fields.push({
       name: escapeKey(key),
-      label: labels[key] || key, // This will now use dependency-specific labels
+      label: labels[key] || key,
       placeholder: placeholders[key] || "",
       description: descriptions[key] || "",
       type: fieldType,
@@ -264,11 +238,16 @@ function extractAttributesFromCaptureBase(
       required: getConformanceValue(conformances, key) === "M",
       recommended: getConformanceValue(conformances, key) === "R",
       optional: getConformanceValue(conformances, key) === "O",
-      multiple: (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) || Array.isArray(value) || (cardinalities[key]
-        ? cardinalities[key].includes("n") ||
-          cardinalities[key] === "1-" ||
-          cardinalities[key] === "0-"
-        : false),
+      multiple:
+        (typeof value === "string" &&
+          value.startsWith("[") &&
+          value.endsWith("]")) ||
+        Array.isArray(value) ||
+        (cardinalities[key]
+          ? cardinalities[key].includes("n") ||
+            cardinalities[key] === "1-" ||
+            cardinalities[key] === "0-"
+          : false),
       categories: entryCodes[key] || null,
       captureBase: currentDigest,
       children,
@@ -277,22 +256,17 @@ function extractAttributesFromCaptureBase(
   return sortFieldsByOrdering(fields, ordering);
 }
 
-//
 function extractOptionsFromFormExtension(extensions, lang) {
   const optionsMap = {};
-
-  // extensions.adc is an object keyed by IDs
   const adcExtensions = extensions?.adc || {};
 
   for (const key in adcExtensions) {
     const overlays = adcExtensions[key]?.overlays;
     if (!overlays?.form) continue;
 
-    const forms = overlays.form;
+    const forms = getFormOverlaysForLang(overlays.form, lang);
     for (const form of forms) {
-      // Match only the form corresponding to the specified language
-      if (form.language !== lang) continue;
-      if (!form.interaction) continue;
+      if (!form?.interaction) continue;
 
       for (const interactionKey of form.interaction) {
         if (!interactionKey.arguments) continue;
@@ -310,28 +284,21 @@ function extractOptionsFromFormExtension(extensions, lang) {
   return optionsMap;
 }
 
-//
 function extractDescriptionsFromFormExtension(extensions, lang) {
   const descriptions = {};
-
-  // extensions.adc is an object keyed by IDs
   const adcExtensions = extensions?.adc || {};
 
   for (const key in adcExtensions) {
     const overlays = adcExtensions[key]?.overlays;
     if (!overlays?.form) continue;
 
-    const forms = overlays.form;
+    const forms = getFormOverlaysForLang(overlays.form, lang);
     for (const form of forms) {
-      // Match only the form corresponding to the specified language
-      if (form.language !== lang) continue;
-      if (!form.description) continue;
+      if (!form?.description) continue;
 
       const attributeDescriptions = form.description;
-
       for (const [attrName, argDef] of Object.entries(attributeDescriptions)) {
-        const description = argDef;
-        descriptions[attrName] = description;
+        descriptions[attrName] = argDef;
       }
     }
   }
@@ -344,12 +311,10 @@ function extractFormatPatterns(jsonData) {
   const formatOverlay = jsonData?.oca_bundle?.bundle?.overlays?.format || [];
 
   if (formatOverlay && formatOverlay.attribute_formats) {
-    // Iterate over each attribute format regex string
     for (const [attr, regexStr] of Object.entries(
       formatOverlay.attribute_formats,
     )) {
       try {
-        // Covert regex string to RegExp object
         formatPatterns[escapeKey(attr)] = new RegExp(regexStr);
       } catch (e) {
         console.warn(`Invalid ${attr}: ${regexStr}`, e);
@@ -360,19 +325,27 @@ function extractFormatPatterns(jsonData) {
 }
 
 // COLLECT REGEX VALIDATION PATTERN FOR ATTRIBUTES FROM DEPENDENCIES
+// Stores both captureBase-scoped keys (`${digest}::${escapedAttr}`) to prevent
+// collisions between dependencies sharing field names and bare keys as fallback.
 function extractFormatPatternsFromDep(dependencies) {
   const depFormatPatterns = {};
 
   dependencies.forEach((dep) => {
     const formatOverlay = dep.overlays?.format;
+    const depDigest = dep.capture_base?.d;
     if (formatOverlay && formatOverlay.attribute_formats) {
-      // Iterate over each attribute format regex string
       for (const [attr, regexStr] of Object.entries(
         formatOverlay.attribute_formats,
       )) {
         try {
-          // Covert regex string to RegExp object
-          depFormatPatterns[escapeKey(attr)] = new RegExp(regexStr);
+          const escaped = escapeKey(attr);
+          const compiled = new RegExp(regexStr);
+          if (depDigest) {
+            depFormatPatterns[`${depDigest}::${escaped}`] = compiled;
+          }
+          if (!(escaped in depFormatPatterns)) {
+            depFormatPatterns[escaped] = compiled;
+          }
         } catch (e) {
           console.warn(`Invalid ${attr}: ${regexStr}`, e);
         }
@@ -382,7 +355,7 @@ function extractFormatPatternsFromDep(dependencies) {
   return depFormatPatterns;
 }
 
-// MAIN EXPORT (ORACHESTRATES EVERYTHING)
+// MAIN EXPORT (ORCHESTRATES EVERYTHING)
 export function extractAttributes(
   jsonData,
   baseKey = "capture_base",
@@ -391,20 +364,19 @@ export function extractAttributes(
 ) {
   const bundle = jsonData?.oca_bundle?.bundle;
   const dependencies = jsonData?.oca_bundle?.dependencies || [];
-  if (!bundle) return [];
+  if (!bundle) {
+    return { fields: [], formatPatterns: {}, depFormatPatterns: {} };
+  }
 
-  // GET FORMAT PATTERNS FROM DEPENDENCIES
   const formatPatterns = extractFormatPatterns(jsonData);
-
-  // GET FORMAT PATTERNS FROM DEPENDENCIES
   const depFormatPatterns = extractFormatPatternsFromDep(dependencies);
 
-  // READ `capture_base` FROM THE BUNDLE
   const captureBase = bundle[baseKey];
-  if (!captureBase) return [];
+  if (!captureBase) {
+    return { fields: [], formatPatterns, depFormatPatterns };
+  }
   const currentDigest = captureBase.d || captureBase["d"];
 
-  // GET CARDINALITIES, CONFORMANCES, LABELS, ENTRY CODES
   const cardinalities =
     bundle.overlays?.cardinality?.attribute_cardinality || {};
   const conformances =
@@ -430,7 +402,6 @@ export function extractAttributes(
 
   let fields = [];
 
-  // RECURSIVELY BUILD ATTRIBUTE FIELD DEFINITIONS
   const attributes = captureBase.attributes || {};
   for (const [key, value] of Object.entries(attributes)) {
     let fieldType = value;
@@ -441,13 +412,12 @@ export function extractAttributes(
     if (refString && refString.includes("refs:")) {
       const refKey = refString.replace("refs:", "");
       if (!visitedRefs.has(refKey)) {
-        visitedRefs.add(refKey);
+        const branchVisited = new Set(visitedRefs);
+        branchVisited.add(refKey);
 
-        // Try to find dependency with a matching d key
-        const dep = dependencies.find((dep) => dep.d === refKey);
+        const dep = dependencies.find((d) => d.d === refKey);
 
         if (dep && dep.capture_base) {
-          // Extract labels and entries from this specific dependency
           const depLabels = extractLabelsFromDependency(dep, lang);
           const depEntries = extractEntriesFromDependency(dep, lang);
           const depConformances =
@@ -459,11 +429,10 @@ export function extractAttributes(
             dep.capture_base?.d,
           );
 
-          // Extract children from dependency's capture_base
           children = extractAttributesFromCaptureBase(
             dep.capture_base,
             dependencies,
-            visitedRefs,
+            branchVisited,
             lang,
             depLabels,
             depEntries,
@@ -476,8 +445,14 @@ export function extractAttributes(
             jsonData?.extensions,
           );
         } else {
-          // fallabck: extract normally from bundle if key present
-          children = extractAttributes(jsonData, refKey, visitedRefs, lang);
+          // Fallback: extract from bundle with correct parameter order and unwrap `.fields`
+          const subResult = extractAttributes(
+            jsonData,
+            refKey,
+            lang,
+            branchVisited,
+          );
+          children = Array.isArray(subResult?.fields) ? subResult.fields : [];
         }
       }
       fieldType = "object";
@@ -488,12 +463,18 @@ export function extractAttributes(
     const recommended = conformanceValue === "R";
     const optional = conformanceValue === "O";
     const cardinality = cardinalities[key];
-    const isArrayType = (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) || Array.isArray(value);
-    const multiple = isArrayType || (cardinality
-      ? cardinality.includes("n") ||
-        cardinality === "1-" ||
-        cardinality === "0-"
-      : false);
+    const isArrayType =
+      (typeof value === "string" &&
+        value.startsWith("[") &&
+        value.endsWith("]")) ||
+      Array.isArray(value);
+    const multiple =
+      isArrayType ||
+      (cardinality
+        ? cardinality.includes("n") ||
+          cardinality === "1-" ||
+          cardinality === "0-"
+        : false);
     const categories = entryCodes[key] || null;
     const label = mainLabels[key] || key;
     const placeholder = placeholders[key] || "";
@@ -516,9 +497,6 @@ export function extractAttributes(
     });
   }
 
-  // GET ATTRIBUTE ORDERING FROM EXTENSIONS
-  // const ordering = getAttributeOrdering(jsonData);
-  // APPLY ORDERING
   fields = sortFieldsByOrdering(fields, ordering);
 
   return { fields, formatPatterns, depFormatPatterns };

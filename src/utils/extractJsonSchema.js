@@ -1,43 +1,21 @@
-import { FILE_MAP, getSchemaBySaid, getSchemaJsonByName } from "./schemaRegistry";
+import {
+  FILE_MAP,
+  loadSchemaBySaid,
+  loadSchemaJsonByName,
+} from "./schemaRegistry";
 
 export const fileMap = FILE_MAP;
 
 export async function extractJsonSchemaAsync(schema, options = {}) {
   try {
     if (options?.exactSaid) {
-      const bySaid = getSchemaBySaid(options.exactSaid);
+      const bySaid = await loadSchemaBySaid(options.exactSaid);
       if (bySaid) return bySaid;
     }
-    return getSchemaJsonByName(schema) || getSchemaJsonByName("OpenAIRE");
+    const byName = await loadSchemaJsonByName(schema);
+    return byName || null;
   } catch (err) {
     console.error(`Failed to load schema for ${schema}:`, err);
-    return false;
+    return null;
   }
 }
-
-// Map schema name -> file name
-// const fileMap = {
-//   "q-002-test": "./q-002-test.json",
-//   schema_catalogue_record: "./schema_catalogue_record_OCA_package.json",
-//   OpenAIRE: "./OpenAIRE_OCA_package.json",
-//   "Dublin Core (Repository-specific)":
-//     "./Dublin_Core_Repository_OCA_package.json",
-//   "Dublin Core (Project-specific)": "./Dublin_Core_Project_OCA_package.json",
-//   DataCite: "./DataCite_OCA_package.json",
-//   "DCAT [Demo]": "./cataloguerecord_DCAT.top_OCA_package.json",
-//   "Project (Minimal)": "./Project_OCA_package.json",
-//   "RAiD (Project)": "./Project_OCA_package.v1.json",
-// };
-
-// export async function extractJsonSchemaAsync(schema) {
-//   const filePath = fileMap[schema] || fileMap.OpenAIRE;
-
-//   try {
-//     const res = await fetch(filePath);
-//     const jsonSchema = await res.json();
-//     return jsonSchema;
-//   } catch (err) {
-//     console.error(`Failed to load schema for ${schema}:`, err);
-//     return false;
-//   }
-// }

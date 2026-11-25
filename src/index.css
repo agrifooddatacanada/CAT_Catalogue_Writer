@@ -2,3 +2,34 @@ body {
   margin: 0;
   font-family: "Roboto", sans-serif;
 }
+
+.skip-to-content-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 2000;
+  padding: 10px 16px;
+  background: #111827;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: 0 0 6px 0;
+}
+
+.skip-to-content-link:focus {
+  left: 8px;
+  top: 8px;
+  outline: 3px solid #1976d2;
+  outline-offset: 2px;
+}
+
+.form-textarea-input {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-textarea-input:focus-visible {
+  outline: 2px solid #1976d2;
+  outline-offset: 1px;
+  border-color: #1976d2 !important;
+}

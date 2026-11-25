@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useId } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -11,6 +11,10 @@ import theme from "../../theme";
 const borderColor = theme.primaryColor;
 
 export default function AccordionExpand({ accordion_question, accordion_summary }) {
+  const baseId = useId();
+  const headerId = `${baseId}-header`;
+  const contentId = `${baseId}-content`;
+
   return (
     <div>
       <Accordion
@@ -27,8 +31,8 @@ export default function AccordionExpand({ accordion_question, accordion_summary 
           expandIcon={
             <ExpandMoreIcon sx={{ color: borderColor, fontSize: "40px" }} />
           }
-          aria-controls="panel-content"
-          id="panel-header"
+          aria-controls={contentId}
+          id={headerId}
           sx={{
             borderBottom: `3px solid ${borderColor}`,
             marginBottom: "20px",
@@ -44,8 +48,9 @@ export default function AccordionExpand({ accordion_question, accordion_summary 
             {accordion_question}
           </Typography>
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails id={contentId} aria-labelledby={headerId}>
           <Typography
+            component="div"
             sx={{
               fontFamily: '"Roboto", sans-serif',
               fontSize: "16px",
