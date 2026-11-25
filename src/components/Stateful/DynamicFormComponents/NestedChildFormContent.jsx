@@ -6,8 +6,12 @@ import { checkDuplicateContributorOrcid } from "../../../utils/orcidUtils";
 import { useDispatch, useSelector } from "react-redux";
 import FieldChecker from "./FieldChecker";
 import { removeIndices } from "../../../utils/removeIndices";
-import { incrementInstanceCount } from "../../../store/slices/instanceCountsSlice";
 import {
+  incrementInstanceCount,
+  setAllInstanceCounts,
+} from "../../../store/slices/instanceCountsSlice";
+import {
+  selectAllInstanceCounts,
   selectFieldByPath,
   selectFormState,
   selectPages,
@@ -26,35 +30,24 @@ import {
   filterMandatoryFields,
   filterRecommendedFields,
 } from "../../../utils/viewModeUtils";
-
-const getFieldByPath = (fieldsArray, targetPath) => {
-  if (!Array.isArray(fieldsArray)) return null;
-  for (const f of fieldsArray) {
-    if (f?.path === targetPath) {
-      return f;
-    }
-    if (f?.children?.length) {
-      const found = getFieldByPath(f.children, targetPath);
-      if (found) return found;
-    }
-  }
-  return null;
-};
+import { getFieldByPath } from "../../../utils/fieldTreeUtils";
+import { useNotification } from "../../Stateless/NotificationContext";
 
 const NestedChildFormContent = ({
   nextValuePath,
-  isOpen = true,
   onClose,
   isEdit = false,
   pageIndex,
   isGenerated = false,
 }) => {
   const { t } = useTranslation();
+  const { confirm } = useNotification();
   const dispatch = useDispatch();
 
   const fieldPath = removeIndices(nextValuePath);
   const field = useSelector(selectFieldByPath(fieldPath));
   const fieldValues = useSelector(selectFormState);
+  const allInstanceCounts = useSelector(selectAllInstanceCounts);
   const pages = useSelector(selectPages);
 
   const { viewMode = "mandatory" } = useSelector((state) => state.formUi || {});
@@ -94,6 +87,7 @@ const NestedChildFormContent = ({
           formatPatterns,
           depFormatPatterns,
           allFormValues: fieldValues,
+          t,
         });
         if (error) return false;
       }
@@ -106,6 +100,7 @@ const NestedChildFormContent = ({
     readOnly,
     formatPatterns,
     depFormatPatterns,
+    t,
   ]);
 
   const duplicateOrcidInfo = useMemo(() => {
@@ -129,6 +124,9 @@ const NestedChildFormContent = ({
   const canSave = isPopupValid && isFormatValid && !duplicateOrcidInfo.isDuplicate;
 
   const latestFieldValuesRef = useRef(fieldValues);
+  const latestInstanceCountsRef = useRef(allInstanceCounts);
+  const initialFieldValuesRef = useRef(null);
+  const initialInstanceCountsRef = useRef(null);
   const isSavedRef = useRef(false);
 
   useEffect(() => {
@@ -136,35 +134,36 @@ const NestedChildFormContent = ({
   }, [fieldValues]);
 
   useEffect(() => {
-    // Snapshot on mount
+    latestInstanceCountsRef.current = allInstanceCounts;
+  }, [allInstanceCounts]);
+
+  useEffect(() => {
+    // Snapshot both formValues and instanceCounts on mount
     const initialFieldValues = { ...latestFieldValuesRef.current };
+    const initialInstanceCounts = { ...latestInstanceCountsRef.current };
+    initialFieldValuesRef.current = initialFieldValues;
+    initialInstanceCountsRef.current = initialInstanceCounts;
     isSavedRef.current = false;
 
-    // Cleanup on unmount
     return () => {
       if (isSavedRef.current) return;
 
       const currentValues = latestFieldValuesRef.current;
       if (!currentValues) return;
 
-      // Find all keys that were present when the form was opened and belong to this child
       const initialKeysForPath = Object.keys(initialFieldValues).filter((key) =>
         key.startsWith(nextValuePath),
       );
-
-      // Find all keys that are currently present and belong to this child
       const currentKeysForPath = Object.keys(currentValues).filter((key) =>
         key.startsWith(nextValuePath),
       );
 
-      // Remove any newly added keys that didn't exist initially
       currentKeysForPath.forEach((key) => {
         if (!Object.prototype.hasOwnProperty.call(initialFieldValues, key)) {
           dispatch(removeFieldValue(key));
         }
       });
 
-      // Restore the values of keys that existed initially
       initialKeysForPath.forEach((key) => {
         if (currentValues[key] !== initialFieldValues[key]) {
           dispatch(
@@ -172,20 +171,73 @@ const NestedChildFormContent = ({
           );
         }
       });
+
+      // Roll back nested instanceCounts created/modified during the cancelled child session
+      const currentCounts = latestInstanceCountsRef.current || {};
+      const nextCounts = { ...currentCounts };
+      let countsChanged = false;
+
+      Object.keys(currentCounts).forEach((key) => {
+        if (
+          key.startsWith(nextValuePath) &&
+          !Object.prototype.hasOwnProperty.call(initialInstanceCounts, key)
+        ) {
+          delete nextCounts[key];
+          countsChanged = true;
+        }
+      });
+
+      Object.keys(initialInstanceCounts).forEach((key) => {
+        if (
+          key.startsWith(nextValuePath) &&
+          currentCounts[key] !== initialInstanceCounts[key]
+        ) {
+          nextCounts[key] = initialInstanceCounts[key];
+          countsChanged = true;
+        }
+      });
+
+      if (countsChanged) {
+        dispatch(setAllInstanceCounts(nextCounts));
+      }
     };
   }, [nextValuePath, dispatch]);
+
+  const hasUnsavedChanges = () => {
+    const initial = initialFieldValuesRef.current || {};
+    const current = latestFieldValuesRef.current || {};
+    const keys = new Set([
+      ...Object.keys(initial).filter((k) => k.startsWith(nextValuePath)),
+      ...Object.keys(current).filter((k) => k.startsWith(nextValuePath)),
+    ]);
+    for (const key of keys) {
+      if (initial[key] !== current[key]) return true;
+    }
+    return false;
+  };
+
+  const handleCancel = async () => {
+    if (hasUnsavedChanges()) {
+      const confirmed = await confirm({
+        title: t("sidebar.discard_changes_title"),
+        message: t("sidebar.discard_changes_message"),
+        confirmLabel: t("sidebar.discard_confirm"),
+        cancelLabel: t("common.cancel"),
+        confirmColor: "error",
+      });
+      if (!confirmed) return;
+    }
+    onClose?.();
+  };
 
   const handleSave = () => {
     if (!canSave) return;
 
     isSavedRef.current = true;
 
-    const prefixPath = nextValuePath.substring(
-      0,
-      nextValuePath.lastIndexOf("["),
-    );
-
-    if (!isEdit) {
+    const lastBracketIdx = nextValuePath.lastIndexOf("[");
+    if (!isEdit && lastBracketIdx !== -1) {
+      const prefixPath = nextValuePath.substring(0, lastBracketIdx);
       dispatch(incrementInstanceCount(prefixPath));
     }
 
@@ -222,8 +274,7 @@ const NestedChildFormContent = ({
 
   const renderContent = () => {
     if (isSchemaBacked && page && page.items) {
-      const activeItems = page.items;
-      const displayedItems = activeItems
+      const displayedItems = page.items
         .map((item) => {
           if (item.type === "field") {
             const filtered = filterFieldsByViewMode([item.field]);
@@ -282,7 +333,8 @@ const NestedChildFormContent = ({
                         valuePath={childPath}
                         depth={1}
                         parentPageIndex={pageIndex}
-                      />                    );
+                      />
+                    );
                   })}
                 </Box>
               );
@@ -306,14 +358,18 @@ const NestedChildFormContent = ({
       );
     }
 
-    // Generated page (fallback)
     const displayedFields = filterFieldsByViewMode(field.children || []);
     return (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
         {displayedFields.map((child) => {
           const childPath = `${nextValuePath}.${child.name}`;
           return (
-            <FieldChecker key={childPath} valuePath={childPath} depth={1} parentPageIndex={pageIndex} />
+            <FieldChecker
+              key={childPath}
+              valuePath={childPath}
+              depth={1}
+              parentPageIndex={pageIndex}
+            />
           );
         })}
       </Box>
@@ -336,11 +392,17 @@ const NestedChildFormContent = ({
           }}
         >
           <Typography variant="body2" sx={{ fontWeight: 600, color: "#e65100" }}>
-            {t("orcid.contributor_already_added") || "Contributor Already Added"}
+            {t("orcid.contributor_already_added")}
           </Typography>
-          <Typography variant="caption" sx={{ color: "text.primary", display: "block", mt: 0.25 }}>
-            A contributor with ORCID ID <strong>{duplicateOrcidInfo.duplicateOrcid}</strong>
-            {duplicateOrcidInfo.duplicateName ? ` (${duplicateOrcidInfo.duplicateName})` : ""} has already been added to this record. Contributors cannot be repeated.
+          <Typography
+            variant="caption"
+            sx={{ color: "text.primary", display: "block", mt: 0.25 }}
+          >
+            <strong>{duplicateOrcidInfo.duplicateOrcid}</strong>
+            {duplicateOrcidInfo.duplicateName
+              ? ` (${duplicateOrcidInfo.duplicateName})`
+              : ""}{" "}
+            {t("orcid.duplicate_warning_text")}
           </Typography>
         </Alert>
       )}
@@ -354,7 +416,7 @@ const NestedChildFormContent = ({
         }}
       >
         {onClose && (
-          <Button color="error" onClick={onClose}>
+          <Button color="error" onClick={handleCancel}>
             {t("popup.cancel")}
           </Button>
         )}
@@ -365,8 +427,10 @@ const NestedChildFormContent = ({
           disabled={!canSave}
           sx={{
             backgroundColor: theme.primaryColor,
+            transition: "filter 0.15s ease",
             "&:hover": {
               backgroundColor: theme.primaryColor,
+              filter: "brightness(0.93)",
             },
           }}
           startIcon={<SaveIcon />}

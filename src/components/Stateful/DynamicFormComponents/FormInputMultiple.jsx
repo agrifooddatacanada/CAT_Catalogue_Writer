@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Box, Button, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -7,7 +7,7 @@ import theme from "../../../theme";
 import {
   selectFieldByPath,
   selectInstanceCount,
-  selectFormValueByPrefix,
+  makeSelectFormValueByPrefix,
 } from "../../../store/selectors/formSelectors";
 import {
   incrementInstanceCount,
@@ -28,65 +28,59 @@ const FormInputMultiple = ({ valuePath, depth = 0 }) => {
 
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
-  // console.log("mode:", mode, "| readOnly:", readOnly);
 
+  // Use stripped fieldPath ONLY for schema lookup; keep indexed valuePath for values & counts
   const fieldPath = removeIndices(valuePath);
   const field = useSelector(selectFieldByPath(fieldPath));
-  const instanceCount = useSelector(selectInstanceCount(fieldPath)) || 0;
-  const fieldValues = useSelector(selectFormValueByPrefix(fieldPath));
+  const instanceCount = useSelector(selectInstanceCount(valuePath)) || 0;
+  const selectPrefixedValues = useMemo(
+    () => makeSelectFormValueByPrefix(valuePath),
+    [valuePath],
+  );
+  const fieldValues = useSelector(selectPrefixedValues);
 
   const handleDelete = useCallback(
     (indexToDelete) => {
-      // 1. Shift all values after indexToDelete down by one
       for (let i = indexToDelete + 1; i < instanceCount; i++) {
-        const fromKey = `${fieldPath}[${i}]`;
-        const toKey = `${fieldPath}[${i - 1}]`;
+        const fromKey = `${valuePath}[${i}]`;
+        const toKey = `${valuePath}[${i - 1}]`;
         const fromValue = fieldValues[fromKey];
         if (fromValue !== undefined && fromValue !== null && fromValue !== "") {
           dispatch(setFieldValue({ path: toKey, value: fromValue }));
         } else {
-          // If there was nothing at fromKey, clear toKey
           dispatch(removeFieldValue(toKey));
         }
       }
-      // 2. Remove the last (now duplicated) entry
       if (instanceCount > 0) {
-        const lastKey = `${fieldPath}[${instanceCount - 1}]`;
+        const lastKey = `${valuePath}[${instanceCount - 1}]`;
         dispatch(removeFieldValue(lastKey));
       }
-      // 3. Decrement instanceCount
-      dispatch(decrementInstanceCount(fieldPath));
+      dispatch(decrementInstanceCount(valuePath));
     },
-    [dispatch, fieldPath, fieldValues, instanceCount],
+    [dispatch, valuePath, fieldValues, instanceCount],
   );
 
   if (!field) return null;
 
-  // Extract just the first `instanceCount` values by parsing indices from keys
   const existingValues = Array.from({ length: instanceCount }).map(
-    (_, index) => {
-      const key = `${fieldPath}[${index}]`;
-      return fieldValues[key];
-    },
+    (_, index) => fieldValues[`${valuePath}[${index}]`],
   );
 
-  // Check if any existing instance is empty
   const hasEmptyEntries = existingValues.some(
-    (value) => !value || value.trim() === "",
+    (value) => value === undefined || value === null || String(value).trim() === "",
   );
 
   const handleAdd = () => {
-    // Promote the current "nextValuePath" to a real instance
-    dispatch(incrementInstanceCount(fieldPath));
+    dispatch(incrementInstanceCount(valuePath));
   };
 
   const { name, label } = field;
+  const displayName = label || name;
 
   return (
     <Box sx={{ mt: 0, mb: 2, width: "100%" }}>
-      {/* All instances */}
       {Array.from({ length: instanceCount }).map((_, index) => {
-        const instancePath = `${fieldPath}[${index}]`;
+        const instancePath = `${valuePath}[${index}]`;
         return (
           <Box
             key={instancePath}
@@ -98,6 +92,9 @@ const FormInputMultiple = ({ valuePath, depth = 0 }) => {
             {!readOnly && (
               <IconButton
                 size="small"
+                aria-label={t("forminputmultiple.remove_item_aria")
+                  .replace("{{name}}", displayName)
+                  .replace("{{index}}", String(index + 1))}
                 onClick={() => handleDelete(index)}
                 sx={{ color: "error.main" }}
               >
@@ -108,7 +105,6 @@ const FormInputMultiple = ({ valuePath, depth = 0 }) => {
         );
       })}
 
-      {/* Add button */}
       {!readOnly && (
         <Button
           disabled={readOnly || hasEmptyEntries}
@@ -117,7 +113,7 @@ const FormInputMultiple = ({ valuePath, depth = 0 }) => {
             borderColor: theme.primaryColor,
             "&:hover": {
               borderColor: theme.primaryColor,
-              backgroundColor: theme.backgroundColor,
+              backgroundColor: theme.hoverUnselectedBgColor,
             },
             mt: 1.5,
           }}
@@ -125,11 +121,10 @@ const FormInputMultiple = ({ valuePath, depth = 0 }) => {
           onClick={handleAdd}
           startIcon={<AddIcon />}
         >
-          {t("forminputmultiple.add")} {label || name}
+          {t("forminputmultiple.add")} {displayName}
         </Button>
       )}
 
-      {/* Show "no data" message in readOnly mode when empty */}
       {readOnly && instanceCount === 0 && existingValues.length === 0 && (
         <span
           style={{
@@ -138,10 +133,10 @@ const FormInputMultiple = ({ valuePath, depth = 0 }) => {
             paddingTop: "16.5px",
             paddingBottom: "16.5px",
             fontStyle: "italic",
-            color: "rgba(100, 100, 100, 1)",
+            color: theme.descriptionColor,
           }}
         >
-          {t("no_data")} {label || name}
+          {t("no_data")} {displayName}
         </span>
       )}
     </Box>

@@ -1,32 +1,47 @@
 import { createSelector } from "@reduxjs/toolkit";
+import { getFieldByPath } from "../../utils/fieldTreeUtils";
 
 export const selectSchemaName = (state) => state.fieldSchema.schemaName;
 export const selectFields = (state) => state.fieldSchema.fields;
+export const selectFieldsByPath = (state) => state.fieldSchema.fieldsByPath;
 export const selectFormatPatterns = (state) => state.fieldSchema.formatPatterns;
 export const selectDepFormatPatterns = (state) =>
   state.fieldSchema.depFormatPatterns;
 export const selectPages = (state) => state.fieldSchema.pages;
+export const selectLoadedSchemaMeta = (state) =>
+  state.fieldSchema.loadedSchemaMeta;
 
-// Direct selectors (use these in components with useSelector)
-export const selectFormState = (state) => {
-  return state.formValues.formState;
-};
-
-// Plain selector - matches selectFormState exactly, no createSelector needed
+// Direct selectors
+export const selectFormState = (state) => state.formValues.formState;
 export const selectAllFormValues = selectFormState;
 
-// Already has data
 export const selectHasFormData = createSelector(
   [selectAllFormValues],
   (formValues) => Object.keys(formValues).length > 0,
 );
 
-export const selectFieldValue = (path) =>
-  createSelector([selectFormState], (formState) => formState[path]);
+// Direct O(1) lookup selector (no Reselect factory overhead on every render)
+export const selectFieldValue = (path) => (state) =>
+  state.formValues.formState[path];
+
+// Memoized factory for components needing prefix-filtered slices
+export const makeSelectFormValueByPrefix = (prefix) =>
+  createSelector([selectAllFormValues], (values) => {
+    const filtered = {};
+    if (!prefix || !values) return filtered;
+    for (const key in values) {
+      if (Object.prototype.hasOwnProperty.call(values, key) && key.startsWith(prefix)) {
+        filtered[key] = values[key];
+      }
+    }
+    return filtered;
+  });
+
+export const selectFormValueByPrefix = makeSelectFormValueByPrefix;
 
 export const selectCheckboxValues = (path) =>
   createSelector(
-    [selectFormValueByPrefix(path), selectInstanceCount(path)],
+    [makeSelectFormValueByPrefix(path), selectInstanceCount(path)],
     (fieldValues, instanceCount) => {
       const values = [];
       for (let i = 0; i < instanceCount; i++) {
@@ -38,18 +53,6 @@ export const selectCheckboxValues = (path) =>
     },
   );
 
-// Convenience selectors for common patterns in your dynamic forms
-export const selectFormValueByPrefix = (prefix) =>
-  createSelector([selectAllFormValues], (values) => {
-    const filtered = {};
-    Object.entries(values).forEach(([key, value]) => {
-      if (key.startsWith(prefix)) {
-        filtered[key] = value;
-      }
-    });
-    return filtered;
-  });
-
 export const selectFilledFieldsCount = createSelector(
   [selectAllFormValues],
   (values) =>
@@ -58,72 +61,57 @@ export const selectFilledFieldsCount = createSelector(
     ).length,
 );
 
-export const selectFieldByPath = (path) =>
-  createSelector([selectFields], (fields) => {
-    if (!Array.isArray(fields)) return null;
-
-    function findField(fieldsArray, targetPath) {
-      for (const field of fieldsArray) {
-        if (field?.path === targetPath) {
-          return field;
-        }
-
-        // Recurse into children
-        if (field?.children?.length) {
-          const found = findField(field.children, targetPath);
-          if (found) return found;
-        }
-      }
-      return null;
-    }
-
-    return findField(fields, path);
-  });
+// O(1) lookup using pre-indexed fieldsByPath map with recursive fallback
+export const selectFieldByPath = (path) => (state) => {
+  if (!path) return null;
+  const byPath = state.fieldSchema.fieldsByPath;
+  if (byPath && Object.prototype.hasOwnProperty.call(byPath, path)) {
+    return byPath[path];
+  }
+  return getFieldByPath(state.fieldSchema.fields, path);
+};
 
 export const selectInstanceCountsState = (state) => state.instanceCounts;
 export const selectAllInstanceCounts = (state) =>
   state.instanceCounts.instanceCounts;
 
-export const selectInstanceCount = (path) =>
-  createSelector([selectAllInstanceCounts], (counts) => {
-    return counts[path] || 0;
-  });
+// Direct O(1) lookup selector
+export const selectInstanceCount = (path) => (state) =>
+  state.instanceCounts.instanceCounts[path] || 0;
 
-export const selectHasInstances = (path) =>
-  createSelector([selectInstanceCount(path)], (count) => count > 0);
+export const selectHasInstances = (path) => (state) =>
+  (state.instanceCounts.instanceCounts[path] || 0) > 0;
 
-export const selectInstanceCountByPrefix = (prefix) =>
+export const makeSelectInstanceCountByPrefix = (prefix) =>
   createSelector([selectAllInstanceCounts], (counts) => {
     const filtered = {};
-    Object.entries(counts).forEach(([key, count]) => {
-      if (key.startsWith(prefix)) {
-        filtered[key] = count;
+    if (!prefix || !counts) return filtered;
+    for (const key in counts) {
+      if (Object.prototype.hasOwnProperty.call(counts, key) && key.startsWith(prefix)) {
+        filtered[key] = counts[key];
       }
-    });
+    }
     return filtered;
   });
 
-// NEW: Schema-driven regex pattern lookup (base + dependent)
+export const selectInstanceCountByPrefix = makeSelectInstanceCountByPrefix;
+
 export const selectFormatPatternByFieldPath = (path) =>
   createSelector(
     [selectFormatPatterns, selectDepFormatPatterns],
     (formatPatterns, depFormatPatterns) => {
-      // 1. Check base patterns first
       if (formatPatterns && formatPatterns[path]) {
         return formatPatterns[path];
       }
 
-      // 2. Check dependent patterns (hierarchical children)
       if (depFormatPatterns) {
-        for (const [parentPath, patterns] of Object.entries(
-          depFormatPatterns,
-        )) {
-          if (path.startsWith(parentPath) && patterns[path]) {
+        for (const [parentPath, patterns] of Object.entries(depFormatPatterns)) {
+          if (path.startsWith(parentPath) && patterns && patterns[path]) {
             return patterns[path];
           }
         }
       }
 
-      return null; // No pattern defined
+      return null;
     },
   );

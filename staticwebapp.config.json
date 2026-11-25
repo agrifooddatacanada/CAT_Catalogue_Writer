@@ -3,7 +3,8 @@
         "rewrite": "/index.html",
         "exclude": [
             "/assets/*",
-            "/*.{css,scss,js,png,gif,ico,jpg,svg}"
+            "/schemas/*",
+            "/*.{css,scss,js,json,png,gif,ico,jpg,svg}"
         ]
     },
     "globalHeaders": {

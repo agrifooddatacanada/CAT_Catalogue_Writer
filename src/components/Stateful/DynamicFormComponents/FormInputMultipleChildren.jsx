@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   CardActions,
-  Grid,
   Chip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -16,87 +15,66 @@ import {
   selectFormState,
   selectFieldByPath,
   selectInstanceCount,
-  selectFormValueByPrefix,
+  makeSelectFormValueByPrefix,
+  selectPages,
 } from "../../../store/selectors/formSelectors";
-import {
-  setFieldValue,
-  removeFieldValue,
-} from "../../../store/slices/formValueSlice";
-import { decrementInstanceCount } from "../../../store/slices/instanceCountsSlice";
+import { setFormState } from "../../../store/slices/formValueSlice";
+import { setAllInstanceCounts } from "../../../store/slices/instanceCountsSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { removeIndices } from "../../../utils/removeIndices";
-// import Popup from "./Popup";
 import { selectMode } from "../../../store/slices/modeSlice";
 import {
   selectActivePage,
   setActivePage,
 } from "../../../store/slices/activePageSlice";
 import { setCurrentPage } from "../../../store/slices/formUiSlice";
-import { selectPages } from "../../../store/selectors/formSelectors";
 import { setChildFormNavigation } from "../../../store/slices/childFormNavigationSlice";
 import { upsertChildPageMeta } from "../../../store/slices/fieldSchemaSlice";
 import { extractCleanOrcid } from "../../../utils/orcidUtils";
+import {
+  findFieldByRelativePath,
+  findLinkedChildPageIndex,
+} from "../../../utils/fieldTreeUtils";
+import { buildInstanceCountsFromValues } from "../../../utils/instanceCounts";
+import { useNotification } from "../../Stateless/NotificationContext";
 
-const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPageIndex }) => {
-  // const [addDialogOpen, setAddDialogOpen] = useState(false);
-  // const [editOpen, setEditOpen] = useState(false); // edit state
-  // const [editingIndex, setEditingIndex] = useState(null); // which instance
-  // const [addOpen, setAddOpen] = useState(false);
+const FormInputMultipleChildren = ({ valuePath, parentPageIndex }) => {
   const { t } = useTranslation();
+  const { confirm } = useNotification();
   const dispatch = useDispatch();
 
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
-  // console.log("mode:", mode, "| readOnly:", readOnly);
 
   const pages = useSelector(selectPages);
   const activePageIndex = useSelector(selectActivePage);
-  const resolvedParentPageIndex = parentPageIndex !== undefined ? parentPageIndex : activePageIndex;
+  const resolvedParentPageIndex =
+    parentPageIndex !== undefined ? parentPageIndex : activePageIndex;
 
   const formState = useSelector(selectFormState);
   const fieldPath = removeIndices(valuePath);
   const field = useSelector(selectFieldByPath(fieldPath));
 
   const instanceCount = useSelector(selectInstanceCount(valuePath));
-  const fieldValues = useSelector(selectFormValueByPrefix(valuePath));
+  const selectPrefixedValues = useMemo(
+    () => makeSelectFormValueByPrefix(valuePath),
+    [valuePath],
+  );
+  const fieldValues = useSelector(selectPrefixedValues);
 
-  const childFieldNames = (field.children || [])
-    .map((child) => child.name)
-    .sort();
-
-  const linkedChildPageIndex =
-    childFieldNames.length > 0
-      ? pages.findIndex((page) => {
-          const pageFieldNames = (page.items || [])
-            .flatMap((item) => {
-              if (item.type === "section") {
-                return (item.fields || []).map((f) => f.name);
-              }
-              if (item.type === "field" && item.field) {
-                return [item.field.name];
-              }
-              return [];
-            })
-            .sort();
-
-          return (
-            pageFieldNames.length === childFieldNames.length &&
-            pageFieldNames.every((name, idx) => name === childFieldNames[idx])
-          );
-        })
-      : -1;
+  const linkedChildPageIndex = useMemo(
+    () => findLinkedChildPageIndex(field, pages),
+    [field, pages],
+  );
 
   // Group flat values into instances: {0: {...}, 1: {...}, ...}
   const instances = useMemo(() => {
     const grouped = {};
     Object.entries(fieldValues || {}).forEach(([fullKey, value]) => {
       if (!fullKey.startsWith(valuePath)) return;
-      // Extract relative path after valuePath
       const relativePath = fullKey.substring(valuePath.length);
-      // Parse first [index] OR .property
       const indexMatch = relativePath.match(/^\[(\d+)\]/);
       if (indexMatch) {
-        // Array instance: creator[0].affiliation[1].prop → index 1
         const index = parseInt(indexMatch[1], 10);
         const prop =
           relativePath.substring(indexMatch[0].length).slice(1) || "_base";
@@ -104,31 +82,14 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
         grouped[index][prop] = value;
       }
     });
-    // Convert to array, sort by Redux index, create visual order (handles gaps/missing instances)
     return Object.entries(grouped)
-      .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10)) // Redux order
+      .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
       .map(([reduxIndex, instanceData]) => ({
-        visualIndex: parseInt(reduxIndex, 10), // 0, 1, 2, ... for display
-        reduxIndex: parseInt(reduxIndex, 10), // Same for Popup path
+        visualIndex: parseInt(reduxIndex, 10),
+        reduxIndex: parseInt(reduxIndex, 10),
         data: instanceData,
       }));
   }, [fieldValues, valuePath]);
-
-  const findFieldByRelativePath = (parentField, relativePath) => {
-    if (!parentField?.children?.length) return null;
-
-    for (const child of parentField.children) {
-      if (child.name === relativePath) return child;
-
-      if (relativePath.startsWith(`${child.name}.`)) {
-        const nestedPath = relativePath.slice(child.name.length + 1);
-        const found = findFieldByRelativePath(child, nestedPath);
-        if (found) return found;
-      }
-    }
-
-    return null;
-  };
 
   const orderedPaths = useMemo(() => {
     const paths = [];
@@ -156,18 +117,36 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
     return paths;
   }, [field, linkedChildPageIndex, pages]);
 
+  const name = field?.name;
+  const label = field?.label;
+
+  useEffect(() => {
+    if (linkedChildPageIndex >= 0 && field) {
+      dispatch(
+        upsertChildPageMeta({
+          childPageIndex: linkedChildPageIndex,
+          parentFieldPath: fieldPath,
+          parentPageIndex: resolvedParentPageIndex,
+          label: label || name,
+        }),
+      );
+    }
+  }, [linkedChildPageIndex, field, fieldPath, resolvedParentPageIndex, label, name, dispatch]);
+
+  if (!field) return null;
+
   const parseKey = (key) => {
     const parts = key.split(".");
     let currentPath = "";
     return parts.map((part) => {
       const match = part.match(/^([^[]+)(?:\[(\d+)\])?$/);
-      const name = match ? match[1] : part;
+      const partName = match ? match[1] : part;
       const index =
         match && match[2] !== undefined ? parseInt(match[2], 10) : -1;
 
-      currentPath = currentPath ? `${currentPath}.${name}` : name;
+      currentPath = currentPath ? `${currentPath}.${partName}` : partName;
 
-      return { name, index, fullPath: currentPath };
+      return { name: partName, index, fullPath: currentPath };
     });
   };
 
@@ -197,23 +176,8 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
     return partsA.length - partsB.length;
   };
 
-  // Show Add button only if not in readOnly mode
   const shouldShowAddButton = !readOnly;
-
-  const { name, label } = field;
-
-  React.useEffect(() => {
-    if (linkedChildPageIndex >= 0) {
-      dispatch(
-        upsertChildPageMeta({
-          childPageIndex: linkedChildPageIndex,
-          parentFieldPath: fieldPath,
-          parentPageIndex: resolvedParentPageIndex,
-          label: label || name,
-        }),
-      );
-    }
-  }, [linkedChildPageIndex, fieldPath, resolvedParentPageIndex, label, name, dispatch]);
+  const displayName = label || name;
 
   const handleAddAsPage = () => {
     dispatch(
@@ -221,9 +185,9 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
         push: true,
         nextValuePath: `${valuePath}[${instanceCount}]`,
         parentPageIndex: resolvedParentPageIndex,
-        childPageIndex: linkedChildPageIndex,
+        childPageIndex: linkedChildPageIndex >= 0 ? linkedChildPageIndex : null,
         isEdit: false,
-        fallbackLabel: label || name,
+        fallbackLabel: displayName,
         fallbackFieldPath: fieldPath,
         useGeneratedPage: linkedChildPageIndex < 0,
       }),
@@ -236,7 +200,6 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
     dispatch(setCurrentPage(1));
   };
 
-  // Edit handler
   const handleEdit = (instance) => {
     dispatch(
       setChildFormNavigation({
@@ -245,7 +208,7 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
         parentPageIndex: resolvedParentPageIndex,
         childPageIndex: linkedChildPageIndex >= 0 ? linkedChildPageIndex : null,
         isEdit: true,
-        fallbackLabel: label || name,
+        fallbackLabel: displayName,
         fallbackFieldPath: fieldPath,
         useGeneratedPage: linkedChildPageIndex < 0,
       }),
@@ -257,26 +220,23 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
 
     dispatch(setCurrentPage(1));
   };
-  // const handleEdit = (instance) => {
-  //   setEditingIndex(instance.reduxIndex); // Use Redux index for popup path
-  //   setEditOpen(true);
-  // };
 
-  // Delete handler
-  const handleDelete = (instance) => {
-    const indexToDelete = instance.reduxIndex; // we stored reduxIndex on each instance
+  // Delete handler: shifts keys AND rebuilds instanceCounts cleanly so nested sub-arrays stay synchronized
+  const handleDelete = async (instance) => {
+    const indexToDelete = instance.reduxIndex;
+    const itemLabel = `${displayName} #${instance.visualIndex + 1}`;
 
-    if (
-      !window.confirm(
-        `Delete ${field.label || field.name} #${instance.visualIndex + 1}?`,
-      )
-    ) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: t("forminputmultiple.delete_confirm_title"),
+      message: t("forminputmultiple.delete_confirm_message").replace("{{name}}", itemLabel),
+      confirmLabel: t("forminputmultiple.delete"),
+      cancelLabel: t("common.cancel"),
+      confirmColor: "error",
+    });
 
-    // 1. Collect all keys for this base path: e.g. "creator[0].affiliation["
-    const basePrefix = `${valuePath}[`; // e.g. "creator[0].affiliation["
+    if (!confirmed) return;
 
+    const basePrefix = `${valuePath}[`;
     const allKeysForThisField = Object.keys(formState).filter((key) =>
       key.startsWith(basePrefix),
     );
@@ -285,12 +245,11 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
       return;
     }
 
-    // 2. Find all existing indices for this base
     const indices = Array.from(
       new Set(
         allKeysForThisField.map((key) => {
-          const afterBase = key.slice(basePrefix.length); // "0].affiliation..."
-          const indexStr = afterBase.split("]")[0]; // "0"
+          const afterBase = key.slice(basePrefix.length);
+          const indexStr = afterBase.split("]")[0];
           return parseInt(indexStr, 10);
         }),
       ),
@@ -299,9 +258,17 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
     const maxIndex = indices.length ? indices[indices.length - 1] : -1;
     if (indexToDelete > maxIndex) return;
 
-    // 3. Shift all instances AFTER indexToDelete down by 1
-    //    For i = indexToDelete+1 .. maxIndex:
-    //      valuePath[i+1].something -> valuePath[i].something
+    const nextFormState = { ...formState };
+
+    // Remove deleted instance keys
+    const deletedPrefix = `${valuePath}[${indexToDelete}]`;
+    allKeysForThisField
+      .filter((key) => key.startsWith(deletedPrefix))
+      .forEach((key) => {
+        delete nextFormState[key];
+      });
+
+    // Shift subsequent instances down by 1
     for (let i = indexToDelete + 1; i <= maxIndex; i += 1) {
       const fromPrefix = `${valuePath}[${i}]`;
       const toPrefix = `${valuePath}[${i - 1}]`;
@@ -309,208 +276,195 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
       allKeysForThisField
         .filter((key) => key.startsWith(fromPrefix))
         .forEach((oldKey) => {
-          const suffix = oldKey.slice(fromPrefix.length); // "].affiliation..."
-          const newKey = `${toPrefix}${suffix}`; // "creator[0].affiliation[1].x" -> "[0].x"
-          const value = formState[oldKey];
-
-          // Move value
-          dispatch(setFieldValue({ path: newKey, value }));
-          dispatch(removeFieldValue(oldKey));
+          const suffix = oldKey.slice(fromPrefix.length);
+          const newKey = `${toPrefix}${suffix}`;
+          nextFormState[newKey] = formState[oldKey];
+          delete nextFormState[oldKey];
         });
     }
 
-    // 4. Remove the last instance (now duplicated)
-    const lastPrefix = `${valuePath}[${maxIndex}]`;
-    allKeysForThisField
-      .filter((key) => key.startsWith(lastPrefix))
-      .forEach((key) => {
-        dispatch(removeFieldValue(key));
-      });
-
-    // 5. Decrement instance count for this base path
-    dispatch(decrementInstanceCount(valuePath));
+    dispatch(setFormState(nextFormState));
+    dispatch(setAllInstanceCounts(buildInstanceCountsFromValues(nextFormState)));
   };
 
   return (
     <Box sx={{ my: 0, width: "100%" }}>
-      <Grid
-        container
-        spacing={2}
-        sx={{
-          pt: readOnly && instances.length !== 0 ? 1 : 0,
-          pb: readOnly && instances.length !== 0 ? 2 : 0,
-        }}
-      >
-        {instances.map((instance) => (
-          <Grid key={instance.reduxIndex} sx={{ display: "block" }}>
-            <Card
-              elevation={2}
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                minWidth: { xs: "240px", md: "320px" },
-                maxWidth: { xs: "240px", md: "320px" },
-                justifyContent: "space-between",
-              }}
-            >
-              <CardContent
+      {instances.length > 0 && (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
+            gap: 2,
+            pt: readOnly ? 1 : 0,
+            pb: readOnly ? 2 : 0,
+          }}
+        >
+          {instances.map((instance) => {
+            const instanceOrcid = extractCleanOrcid(
+              instance.data["id"] ||
+                Object.entries(instance.data).find(
+                  ([k]) => k.toLowerCase().includes("orcid") || k.endsWith(".id"),
+                )?.[1],
+            );
+            const isDuplicateInList =
+              instanceOrcid &&
+              instances.some((other) => {
+                if (other.reduxIndex === instance.reduxIndex) return false;
+                const otherOrcid = extractCleanOrcid(
+                  other.data["id"] ||
+                    Object.entries(other.data).find(
+                      ([k]) => k.toLowerCase().includes("orcid") || k.endsWith(".id"),
+                    )?.[1],
+                );
+                return otherOrcid && otherOrcid === instanceOrcid;
+              });
+
+            const sortedEntries = Object.entries(instance.data).sort(([keyA], [keyB]) =>
+              compareKeys(keyA, keyB),
+            );
+
+            const nodes = [];
+            let previousParts = [];
+
+            sortedEntries.forEach(([subKey, value]) => {
+              if (value === null || value === undefined || value === "") return;
+
+              const parts = parseKey(subKey);
+
+              let divergenceIndex = 0;
+              while (
+                divergenceIndex < parts.length &&
+                divergenceIndex < previousParts.length &&
+                parts[divergenceIndex].name === previousParts[divergenceIndex].name &&
+                parts[divergenceIndex].index === previousParts[divergenceIndex].index
+              ) {
+                divergenceIndex++;
+              }
+
+              for (let i = divergenceIndex; i < parts.length - 1; i++) {
+                const part = parts[i];
+                const matchedField = findFieldByRelativePath(field, part.fullPath);
+                const labelObj = matchedField?.label || matchedField?.name || part.name;
+                const labelStr =
+                  typeof labelObj === "string"
+                    ? labelObj
+                    : typeof labelObj === "object" && labelObj?.title
+                      ? labelObj.title
+                      : String(labelObj) || "Unknown";
+
+                const nodeLabel =
+                  labelStr + (part.index !== -1 ? ` #${part.index + 1}` : "");
+
+                nodes.push({
+                  type: "header",
+                  key: `${part.fullPath}${part.index !== -1 ? `[${part.index}]` : ""}`,
+                  label: nodeLabel,
+                  depth: i,
+                });
+              }
+
+              const lastPart = parts[parts.length - 1];
+              const matchedField = findFieldByRelativePath(field, lastPart.fullPath);
+              const labelObj =
+                matchedField?.label || matchedField?.name || lastPart.name;
+              const labelStr =
+                typeof labelObj === "string"
+                  ? labelObj
+                  : typeof labelObj === "object" && labelObj?.title
+                    ? labelObj.title
+                    : String(labelObj) || "Unknown";
+
+              const isMultiplePrimitive =
+                matchedField?.multiple && !(matchedField?.children?.length > 0);
+
+              if (isMultiplePrimitive && lastPart.index !== -1) {
+                const existingNodeIndex = nodes.findIndex(
+                  (n) => n.type === "valueArray" && n.fullPath === lastPart.fullPath,
+                );
+
+                if (existingNodeIndex !== -1) {
+                  nodes[existingNodeIndex].values.push(value);
+                } else {
+                  nodes.push({
+                    type: "valueArray",
+                    fullPath: lastPart.fullPath,
+                    key: lastPart.fullPath,
+                    label: labelStr,
+                    values: [value],
+                    depth: parts.length - 1,
+                  });
+                }
+              } else {
+                const leafLabel =
+                  labelStr + (lastPart.index !== -1 ? ` #${lastPart.index + 1}` : "");
+
+                nodes.push({
+                  type: "value",
+                  key: subKey,
+                  label: leafLabel,
+                  value: typeof value === "boolean" ? String(value) : value,
+                  depth: parts.length - 1,
+                });
+              }
+
+              previousParts = parts;
+            });
+
+            return (
+              <Card
+                key={instance.reduxIndex}
+                elevation={2}
                 sx={{
+                  height: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  pb: 0,
+                  justifyContent: "space-between",
+                  minWidth: 0,
                 }}
               >
-                {(() => {
-                  const instanceOrcid = extractCleanOrcid(
-                    instance.data["id"] ||
-                    Object.entries(instance.data).find(([k]) =>
-                      k.toLowerCase().includes("orcid") || k.endsWith(".id")
-                    )?.[1]
-                  );
-                  const isDuplicateInList = instanceOrcid && instances.some((other) => {
-                    if (other.reduxIndex === instance.reduxIndex) return false;
-                    const otherOrcid = extractCleanOrcid(
-                      other.data["id"] ||
-                      Object.entries(other.data).find(([k]) =>
-                        k.toLowerCase().includes("orcid") || k.endsWith(".id")
-                      )?.[1]
-                    );
-                    return otherOrcid && otherOrcid === instanceOrcid;
-                  });
+                <CardContent
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    pb: 0,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ mb: 0, fontSize: "1.05rem" }}>
+                      {displayName} #{instance.visualIndex + 1}
+                    </Typography>
+                    {isDuplicateInList && (
+                      <Chip
+                        label={t("forminputmultiple.duplicate_contributor")}
+                        color="warning"
+                        size="small"
+                        sx={{ fontWeight: 600, height: 20, fontSize: "0.7rem" }}
+                      />
+                    )}
+                  </Box>
 
-                  return (
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mb: 1 }}>
-                      <Typography variant="h6" sx={{ mb: 0 }}>
-                        {field.label} #{instance.visualIndex + 1}
-                      </Typography>
-                      {isDuplicateInList && (
-                        <Chip
-                          label="Duplicate Contributor"
-                          color="warning"
-                          size="small"
-                          sx={{ fontWeight: 600, height: 20, fontSize: "0.7rem" }}
-                        />
-                      )}
-                    </Box>
-                  );
-                })()}
-                {(() => {
-                  const sortedEntries = Object.entries(instance.data).sort(
-                    ([keyA], [keyB]) => compareKeys(keyA, keyB)
-                  );
-
-                  const nodes = [];
-                  let previousParts = [];
-
-                  sortedEntries.forEach(([subKey, value]) => {
-                    if (value === null || value === undefined || value === "") return;
-
-                    const parts = parseKey(subKey);
-
-                    let divergenceIndex = 0;
-                    while (
-                      divergenceIndex < parts.length &&
-                      divergenceIndex < previousParts.length &&
-                      parts[divergenceIndex].name ===
-                        previousParts[divergenceIndex].name &&
-                      parts[divergenceIndex].index ===
-                        previousParts[divergenceIndex].index
-                    ) {
-                      divergenceIndex++;
-                    }
-
-                    for (let i = divergenceIndex; i < parts.length - 1; i++) {
-                      const part = parts[i];
-                      const matchedField = findFieldByRelativePath(
-                        field,
-                        part.fullPath
-                      );
-                      const labelObj =
-                        matchedField?.label || matchedField?.name || part.name;
-                      const labelStr =
-                        typeof labelObj === "string"
-                          ? labelObj
-                          : typeof labelObj === "object" && labelObj?.title
-                            ? labelObj.title
-                            : String(labelObj) || "Unknown";
-
-                      const label =
-                        labelStr +
-                        (part.index !== -1 ? ` #${part.index + 1}` : "");
-
-                      nodes.push({
-                        type: "header",
-                        key: part.fullPath + (part.index !== -1 ? `[${part.index}]` : ""),
-                        label,
-                        depth: i,
-                      });
-                    }
-
-                    const lastPart = parts[parts.length - 1];
-                    const matchedField = findFieldByRelativePath(
-                      field,
-                      lastPart.fullPath
-                    );
-                    const labelObj =
-                      matchedField?.label || matchedField?.name || lastPart.name;
-                    const labelStr =
-                      typeof labelObj === "string"
-                        ? labelObj
-                        : typeof labelObj === "object" && labelObj?.title
-                          ? labelObj.title
-                          : String(labelObj) || "Unknown";
-
-                    // Check if it's a multiple/array field (like checkboxes)
-                    const isMultiplePrimitive = matchedField?.multiple && !(matchedField?.children?.length > 0);
-
-                    if (isMultiplePrimitive && lastPart.index !== -1) {
-                      const existingNodeIndex = nodes.findIndex(
-                        (n) => n.type === "valueArray" && n.fullPath === lastPart.fullPath
-                      );
-
-                      if (existingNodeIndex !== -1) {
-                        nodes[existingNodeIndex].values.push(value);
-                      } else {
-                        nodes.push({
-                          type: "valueArray",
-                          fullPath: lastPart.fullPath,
-                          key: lastPart.fullPath,
-                          label: labelStr,
-                          values: [value],
-                          depth: parts.length - 1,
-                        });
-                      }
-                    } else {
-                      const leafLabel =
-                        labelStr +
-                        (lastPart.index !== -1 ? ` #${lastPart.index + 1}` : "");
-
-                      nodes.push({
-                        type: "value",
-                        key: subKey,
-                        label: leafLabel,
-                        value,
-                        depth: parts.length - 1,
-                      });
-                    }
-
-                    previousParts = parts;
-                  });
-
-                  return nodes.map((node) => {
-                    const depth = node.depth;
+                  {nodes.map((node) => {
+                    const nodeDepth = node.depth;
                     return (
                       <Box
                         key={node.key}
                         sx={{
-                          mt: depth > 0 ? 0.5 : 2.5,
+                          mt: nodeDepth > 0 ? 0.5 : 2,
                           flexGrow: 1,
-                          pl: depth > 0 ? 1.5 : 0,
-                          ml: depth > 0 ? depth * 1.5 : 0,
+                          pl: nodeDepth > 0 ? 1.5 : 0,
+                          ml: nodeDepth > 0 ? nodeDepth * 1.5 : 0,
                           borderLeft:
-                            depth > 0
-                              ? `2px solid ${theme.palette?.divider || "rgba(0, 0, 0, 0.12)"}`
+                            nodeDepth > 0
+                              ? "2px solid rgba(0, 0, 0, 0.12)"
                               : "none",
                         }}
                       >
@@ -520,10 +474,15 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
                           </Typography>
                         ) : node.type === "valueArray" ? (
                           <>
-                            <Typography variant="subtitle2">
-                              {node.label}:
-                            </Typography>
-                            <Box sx={{ mt: 0.5, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                            <Typography variant="subtitle2">{node.label}:</Typography>
+                            <Box
+                              sx={{
+                                mt: 0.5,
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 0.5,
+                              }}
+                            >
                               {node.values.map((val, idx) => (
                                 <Chip key={`${val}-${idx}`} label={val} size="small" />
                               ))}
@@ -531,9 +490,7 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
                           </>
                         ) : (
                           <>
-                            <Typography variant="subtitle2">
-                              {node.label}:
-                            </Typography>
+                            <Typography variant="subtitle2">{node.label}:</Typography>
                             <Typography
                               variant="body2"
                               sx={{
@@ -542,30 +499,33 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
                               }}
                               color="text.secondary"
                             >
-                              {node.value || "—"}
+                              {node.value !== undefined && node.value !== null && node.value !== ""
+                                ? node.value
+                                : "—"}
                             </Typography>
                           </>
                         )}
                       </Box>
                     );
-                  });
-                })()}
-              </CardContent>
+                  })}
+                </CardContent>
 
-              {!readOnly && (
-                <CardActions sx={{ pt: 0, justifyContent: "flex-end", mx: 1 }}>
-                  <Button onClick={() => handleEdit(instance)}>Edit</Button>
-                  <Button color="error" onClick={() => handleDelete(instance)}>
-                    Delete
-                  </Button>
-                </CardActions>
-              )}
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                {!readOnly && (
+                  <CardActions sx={{ pt: 1, justifyContent: "flex-end", mx: 1 }}>
+                    <Button onClick={() => handleEdit(instance)}>
+                      {t("forminputmultiple.edit")}
+                    </Button>
+                    <Button color="error" onClick={() => handleDelete(instance)}>
+                      {t("forminputmultiple.delete")}
+                    </Button>
+                  </CardActions>
+                )}
+              </Card>
+            );
+          })}
+        </Box>
+      )}
 
-      {/* Add button */}
       {shouldShowAddButton && (
         <Button
           sx={{
@@ -573,18 +533,15 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
             borderColor: theme.primaryColor,
             "&:hover": {
               borderColor: theme.primaryColor,
-              backgroundColor: theme.backgroundColor,
+              backgroundColor: theme.hoverUnselectedBgColor,
             },
-            mt: 1,
+            mt: 1.5,
           }}
           variant="outlined"
           onClick={handleAddAsPage}
-          // onClick={() => {
-          //   setAddOpen(true);
-          // }}
           startIcon={<AddIcon />}
         >
-          {t("forminputmultiple.add")} {label || name}
+          {t("forminputmultiple.add")} {displayName}
         </Button>
       )}
 
@@ -600,44 +557,9 @@ const FormInputMultipleChildren = ({ valuePath, depth = 0, isEditMode, parentPag
             pb: 2,
           }}
         >
-          {t("no_data")} {label || name}
+          {t("no_data")} {displayName}
         </Box>
       )}
-
-      {/* Render Popup */}
-      {/* <Popup
-        nextValuePath={`${valuePath}[${instanceCount}]`}
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-      /> */}
-
-      {/* EDIT POPUP */}
-      {/* {editingIndex !== null && (
-        <Popup
-          nextValuePath={`${valuePath}[${editingIndex}]`} // Reuse existing index
-          open={editOpen}
-          onClose={() => {
-            setEditOpen(false);
-            setEditingIndex(null);
-          }}
-        />
-      )} */}
-
-      {/* Show "no data" message in readOnly mode when empty */}
-      {!readOnly ? null : !isEditMode && fieldValues.length === 0 ? (
-        <span
-          style={{
-            display: "inline-block",
-            paddingLeft: "14px",
-            paddingTop: "16.5px",
-            paddingBottom: "16.5px",
-            fontStyle: "italic",
-            color: "rgba(100, 100, 100, 1)",
-          }}
-        >
-          {t("no_data")} {label || name}
-        </span>
-      ) : null}
     </Box>
   );
 };

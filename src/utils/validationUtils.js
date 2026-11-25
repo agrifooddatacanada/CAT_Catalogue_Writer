@@ -1,4 +1,32 @@
-import { checkDuplicateContributorOrcid } from "./orcidUtils";
+import {
+  checkDuplicateContributorOrcid,
+  isQualifiedAttributionOrcidField,
+} from "./orcidUtils";
+import { removeIndices } from "./removeIndices";
+
+function lookupPatternData(fieldName, captureBase, formatPatterns, depFormatPatterns) {
+  if (captureBase && depFormatPatterns) {
+    const scopedKey = `${captureBase}::${fieldName}`;
+    if (depFormatPatterns[scopedKey]) {
+      return depFormatPatterns[scopedKey];
+    }
+  }
+  if (formatPatterns && formatPatterns[fieldName]) {
+    return formatPatterns[fieldName];
+  }
+  if (depFormatPatterns && depFormatPatterns[fieldName]) {
+    return depFormatPatterns[fieldName];
+  }
+  return null;
+}
+
+function extractRegexSource(patternData) {
+  if (!patternData) return null;
+  if (typeof patternData === "string") return patternData;
+  if (patternData?.source && patternData.type === "regex") return patternData.source;
+  if (patternData instanceof RegExp) return patternData.source;
+  return null;
+}
 
 export function getValidationError({
   field,
@@ -9,52 +37,78 @@ export function getValidationError({
   formatPatterns,
   depFormatPatterns,
   allFormValues,
+  t,
 }) {
-  const { name, label, required } = field;
+  if (!field) return null;
+  const { name, label, required, placeholder, captureBase } = field;
+  const displayName = label || name;
 
-  // 1. Required validation
-  if (required && (!value || String(value).trim() === "")) {
-    return `${label || name} is required`;
+  const translate = (key, fallback) => {
+    if (typeof t !== "function") return fallback;
+    const translated = t(key);
+    return translated && translated !== key ? translated : fallback;
+  };
+
+  // 1. Required validation (Boolean `false` is a valid non-empty answer)
+  const isEmpty =
+    value === undefined ||
+    value === null ||
+    (typeof value === "string" && value.trim() === "") ||
+    (Array.isArray(value) && value.length === 0);
+
+  if (required && isEmpty) {
+    return `${displayName} ${translate("validation.is_required", "is required")}`;
   }
 
   // 2. Skip if readOnly or empty (after required check)
-  if (readOnly || !value) return null;
+  if (readOnly || isEmpty) return null;
 
-  // 2.5. Duplicate Contributor ORCID check
-  if (allFormValues) {
-    const pathToUse = valuePath || fieldPath;
+  // 2.5. Duplicate Contributor ORCID check (scoped strictly to ORCID fields)
+  const pathToUse = valuePath || fieldPath || "";
+  const cleanFieldPath = removeIndices(pathToUse);
+  if (allFormValues && isQualifiedAttributionOrcidField(field, cleanFieldPath)) {
     const dupCheck = checkDuplicateContributorOrcid(allFormValues, pathToUse, value);
     if (dupCheck.isDuplicate) {
       const dupLabel = dupCheck.duplicateName
         ? `${dupCheck.duplicateName} (${dupCheck.duplicateOrcid})`
         : dupCheck.duplicateOrcid;
-      return `Contributor already added: ${dupLabel}`;
+      return `${translate("validation.contributor_already_added", "Contributor already added")}: ${dupLabel}`;
     }
   }
 
   // 3. Field name from path
-  const pathToExtract = fieldPath || valuePath || "";
-  const fieldName = pathToExtract.split(".").pop() || name;
+  const fieldName = cleanFieldPath.split(".").pop() || name;
 
-  // 4. Merge patterns
-  const allPatterns = { ...formatPatterns, ...depFormatPatterns };
-  const patternData = allPatterns[fieldName];
-  if (!patternData) return null;
-
-  // 5. Normalize pattern
-  let regexPattern;
-  if (typeof patternData === "string") {
-    regexPattern = patternData;
-  } else if (patternData?.source && patternData.type === "regex") {
-    regexPattern = patternData.source;
-  }
+  // 4. Lookup pattern (captureBase-scoped first to prevent dependency collisions)
+  const patternData = lookupPatternData(
+    fieldName,
+    captureBase,
+    formatPatterns,
+    depFormatPatterns
+  );
+  const regexPattern = extractRegexSource(patternData);
   if (!regexPattern) return null;
 
-  // 6. Test regex
+  // 5. Test regex
   try {
     const regex = new RegExp(regexPattern, "i");
-    if (!regex.test(value)) {
-      return `Invalid format for ${label || fieldName}`;
+    const testVal = Array.isArray(value) ? value : [value];
+    const hasMismatch = testVal.some((item) => !regex.test(String(item)));
+    if (hasMismatch) {
+      const baseMsg = `${translate("validation.invalid_format", "Invalid format for")} ${displayName}`;
+      const maxLen = getMaxLengthFromPattern(
+        fieldName,
+        formatPatterns,
+        depFormatPatterns,
+        captureBase
+      );
+      if (placeholder) {
+        return `${baseMsg} (${translate("validation.expected", "e.g.")} ${placeholder})`;
+      }
+      if (maxLen && String(value).length > maxLen) {
+        return `${baseMsg} (${translate("validation.max_chars", "max")} ${maxLen})`;
+      }
+      return baseMsg;
     }
   } catch (err) {
     console.error("Regex compilation failed:", regexPattern);
@@ -63,17 +117,19 @@ export function getValidationError({
   return null;
 }
 
-export function getMaxLengthFromPattern(fieldName, formatPatterns, depFormatPatterns) {
-  const allPatterns = { ...formatPatterns, ...depFormatPatterns };
-  const patternData = allPatterns[fieldName];
-  if (!patternData) return null;
-
-  let regexPattern;
-  if (typeof patternData === "string") {
-    regexPattern = patternData;
-  } else if (patternData?.source && patternData.type === "regex") {
-    regexPattern = patternData.source;
-  }
+export function getMaxLengthFromPattern(
+  fieldName,
+  formatPatterns,
+  depFormatPatterns,
+  captureBase = null
+) {
+  const patternData = lookupPatternData(
+    fieldName,
+    captureBase,
+    formatPatterns,
+    depFormatPatterns
+  );
+  const regexPattern = extractRegexSource(patternData);
   if (!regexPattern) return null;
 
   const match = regexPattern.match(/\{(\d+)?,(\d+)?\}\$?$/);

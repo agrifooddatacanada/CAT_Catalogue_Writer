@@ -1,9 +1,13 @@
+/* global __SCHEMA_INDEX__ */
 /**
  * Schema Registry for CAT Catalogue Writer
- * 
+ *
  * Manages multi-version Schema Plugins, Schema Families, and historical SAID mappings.
- * Supports Semantic Versioning (SemVer) starting from 0.1.0 (development/drafts) 
+ * Supports Semantic Versioning (SemVer) starting from 0.1.0 (development/drafts)
  * through 1.0.0+ (production releases).
+ *
+ * Schema JSON payloads are fetched lazily on demand from /schemas/ rather than
+ * eagerly bundled into the initial JS chunk.
  */
 
 // Regular expression supporting SemVer starting from 0.1.0+ (and 0.0.x if needed)
@@ -31,11 +35,9 @@ export const normalizeVersion = (version, defaultVersion = "1.0.0") => {
   if (!version) return defaultVersion;
   const clean = String(version).trim().replace(/^v/i, "");
   if (SEMVER_REGEX.test(clean)) return clean;
-  // Handle 2-part format e.g. "0.1" -> "0.1.0", "1.0" -> "1.0.0"
   if (/^(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(clean)) {
     return `${clean}.0`;
   }
-  // Handle 1-part format e.g. "1" -> "1.0.0", "2" -> "2.0.0"
   if (/^(0|[1-9]\d*)$/.test(clean)) {
     return `${clean}.0.0`;
   }
@@ -63,7 +65,6 @@ export const compareSemVer = (vA, vB) => {
 
 /**
  * Increments a SemVer string by type: 'patch', 'minor', or 'major'.
- * Supports versions starting from 0.1.0 or 1.0.0.
  * @param {string} version - Current version
  * @param {'patch'|'minor'|'major'} releaseType
  * @returns {string} Incremented version
@@ -86,7 +87,6 @@ export const incrementVersion = (version, releaseType = "patch") => {
  * Known metadata overrides for historical schemas and explicit lineage.
  */
 export const KNOWN_SCHEMA_MANIFEST = {
-  // SAID -> Metadata (Pure out-of-band SAID mapping without changing schema plugin file contents)
   "EHyGYfN7TNAUsfG9cpvC1uqC-RfahoO6TdaYtYw1cH4R": {
     family: "Project description",
     version: "1.0.0",
@@ -169,14 +169,12 @@ export const KNOWN_SCHEMA_MANIFEST = {
 /**
  * Checks whether a schema plugin SAID has become outdated because a newer version exists.
  * @param {string} said - Schema plugin SAID (from @schema_id)
- * @returns {{ isOutdated: boolean, currentVersion?: string, latestVersion?: string, family?: string, latestSaid?: string }}
  */
 export const getSchemaPluginOutdatedStatus = (said) => {
   if (!said) return { isOutdated: false };
   const item = KNOWN_SCHEMA_MANIFEST[said];
   if (!item) return { isOutdated: false };
 
-  // Find all known versions in the same family
   const familyEntries = Object.entries(KNOWN_SCHEMA_MANIFEST).filter(
     ([, meta]) => meta.family === item.family
   );
@@ -205,51 +203,54 @@ export const getSchemaPluginOutdatedStatus = (said) => {
   };
 };
 
-// Scan visible public/schemas (non-recursive: excludes hidden schemas)
-const visibleContext = require.context("../../public/schemas", false, /\.json$/);
+// Fallback index used in non-webpack test environments (Jest) when __SCHEMA_INDEX__ is not injected
+const FALLBACK_SCHEMA_INDEX = {
+  visible: [
+    { name: "Basic DMP", said: "EA5-t0oGau19k-wmR4-WsxD44ed6-WpUQUC26ztoTta3", filePath: "./schemas/Basic_OCA_package.json" },
+    { name: "cataloguerecord_DCAT.top", said: "EFyyq7pbgewSwaeAZlBKl4Zk2nciNTfB2CpnEjphcnQ8", filePath: "./schemas/cataloguerecord_DCAT.top_OCA_package.json" },
+    { name: "ContextHub_project_catalogue_record", said: "EE4QpFQwDzOP1xjn9iffzZm5Wx1RlybSeU7RKIFsGkTs", filePath: "./schemas/ContextHub_project_catalogue_record_OCA_package.json" },
+    { name: "ContextHub_questionnaire_catalogue_record", said: "ELj685L9fDdQUFJV-5EffI1sUMrYu2j1jKOhy8u3SXi8", filePath: "./schemas/ContextHub_questionnaire_catalogue_record_OCA_package.json" },
+    { name: "ContextHub_schema_catalogue_record", said: "EKXaGk0pzYY8hMX0uAzyU3gOTPw1saFN-IPzgHWw7I1I", filePath: "./schemas/ContextHub_schema_catalogue_record_OCA_package.json" },
+    { name: "Dublin_Core_Project", said: "EJ4icsxrpbxRHy0Eo_zHMB9_kTkrZ4hmT7r4CKLtL41_", filePath: "./schemas/Dublin_Core_Project_OCA_package.json" },
+    { name: "Dublin_Core_Repository", said: "EDqM_wwgWgRrEd609T9X8wTasxpp1e_QJYmdBxFVRoii", filePath: "./schemas/Dublin_Core_Repository_OCA_package.json" },
+    { name: "OpenAIRE Application Profile Parent", said: "ELFQbADu3w__7hDbaF6iY_1nOa68LgJWmqf3B_dTV0e5", filePath: "./schemas/OpenAIRE_OCA_package.json" },
+    { name: "Project description", said: "EEWsnDGmkD53-TbApvjmMW-gRurySkBaX_fPN_BrPGna", filePath: "./schemas/Project_schema_v2.json" },
+    { name: "schema_catalogue_record", said: "EAMDDRFBhdGg8OcfgzMFLFq5DT6LbroGkc-zM6iKnsuc", filePath: "./schemas/schema_catalogue_record_OCA_package.json" },
+  ],
+  hidden: [
+    { name: "Basic DMP", said: "EOuPm5G8zb5M2RrIa87yHEwhWqWJdHb8GmfC4eRpi-E2", filePath: "./schemas/hidden/Basic_DMP_OCA_package_v6.json" },
+    { name: "DataCite", said: "####digest_of_oca_datacite_package####", filePath: "./schemas/hidden/DataCite_OCA_package.json" },
+    { name: "dataset_catalogue_record", said: "ED7BjGJlzWOIBFuInwEtOH0-a7ZDHTUejbK17NJKgPc7", filePath: "./schemas/hidden/dataset_catalogue_record_OCA_package.json" },
+    { name: "OpenAIRE Application Profile Parent", said: "ELFQbADu3w__7hDbaF6iY_1nOa68LgJWmqf3B_dTV0e5", filePath: "./schemas/hidden/OpenAIRE_OCA_package_Original.json" },
+    { name: "Project (RAiD\\-inspired)", said: "EOCArfeoEEQCo2HU7zuSAlqEevTxMLgg0-qgcTsp3BIP", filePath: "./schemas/hidden/Project_OCA_package.json" },
+    { name: "Project description", said: "EHyGYfN7TNAUsfG9cpvC1uqC-RfahoO6TdaYtYw1cH4R", filePath: "./schemas/hidden/Project_OCA_package.v1.json" },
+    { name: "Project description", said: "EBVqlR0bOCzF0TU8hGyf0Zgza9Zk5PDmFTJ4r5rOvdLw", filePath: "./schemas/hidden/Project_RAiD_schema.json" },
+    { name: "Data Request Schema", said: "EJ1milH26HLFzEAufIEKJLJ61W-HPFJiY1kz_QtW5wS-", filePath: "./schemas/hidden/q-002-test.json" },
+  ],
+};
 
-const visibleSchemas = visibleContext
-  .keys()
-  .map((key) => {
-    const json = visibleContext(key);
-    const data = json.default || json;
+const rawIndex =
+  typeof __SCHEMA_INDEX__ !== "undefined" && __SCHEMA_INDEX__
+    ? __SCHEMA_INDEX__
+    : FALLBACK_SCHEMA_INDEX;
 
-    return {
-      name: data?.oca_bundle?.bundle?.overlays?.meta?.[0]?.name || null,
-      said: data?.d || null,
-      filePath: `./schemas/${key.replace("./", "")}`,
-      json: data,
-    };
-  })
-  .filter((item) => item.name && item.said)
+const visibleSchemas = (rawIndex.visible || [])
+  .filter((item) => item && item.name && item.said)
+  .map((item) => ({ ...item }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
-// Scan hidden public/schemas/hidden for historical SAID and version resolution
-const hiddenContext = require.context(
-  "../../public/schemas/hidden",
-  false,
-  /\.json$/
-);
-
-const hiddenSchemas = hiddenContext
-  .keys()
-  .map((key) => {
-    const json = hiddenContext(key);
-    const data = json.default || json;
-
-    return {
-      name:
-        data?.oca_bundle?.bundle?.overlays?.meta?.[0]?.name ||
-        KNOWN_SCHEMA_MANIFEST[data?.d]?.family ||
-        null,
-      said: data?.d || null,
-      filePath: `./schemas/hidden/${key.replace("./", "")}`,
-      json: data,
-    };
-  })
-  .filter((item) => item.said);
+const hiddenSchemas = (rawIndex.hidden || [])
+  .filter((item) => item && item.said)
+  .map((item) => ({
+    ...item,
+    name: item.name || KNOWN_SCHEMA_MANIFEST[item.said]?.family || null,
+  }));
 
 const allParsedSchemas = [...visibleSchemas, ...hiddenSchemas];
+
+// In-memory cache of lazily fetched schema JSON bundles keyed by filePath
+const schemaJsonCache = new Map();
+const pendingSchemaFetches = new Map();
 
 export const slugify = (name) =>
   String(name || "")
@@ -269,12 +270,10 @@ const fileMapData = Object.fromEntries(
   visibleSchemas.map((item) => [item.name, item.filePath])
 );
 
-// Map Schema Names to SAIDs
 const schemaIdMapData = Object.fromEntries(
   visibleSchemas.filter((item) => item.said).map((item) => [item.name, item.said])
 );
 
-// Map EVERY historical and current SAID back to its schema name
 const idToSchemaMapData = {};
 
 allParsedSchemas.forEach((item) => {
@@ -296,42 +295,116 @@ export const SCHEMA_ID_MAP = schemaIdMapData;
 export const ID_TO_SCHEMA_MAP = idToSchemaMapData;
 
 /**
- * Returns schema JSON by name or SAID.
- * @param {string} schemaNameOrSaid
- * @returns {object|null}
+ * Resolves a schema metadata entry by exact name, SAID, or URL slug.
  */
-export const getSchemaJsonByName = (schemaNameOrSaid) => {
-  if (!schemaNameOrSaid) return null;
+export const resolveSchemaEntry = (schemaNameOrSaidOrSlug) => {
+  if (!schemaNameOrSaidOrSlug) return null;
+  const query = String(schemaNameOrSaidOrSlug).trim();
+  if (!query) return null;
 
   // 1. Exact name match in visible registry
-  const matchByName = visibleSchemas.find((item) => item.name === schemaNameOrSaid);
-  if (matchByName) return matchByName.json;
+  const matchByName = visibleSchemas.find((item) => item.name === query);
+  if (matchByName) return matchByName;
 
-  // 2. Direct SAID match
-  const bySaid = allParsedSchemas.find((item) => item.said === schemaNameOrSaid);
-  if (bySaid) return bySaid.json;
+  // 2. Direct SAID match across all schemas
+  const bySaid = allParsedSchemas.find((item) => item.said === query);
+  if (bySaid) return bySaid;
 
-  // 3. Fallback by name in hidden schemas
-  const hiddenByName = hiddenSchemas.find((item) => item.name === schemaNameOrSaid);
-  if (hiddenByName) return hiddenByName.json;
+  // 3. URL slug match in visible registry (fixes direct /form/:schemaSlug navigation)
+  const querySlug = slugify(query);
+  const bySlug = visibleSchemas.find((item) => slugify(item.name) === querySlug);
+  if (bySlug) return bySlug;
+
+  // 4. Fallback by name or slug in hidden schemas
+  const hiddenByName = hiddenSchemas.find(
+    (item) => item.name === query || (item.name && slugify(item.name) === querySlug)
+  );
+  if (hiddenByName) return hiddenByName;
 
   return null;
 };
 
 /**
- * Looks up a schema bundle directly by SAID.
- * @param {string} said
- * @returns {object|null}
+ * Resolves the canonical schema name from a name, SAID, or URL slug.
+ */
+export const resolveSchemaName = (schemaNameOrSaidOrSlug) => {
+  const entry = resolveSchemaEntry(schemaNameOrSaidOrSlug);
+  return entry?.name || schemaNameOrSaidOrSlug || "";
+};
+
+/**
+ * Lazily fetches and caches a schema JSON file from /schemas/...
+ */
+async function fetchSchemaJson(filePath) {
+  if (!filePath) return null;
+  if (schemaJsonCache.has(filePath)) {
+    return schemaJsonCache.get(filePath);
+  }
+  if (pendingSchemaFetches.has(filePath)) {
+    return pendingSchemaFetches.get(filePath);
+  }
+
+  const normalizedPath = filePath.replace(/^\.\//, "");
+  const publicBase = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
+  const url = `${publicBase}/${normalizedPath}`;
+
+  const fetchPromise = fetch(url)
+    .then(async (res) => {
+      if (!res.ok) {
+        throw new Error(`Failed to fetch schema ${url} (HTTP ${res.status})`);
+      }
+      const data = await res.json();
+      schemaJsonCache.set(filePath, data);
+      return data;
+    })
+    .finally(() => {
+      pendingSchemaFetches.delete(filePath);
+    });
+
+  pendingSchemaFetches.set(filePath, fetchPromise);
+  return fetchPromise;
+}
+
+/**
+ * Asynchronously loads schema JSON by name, SAID, or URL slug (with caching).
+ */
+export const loadSchemaJsonByName = async (schemaNameOrSaidOrSlug) => {
+  const entry = resolveSchemaEntry(schemaNameOrSaidOrSlug);
+  if (!entry) return null;
+  return fetchSchemaJson(entry.filePath);
+};
+
+/**
+ * Asynchronously loads schema JSON directly by SAID (with caching).
+ */
+export const loadSchemaBySaid = async (said) => {
+  if (!said) return null;
+  const match = allParsedSchemas.find((item) => item.said === said);
+  if (!match) return null;
+  return fetchSchemaJson(match.filePath);
+};
+
+/**
+ * Returns cached schema JSON synchronously if already fetched.
+ */
+export const getSchemaJsonByName = (schemaNameOrSaid) => {
+  const entry = resolveSchemaEntry(schemaNameOrSaid);
+  if (!entry) return null;
+  return schemaJsonCache.get(entry.filePath) || null;
+};
+
+/**
+ * Returns cached schema JSON synchronously by SAID if already fetched.
  */
 export const getSchemaBySaid = (said) => {
   if (!said) return null;
   const match = allParsedSchemas.find((item) => item.said === said);
-  return match?.json || null;
+  if (!match) return null;
+  return schemaJsonCache.get(match.filePath) || null;
 };
 
 /**
- * Returns full schema metadata + bundle info by SAID.
- * @param {string} said
+ * Returns full schema metadata by SAID.
  */
 export const getSchemaInfoBySaid = (said) => {
   if (!said) return null;
@@ -345,13 +418,12 @@ export const getSchemaInfoBySaid = (said) => {
     version: manifestMeta?.version || "1.0.0",
     status: manifestMeta?.status || "active",
     filePath: parsed?.filePath || null,
-    json: parsed?.json || null,
+    json: parsed ? schemaJsonCache.get(parsed.filePath) || null : null,
   };
 };
 
 /**
  * Resolves the latest active schema plugin for a given schema family name or historical SAID.
- * @param {string} familyOrSaid
  */
 export const getLatestSchemaForFamily = (familyOrSaid) => {
   if (!familyOrSaid) return null;
@@ -373,7 +445,8 @@ export const getLatestSchemaForFamily = (familyOrSaid) => {
       family: activeMeta.family,
       version: activeMeta.version,
       route: routeMapData[schemaName] || `/form/${slugify(schemaName)}`,
-      json: parsed?.json || null,
+      filePath: parsed?.filePath || null,
+      json: parsed ? schemaJsonCache.get(parsed.filePath) || null : null,
     };
   }
 
@@ -385,7 +458,8 @@ export const getLatestSchemaForFamily = (familyOrSaid) => {
       family: visibleMatch.name,
       version: KNOWN_SCHEMA_MANIFEST[visibleMatch.said]?.version || "1.0.0",
       route: routeMapData[visibleMatch.name] || `/form/${slugify(visibleMatch.name)}`,
-      json: visibleMatch.json,
+      filePath: visibleMatch.filePath,
+      json: schemaJsonCache.get(visibleMatch.filePath) || null,
     };
   }
 

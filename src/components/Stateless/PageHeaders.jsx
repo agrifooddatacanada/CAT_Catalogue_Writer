@@ -1,10 +1,11 @@
 import React from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 import SelectLanguage from "../Stateful/LanguageSelector";
 import { Stack, Box } from "@mui/system";
-import { Button, Tooltip, Typography } from "@mui/material";
+import { Button, IconButton, Tooltip, Typography } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HomeIcon from "@mui/icons-material/Home";
 import theme from "../../theme";
 import { checkIsIframe } from "../../utils/iframeUtils";
 
@@ -13,12 +14,16 @@ function PageHeaders({
   tooltip_description,
   help_button_redirect,
 }) {
-  const { t } = useTranslation(); // use translation function
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isIframeMode = checkIsIframe(searchParams);
 
   return (
-    <div className="Header" style={{ maxWidth: "100%", overflow: "visible" }}>
+    <header className="Header" style={{ maxWidth: "100%", overflow: "visible" }}>
+      <a href="#main-content" className="skip-to-content-link">
+        {t("common.skip_to_content")}
+      </a>
       <Stack
         direction={isIframeMode ? "row" : { xs: "column", md: "row" }}
         alignItems="center"
@@ -46,7 +51,7 @@ function PageHeaders({
               gap: 1,
             }}
           >
-            {/* Logos */}
+            {/* Logos & Home link */}
             <Stack
               direction="row"
               alignItems="center"
@@ -55,12 +60,11 @@ function PageHeaders({
                 gap: { xs: 1, sm: 1.5 },
               }}
             >
-              {/* Semantic Engine Logo */}
               <Box
                 component="a"
                 href="https://www.semanticengine.org/"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 sx={{
                   display: "flex",
                   alignItems: "center",
@@ -77,8 +81,8 @@ function PageHeaders({
                 />
               </Box>
 
-              {/* Logo Divider */}
               <Box
+                aria-hidden="true"
                 sx={{
                   display: { xs: "none", sm: "block" },
                   width: "1px",
@@ -87,12 +91,11 @@ function PageHeaders({
                 }}
               />
 
-              {/* Agri-Food Data Canada Logo */}
               <Box
                 component="a"
                 href="https://agrifooddatacanada.ca/"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 sx={{
                   display: "flex",
                   alignItems: "center",
@@ -105,7 +108,7 @@ function PageHeaders({
               >
                 <img
                   src="/assets/images/agri-logo.png"
-                  alt="Agri-Food Data Canada at UoG White Logo"
+                  alt="Agri-Food Data Canada at University of Guelph Logo"
                 />
               </Box>
             </Stack>
@@ -152,7 +155,6 @@ function PageHeaders({
               overflow: "hidden",
             }}
           >
-            {/* Page title */}
             <Typography
               component="h1"
               sx={{
@@ -170,7 +172,7 @@ function PageHeaders({
               {page_heading}
             </Typography>
 
-            {/* Tooltip */}
+            {/* Keyboard-focusable Tooltip button */}
             {tooltip_description && (
               <Tooltip
                 title={tooltip_description}
@@ -178,26 +180,55 @@ function PageHeaders({
                 enterTouchDelay={0}
                 leaveTouchDelay={3000}
               >
-                <HelpOutlineIcon
+                <IconButton
+                  size="small"
+                  aria-label={tooltip_description}
                   sx={{
                     flexShrink: 0,
-                    ml: 1,
-                    fontSize: { xs: 16, sm: 18 },
-                    color: "rgba(120,120,120,1)",
-                    cursor: "help",
+                    ml: 0.5,
+                    color: "rgba(100,100,100,1)",
                   }}
-                />
+                >
+                  <HelpOutlineIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                </IconButton>
               </Tooltip>
             )}
           </Stack>
 
-          {/* Right Controls: Help Button & Language Selector */}
+          {/* Right Controls: Home, Help Button & Language Selector */}
           <Stack
             direction="row"
             alignItems="center"
-            spacing={1.5}
+            spacing={1}
             sx={{ flexShrink: 0 }}
           >
+            {!isIframeMode && (
+              <Tooltip title={t("common.home")}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<HomeIcon fontSize="small" />}
+                  onClick={() => navigate("/")}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: { xs: "12px", sm: "13px" },
+                    fontWeight: 600,
+                    color: theme.primaryColor,
+                    borderColor: theme.primaryColor,
+                    px: { xs: 1, sm: 1.5 },
+                    py: { xs: 0.5, sm: 0.65 },
+                    whiteSpace: "nowrap",
+                    "&:hover": {
+                      borderColor: theme.primaryColor,
+                      backgroundColor: theme.hoverUnselectedBgColor,
+                    },
+                  }}
+                >
+                  {t("common.home")}
+                </Button>
+              </Tooltip>
+            )}
+
             {typeof help_button_redirect === "function" && (
               <Button
                 variant="contained"
@@ -213,9 +244,11 @@ function PageHeaders({
                   whiteSpace: "nowrap",
                   textTransform: "none",
                   fontWeight: 600,
+                  transition: "filter 0.15s ease, box-shadow 0.15s ease",
                   "&:hover": {
                     backgroundColor: theme.primaryColor,
-                    boxShadow: "none",
+                    filter: "brightness(0.93)",
+                    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.14)",
                   },
                 }}
                 onClick={() => help_button_redirect()}
@@ -224,7 +257,6 @@ function PageHeaders({
               </Button>
             )}
 
-            {/* Language selector */}
             <Box
               sx={{
                 display: isIframeMode ? "block" : { xs: "none", md: "block" },
@@ -245,7 +277,6 @@ function PageHeaders({
         </Stack>
       </Stack>
 
-      {/* Header Divider */}
       <Box
         component="hr"
         sx={{
@@ -254,7 +285,7 @@ function PageHeaders({
           borderTop: "1px solid rgba(195, 195, 195, 1)",
         }}
       />
-    </div>
+    </header>
   );
 }
 

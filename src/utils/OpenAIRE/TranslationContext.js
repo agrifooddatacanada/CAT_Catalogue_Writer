@@ -1,7 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import translations from "./TranslationContent";
+import {
+  isAllowedOrigin,
+  rememberVerifiedOrigin,
+  safeLocalGet,
+  safeLocalSet,
+} from "../postMessageSecurity";
 
 const TranslationContext = createContext();
+const LANG_STORAGE_KEY = "cat_catalogue_writer_lang";
 
 export function normalizeLang(val) {
   if (!val || typeof val !== "string") return null;
@@ -36,20 +50,41 @@ function getInitialLanguage() {
     } catch {
       // Ignore URL parsing error
     }
+
+    const persisted = normalizeLang(safeLocalGet(LANG_STORAGE_KEY));
+    if (persisted) return persisted;
   }
   return "eng";
 }
 
+function getNestedValue(obj, key) {
+  return key.split(".").reduce((o, i) => (o ? o[i] : undefined), obj);
+}
+
 export function TranslationProvider({ children }) {
-  const [lang, setLang] = useState(getInitialLanguage);
+  const [lang, setLangState] = useState(getInitialLanguage);
+
+  const setLang = useCallback((nextLang) => {
+    const resolved = normalizeLang(nextLang) || "eng";
+    setLangState(resolved);
+    safeLocalSet(LANG_STORAGE_KEY, resolved);
+  }, []);
+
+  // Keep <html lang="en|fr"> synchronized for screen readers & browsers (WCAG 3.1.1)
+  useEffect(() => {
+    if (typeof document !== "undefined" && document.documentElement) {
+      document.documentElement.lang = lang === "fra" ? "fr" : "en";
+    }
+  }, [lang]);
 
   useEffect(() => {
     const handleMessage = (event) => {
+      if (!isAllowedOrigin(event.origin)) return;
+      rememberVerifiedOrigin(event.origin);
       try {
         const data = event.data;
-        if (!data) return;
+        if (!data || typeof data !== "object") return;
 
-        // Support { type: 'SET_LANGUAGE', lang: 'fra' }, { type: 'CHANGE_LANGUAGE', lang: 'fr' }, { lang: 'fr' }, etc.
         const candidateLang =
           data.lang ||
           data.language ||
@@ -66,8 +101,17 @@ export function TranslationProvider({ children }) {
     window.addEventListener("message", handleMessage);
 
     const handlePopState = () => {
-      const urlLang = getInitialLanguage();
-      if (urlLang) setLang(urlLang);
+      if (typeof window !== "undefined" && window.location) {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const urlLang = normalizeLang(
+            params.get("lang") || params.get("language"),
+          );
+          if (urlLang) setLangState(urlLang);
+        } catch {
+          // Ignore URL parsing error
+        }
+      }
     };
     window.addEventListener("popstate", handlePopState);
 
@@ -75,19 +119,26 @@ export function TranslationProvider({ children }) {
       window.removeEventListener("message", handleMessage);
       window.removeEventListener("popstate", handlePopState);
     };
-  }, []);
+  }, [setLang]);
 
-  function getNestedValue(obj, key) {
-    return key.split(".").reduce((o, i) => (o ? o[i] : undefined), obj);
-  }
+  const t = useCallback(
+    (key) => {
+      const value = getNestedValue(translations[lang], key);
+      if (value !== undefined) return value;
+      const fallback = getNestedValue(translations.eng, key);
+      return fallback !== undefined ? fallback : key;
+    },
+    [lang],
+  );
 
-  const t = (key) => getNestedValue(translations[lang], key) || key;
-
-  const value = {
-    lang,
-    setLang,
-    t,
-  };
+  const value = useMemo(
+    () => ({
+      lang,
+      setLang,
+      t,
+    }),
+    [lang, setLang, t],
+  );
 
   return (
     <TranslationContext.Provider value={value}>
@@ -96,7 +147,6 @@ export function TranslationProvider({ children }) {
   );
 }
 
-// Export useTranslation as named export
 export function useTranslation() {
   return useContext(TranslationContext);
 }

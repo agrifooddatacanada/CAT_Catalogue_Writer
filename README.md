@@ -1,70 +1,29 @@
-# Getting Started with Create React App
+# CAT Catalogue Writer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React + Redux web application for creating, editing, viewing, upgrading, and exporting standards-compliant JSON-LD catalogue records driven by Overlays Capture Architecture (OCA) schema packages.
 
-## Available Scripts
+## Key Capabilities
 
-In the project directory, you can run:
+- **Dynamic OCA Form Rendering**: Generates multi-page and sectioned metadata forms directly from untouched schema bundles in `public/schemas/` (and historical versions in `public/schemas/hidden/`).
+- **Lazy Schema Loading**: Build-time indexing (`config-overrides.js`) keeps the initial JS bundle small while fetching each schema JSON on demand from `/schemas/`.
+- **SAID Canonicalization & Revision Lineage**: Deterministically canonicalizes records and computes Self-Addressing Identifiers (SAIDs) via `saidify`, preserving `dcterms:isVersionOf`, `dcterms:version`, and `adms:versionNotes`.
+- **Schema Plugin Upgrade Flow**: Detects outdated `@schema_id` records and migrates matching fields into the latest schema version while listing unmapped and missing required fields.
+- **ORCID Registry Search & Verified ContextHub ORCID**: Supports direct ORCID Public API v3.0 search, name lookup, duplicate contributor detection, and ContextHub verified ORCID prefill.
+- **ContextHub Integration**: Works standalone or embedded inside an allowlisted iframe/popup (`postMessage` + `dataUrl` deep-linking).
+- **Bilingual (EN / FR)**: Full English and French UI translations plus dynamic OCA language overlay extraction.
 
-### `npm start`
+## Scripts
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+npm start          # Start local dev server (http://localhost:3000)
+npm test           # Run Jest unit tests
+npm run build      # Create optimized production build in build/
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Architecture Overview
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- `public/schemas/` — OCA schema bundles (never modified by app logic).
+- `src/pages/` — `HomePage`, `FormPage`, `ViewPage`, `FormHelpPage`, `ViewHelpPage`, `NotFoundPage`.
+- `src/components/Stateful/` — `DynamicForm`, `FormSidebar`, `UploadButton`, `LanguageSelector`, and `DynamicFormComponents/*`.
+- `src/store/` — Redux Toolkit slices (`fieldSchema`, `formValues`, `instanceCounts`, `mode`, `uploadFile`, `formUi`, `activePage`, `childFormNavigation`, `userContext`) and memoized selectors.
+- `src/utils/` — Schema registry/loading, attribute/page extraction, flattening/unflattening, validation, migration, ORCID helpers, and `postMessage` origin security.

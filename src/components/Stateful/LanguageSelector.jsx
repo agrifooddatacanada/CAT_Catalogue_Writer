@@ -1,6 +1,6 @@
-import * as React from "react";
+import React, { useId } from "react";
 import { MenuItem, FormControl, Select, FormHelperText } from "@mui/material";
-import { useTranslation } from "../../utils/OpenAIRE/TranslationContext"; // Adjust path to your context
+import { useTranslation } from "../../utils/OpenAIRE/TranslationContext";
 
 export default function SelectLanguage({
   helperText_color,
@@ -9,16 +9,16 @@ export default function SelectLanguage({
   menu_bgColor,
   menu_color,
   selected_item_bgColor,
-  selected_item_color
+  selected_item_color,
 }) {
+  const selectId = useId();
   const translationContext = useTranslation();
 
   if (!translationContext) {
-    // context is not provided
-    return null; // or fallback UI
+    return null;
   }
 
-  const { lang, setLang } = translationContext;
+  const { lang, setLang, t } = translationContext;
 
   const handleChange = (e) => {
     setLang(e.target.value.toLowerCase());
@@ -26,21 +26,29 @@ export default function SelectLanguage({
 
   return (
     <div>
-      <FormControl sx={{ maxWidth: 90 }}>
+      <FormControl sx={{ minWidth: 88, maxWidth: 140 }}>
         <FormHelperText
+          id={`${selectId}-hint`}
           sx={{
             color: helperText_color,
-            fontSize: { xs: "7.5px", sm: "8.25px", lg: "9px" },
+            fontSize: "12px",
             lineHeight: 1.2,
             m: 0,
+            mb: 0.25,
+            whiteSpace: "nowrap",
           }}
         >
-          {lang === "eng" ? "Sélectionnez le Français ici" : "Select English here"}
+          {lang === "eng" ? "Français" : "English"}
         </FormHelperText>
         <Select
+          id={selectId}
           value={lang}
           onChange={handleChange}
           displayEmpty
+          inputProps={{
+            "aria-label": t("common.select_language"),
+            "aria-describedby": `${selectId}-hint`,
+          }}
           sx={{
             "& .MuiOutlinedInput-notchedOutline": {
               border: "none",
@@ -48,10 +56,21 @@ export default function SelectLanguage({
             backgroundColor: select_bgColor,
             "& .MuiSelect-select": {
               color: select_color,
+              py: 0.5,
+              minHeight: "24px",
+              display: "flex",
+              alignItems: "center",
             },
-            fontSize: { xs: "18px", sm: "21px", md: "24px" },
-            height: "25px",
-            marginTop: "2px",
+            "& .MuiSelect-icon": {
+              color: select_color,
+            },
+            fontSize: { xs: "16px", sm: "18px", md: "20px" },
+            minHeight: "34px",
+            borderRadius: 1,
+            "&.Mui-focused": {
+              outline: "2px solid currentColor",
+              outlineOffset: "2px",
+            },
           }}
           MenuProps={{
             PaperProps: {

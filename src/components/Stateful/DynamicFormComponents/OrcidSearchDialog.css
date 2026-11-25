@@ -5,7 +5,7 @@ dialog.orcid-search-dialog {
   border-radius: 12px;
   width: min(94vw, 820px);
   max-width: 820px;
-  max-height: min(92vh, 500px);
+  max-height: min(88vh, 720px);
   margin: auto;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
   background: #ffffff;

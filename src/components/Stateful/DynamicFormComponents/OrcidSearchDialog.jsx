@@ -253,9 +253,9 @@ const OrcidSearchDialog = ({
           <span className="orcid-badge-circle" aria-hidden="true">
             iD
           </span>
-          <h1 id={titleId} className="orcid-dialog-title">
+          <h2 id={titleId} className="orcid-dialog-title">
             {t("orcid.search_dialog_title") || "Search ORCID Registry"}
-          </h1>
+          </h2>
         </div>
         <button
           type="button"
@@ -281,7 +281,7 @@ const OrcidSearchDialog = ({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={
-              t("orcid.search_name_placeholder") || "e.g. Niraj Patil or 0000-0002-1825-0097"
+              t("orcid.search_name_placeholder") || "e.g. Jane Doe or 0000-0002-1825-0097"
             }
             autoFocus
           />

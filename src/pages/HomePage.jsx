@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import React, { useEffect, useId, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Stack, Box } from "@mui/system";
 import {
   Alert,
   Button,
+  CircularProgress,
   FormControl,
   FormHelperText,
   MenuItem,
@@ -12,30 +13,19 @@ import {
 } from "@mui/material";
 import AccordionExpand from "../components/Stateless/Accordion";
 import { useTranslation } from "../utils/OpenAIRE/TranslationContext";
-import { extractAttributes } from "../utils/extractAttributes";
 import UploadButton from "../components/Stateful/UploadButton";
 import Footer from "../components/Stateless/Footer";
 import theme from "../theme";
 import HomeHeader from "../components/Stateless/HomeHeader";
 import HomeSubHeader from "../components/Stateless/HomeSubHeader";
-// import HomeQuickStart from "../components/Stateless/HomeQuickStart";
 import {
-  setFields,
   setSchemaName,
-  setDepFormatPatterns,
-  setFormatPatterns,
   resetFieldSchemas,
-  setPages,
 } from "../store/slices/fieldSchemaSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { extractJsonSchemaAsync } from "../utils/extractJsonSchema";
 import { setInitialFormState } from "../store/slices/formValueSlice";
 import { buildInstanceCountsFromValues } from "../utils/instanceCounts";
-import {
-  setAllInstanceCounts,
-} from "../store/slices/instanceCountsSlice";
-import { serializeRegexPatterns } from "../utils/regexUtils";
-import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths";
+import { setAllInstanceCounts } from "../store/slices/instanceCountsSlice";
 import { setMode } from "../store/slices/modeSlice";
 import { getSchemaFromId } from "../utils/schemaMapping";
 import {
@@ -46,155 +36,115 @@ import {
   setUpgradeContext,
 } from "../store/slices/uploadFileSlice";
 import { selectSchemaName } from "../store/selectors/formSelectors";
-import { setViewMode } from "../store/slices/formUiSlice";
-import { getInitialViewMode } from "../utils/viewModeUtils";
-import { extractPages } from "../utils/extractPages";
 import {
   ROUTE_MAP,
   SCHEMA_REGISTRY,
   getSchemaPluginOutdatedStatus,
   getLatestSchemaForFamily,
 } from "../utils/schemaRegistry";
-import { escapeKey } from "../utils/pathEncoding";
 import { normalizeNestedFields } from "../utils/normalizeJson";
 import { migrateRecordToSchema } from "../utils/schemaMigration";
-
-// FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
-  function flatten(obj, parentKey = "", result = {}) {
-    if (Array.isArray(obj)) {
-      if (obj.length === 0) {
-        // Always include the array path
-        result[parentKey] = obj;
-      } else {
-        // Then recurse into elements
-        obj.forEach((item, index) => {
-          const newKey = `${parentKey}[${index}]`;
-          if (item !== null && typeof item === "object") {
-            flatten(item, newKey, result);
-          } else {
-            result[newKey] = item;
-          }
-        });
-      }
-      return result;
-    }
-    // Object case
-    for (const key in obj) {
-      if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
-
-      const value = obj[key];
-      const escapedKey = escapeKey(key);
-      const newKey = parentKey ? `${parentKey}.${escapedKey}` : escapedKey;
-
-      if (value !== null && typeof value === "object") {
-        // Then recurse into children
-        flatten(value, newKey, result);
-      } else {
-        // Primitive → set directly
-        result[newKey] = value;
-      }
-    }
-    return result;
-  }
+import { flattenFormData } from "../utils/formStateFlatten";
+import { loadSchemaIntoStore } from "../utils/loadSchemaIntoStore";
+import {
+  isSafeDataUrl,
+  safeSessionRemove,
+  safeSessionSet,
+} from "../utils/postMessageSecurity";
+import { useNotification } from "../components/Stateless/NotificationContext";
 
 function HomePage() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
   const [jsonContent, setJsonContent] = useState(null);
+  const [isLoadingSchema, setIsLoadingSchema] = useState(false);
 
-  // const [schema, setSchema] = useState("");
   const schema = useSelector(selectSchemaName);
   const isUploaded = useSelector(selectIsUploaded);
   const isSchemaSelected = !!schema;
-  // const hasUploadedFile = !!uploadedFiles;
   const hasUploadedFile = isUploaded;
 
-  const [schemaLocked, setSchemaLocked] = useState(false); // true when schema came from @schema_id
+  const [schemaLocked, setSchemaLocked] = useState(false);
   const [outdatedSchemaInfo, setOutdatedSchemaInfo] = useState(null);
   const [uploadedSchemaId, setUploadedSchemaId] = useState(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useTranslation(); // use translation function
+  const { t, lang } = useTranslation();
+  const { notify } = useNotification();
   const dispatch = useDispatch();
+  const schemaSelectLabelId = useId();
 
   // RESET on mount/return to HomePage
   useEffect(() => {
-    // Skip reset if we're about to auto-load from URL params
     const dataUrl = searchParams.get("dataUrl");
     if (dataUrl) {
-      if (!dataUrl.startsWith("data:")) {
-        window.sessionStorage.setItem("dataUrl", dataUrl);
+      if (!dataUrl.startsWith("data:") && isSafeDataUrl(dataUrl)) {
+        safeSessionSet("dataUrl", dataUrl);
       } else {
-        window.sessionStorage.removeItem("dataUrl");
+        safeSessionRemove("dataUrl");
       }
       return;
     }
 
-    // Reset Redux upload state
     dispatch(resetUploaded());
-
-    // Reset fieldSchema upload state
     dispatch(resetFieldSchemas());
     dispatch(setMode("write"));
 
-    // Reset local state
     setJsonContent(null);
     setUploadedFiles(null);
     setSchemaLocked(false);
     setOutdatedSchemaInfo(null);
     setUploadedSchemaId(null);
 
-    // Clear dataUrl
-    window.sessionStorage.removeItem("dataUrl");
-  }, [dispatch, searchParams]); // empty deps = run once on mount
+    safeSessionRemove("dataUrl");
+  }, [dispatch, searchParams]);
 
   // AUTO-LOAD from URL params (e.g. ?dataUrl=<url>&schema=<schemaName>)
-  // This enables ContextHub to deep-link into editing an existing catalogue record.
   useEffect(() => {
     const dataUrl = searchParams.get("dataUrl");
     const schemaParam = searchParams.get("schema");
     if (!dataUrl || !schemaParam) return;
 
+    if (!isSafeDataUrl(dataUrl)) {
+      notify(`${t("homepage.url_load_failed")} Invalid URL protocol`, "error");
+      return;
+    }
+
     let cancelled = false;
 
     const loadFromUrl = async () => {
+      setIsLoadingSchema(true);
       try {
         const response = await fetch(dataUrl);
-        if (!response.ok) throw new Error(`Failed to fetch data: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
         const jsonData = await response.json();
-
         if (cancelled) return;
 
-        // Auto-select the schema
-        dispatch(setSchemaName(schemaParam));
+        const { canonicalName, enrichedFields } = await loadSchemaIntoStore(
+          dispatch,
+          { schema: schemaParam, lang }
+        );
+        if (cancelled) return;
 
-        // Load the schema and parse form data (same logic as handleEditClick)
-        const jsonSchema = await extractJsonSchemaAsync(schemaParam);
-        if (!jsonSchema) throw new Error("Schema fetch failed");
-
-        const { fields: rawFields, formatPatterns, depFormatPatterns } =
-          extractAttributes(jsonSchema);
-        const enrichedFields = enrichFieldsWithPaths(rawFields);
-        const pages = extractPages(jsonSchema, enrichedFields);
-
-        // Normalize and flatten the JSON data
         const normalizedJson = normalizeNestedFields(jsonData, enrichedFields);
-        const formValues = flatten(normalizedJson);
+        const formValues = flattenFormData(normalizedJson);
 
         dispatch(setInitialFormState(formValues));
-        dispatch(setFields(enrichedFields));
-        dispatch(setPages(pages));
-        dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
-        dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
-        dispatch(setViewMode(getInitialViewMode(enrichedFields)));
-
-        const instanceCount = buildInstanceCountsFromValues(formValues);
-        dispatch(setAllInstanceCounts(instanceCount));
+        dispatch(setAllInstanceCounts(buildInstanceCountsFromValues(formValues)));
         dispatch(setIsUploaded(true));
         dispatch(setMode("edit"));
 
-        // Record lineage metadata for revision tracking
-        const loadedVersion = jsonData.dcterms?.version || jsonData.version || jsonData["dcterms:version"] || "1.0.0";
-        const loadedIsVersionOf = jsonData.dcterms?.isVersionOf || jsonData.isVersionOf || jsonData["dcterms:isVersionOf"] || null;
+        const loadedVersion =
+          jsonData.dcterms?.version ||
+          jsonData.version ||
+          jsonData["dcterms:version"] ||
+          "1.0.0";
+        const loadedIsVersionOf =
+          jsonData.dcterms?.isVersionOf ||
+          jsonData.isVersionOf ||
+          jsonData["dcterms:isVersionOf"] ||
+          null;
         dispatch(
           setRecordMetadata({
             originalSaid: jsonData.d || null,
@@ -204,35 +154,29 @@ function HomePage() {
           })
         );
 
-        if (cancelled) return;
-
-        // Navigate to form in edit mode
-        const baseRoute = ROUTE_MAP[schemaParam] || "/form";
-        navigate(`${baseRoute}?schema=${encodeURIComponent(schemaParam)}`);
+        const baseRoute = ROUTE_MAP[canonicalName] || "/form";
+        navigate(`${baseRoute}?schema=${encodeURIComponent(canonicalName)}`);
       } catch (err) {
         console.error("Auto-load from URL failed:", err);
         if (!cancelled) {
-          alert(`Failed to load catalogue data from URL: ${err.message}`);
+          notify(`${t("homepage.url_load_failed")} ${err.message}`, "error");
         }
+      } finally {
+        if (!cancelled) setIsLoadingSchema(false);
       }
     };
 
     loadFromUrl();
-    return () => { cancelled = true; };
-  }, [searchParams, dispatch, navigate]);
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, dispatch, navigate, lang, notify, t]);
 
-  //
   const handleSchemaSelect = (e) => {
-    const value = e.target.value;
-
-    // setSchema(value);
-    dispatch(setSchemaName(value));
-
-    // This is a manual schema choice, so it should not be "locked by file"
+    dispatch(setSchemaName(e.target.value));
     setSchemaLocked(false);
   };
 
-  //
   const handleFileSelect = (files) => {
     dispatch(setSchemaName(""));
     const file = files[0];
@@ -241,39 +185,36 @@ function HomePage() {
     reader.onload = (e) => {
       try {
         const jsonData = JSON.parse(e.target.result);
-
-        // Store file + content in all success cases
         setJsonContent(jsonData);
         setUploadedFiles(files);
+        dispatch(setIsUploaded(true));
 
-        dispatch(setIsUploaded(true)); // mark as uploaded globally
-
-        // 1) Read `@schema_id` from the uploaded JSON-LD
         const schemaId = jsonData["@schema_id"];
         setUploadedSchemaId(schemaId || null);
 
-        // Check if the form questionnaire used for this record is outdated
         const outdatedInfo = getSchemaPluginOutdatedStatus(schemaId);
         setOutdatedSchemaInfo(outdatedInfo.isOutdated ? outdatedInfo : null);
 
-        // 2) Map it to internal schema name
         const detectedSchema = schemaId ? getSchemaFromId(schemaId) : null;
 
         if (detectedSchema) {
-          // Case 1: file HAS @schema_id
-          // setSchema(detectedSchema);
           dispatch(setSchemaName(detectedSchema));
           setSchemaLocked(true);
         } else {
-          // Case 2: file has NO @schema_id
-          alert(t("homepage.file_select_no_schema_detected"));
-          // Do NOT touch existing schema; user might already have selected it
-          setSchemaLocked(false); // user can choose schema from the menu
+          notify(t("homepage.file_select_no_schema_detected"), "warning");
+          setSchemaLocked(false);
         }
 
-        // Record lineage metadata for revision tracking
-        const loadedVersion = jsonData.dcterms?.version || jsonData.version || jsonData["dcterms:version"] || "1.0.0";
-        const loadedIsVersionOf = jsonData.dcterms?.isVersionOf || jsonData.isVersionOf || jsonData["dcterms:isVersionOf"] || null;
+        const loadedVersion =
+          jsonData.dcterms?.version ||
+          jsonData.version ||
+          jsonData["dcterms:version"] ||
+          "1.0.0";
+        const loadedIsVersionOf =
+          jsonData.dcterms?.isVersionOf ||
+          jsonData.isVersionOf ||
+          jsonData["dcterms:isVersionOf"] ||
+          null;
         dispatch(
           setRecordMetadata({
             originalSaid: jsonData.d || null,
@@ -284,10 +225,9 @@ function HomePage() {
         );
       } catch (err) {
         console.error(err);
-        alert(t("homepage.file_select_invalid_json"));
+        notify(t("homepage.file_select_invalid_json"), "error");
         setJsonContent(null);
         setUploadedFiles(null);
-        // setSchema("");
         dispatch(setSchemaName(""));
         setSchemaLocked(false);
         dispatch(setIsUploaded(false));
@@ -297,206 +237,174 @@ function HomePage() {
     reader.readAsText(file);
   };
 
-  //
   const handleCancelUpload = () => {
-    // Clear content and file
     setJsonContent(null);
     setUploadedFiles(null);
-
-    // Reset Redux upload state
     dispatch(resetUploaded());
-
-    // Reset fieldSchema upload state
     dispatch(resetFieldSchemas());
-
     setSchemaLocked(false);
     setOutdatedSchemaInfo(null);
     setUploadedSchemaId(null);
   };
 
-  // Form Routing
-  const getFormRoute = async () => {
-    const jsonSchema = await extractJsonSchemaAsync(schema);
-    const { fields, formatPatterns, depFormatPatterns } =
-      extractAttributes(jsonSchema);
-    // Enrich fields with paths BEFORE dispatching
-    const enrichedFields = enrichFieldsWithPaths(fields);
-    const pages = extractPages(jsonSchema, enrichedFields);
-
-    dispatch(setFields(enrichedFields));
-    dispatch(setPages(pages));
-    dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
-    dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
-    dispatch(setViewMode(getInitialViewMode(enrichedFields)));
-
-    // Return route WITH schema param
-    // const routeMap = {
-    //   "q-002-test": "/form-q-test",
-    //   schema_catalogue_record: "/form-schema-cat-rec",
-    //   OpenAIRE: "/form",
-    //   "Dublin Core (Repository-specific)": "/form-dublincore-repository",
-    //   "Dublin Core (Project-specific)": "/form-dublincore-project",
-    //   DataCite: "/form-datacite",
-    //   "DCAT [Demo]": "/form-dcat-demo",
-    //   "Project (Minimal)": "/form-project-minimal",
-    //   "RAiD (Project)": "/form-raid-project",
-    // };
-
-    const baseRoute = ROUTE_MAP[schema] || "/form";
-    return `${baseRoute}?schema=${encodeURIComponent(schema)}`;
-  };
-
-  //
   const handleNavigate = async () => {
-    const route = await getFormRoute(); // Awaits schema extraction & dispatches
-    dispatch(setMode("write"));
-    navigate(route);
+    if (!schema || isLoadingSchema) return;
+    setIsLoadingSchema(true);
+    try {
+      const { canonicalName } = await loadSchemaIntoStore(dispatch, {
+        schema,
+        lang,
+      });
+      dispatch(setMode("write"));
+      const baseRoute = ROUTE_MAP[canonicalName] || "/form";
+      navigate(`${baseRoute}?schema=${encodeURIComponent(canonicalName)}`);
+    } catch (err) {
+      console.error("Failed to open form:", err);
+      notify(t("homepage.schema_load_failed"), "error");
+    } finally {
+      setIsLoadingSchema(false);
+    }
   };
 
-  //
   const handleViewClick = async () => {
     if (!jsonContent) {
-      alert(t("homepage.view_click_no_content"));
+      notify(t("homepage.view_click_no_content"), "warning");
       return;
     }
     if (!schema) {
-      alert(t("homepage.view_click_no_schemaId"));
+      notify(t("homepage.view_click_no_schemaId"), "warning");
       return;
     }
 
-    if (jsonContent) {
-      // Load the exact historical schema plugin SAID when viewing an older record
-      const jsonSchema = await extractJsonSchemaAsync(
+    setIsLoadingSchema(true);
+    try {
+      const { enrichedFields } = await loadSchemaIntoStore(dispatch, {
         schema,
-        uploadedSchemaId ? { exactSaid: uploadedSchemaId } : undefined
-      );
-      const { fields, formatPatterns, depFormatPatterns } =
-        extractAttributes(jsonSchema);
-      // Enrich fields with paths BEFORE dispatching
-      const enrichedFields = enrichFieldsWithPaths(fields);
-      const pages = extractPages(jsonSchema, enrichedFields);
+        exactSaid: uploadedSchemaId || null,
+        lang,
+      });
 
-      // Normalize jsonContent to fix any legacy incorrectly nested fields
       const normalizedJson = normalizeNestedFields(jsonContent, enrichedFields);
-      const formValues = flatten(normalizedJson);
+      const formValues = flattenFormData(normalizedJson);
       dispatch(setInitialFormState(formValues));
-
-      dispatch(setFields(enrichedFields));
-      dispatch(setPages(pages));
-      dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
-      dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
-      dispatch(setViewMode(getInitialViewMode(enrichedFields)));
-
-      const instanceCount = buildInstanceCountsFromValues(formValues);
-      dispatch(setAllInstanceCounts(instanceCount));
-
+      dispatch(setAllInstanceCounts(buildInstanceCountsFromValues(formValues)));
       dispatch(setMode("view"));
       navigate("/view");
+    } catch (err) {
+      console.error("Failed to view record:", err);
+      notify(t("homepage.schema_load_failed"), "error");
+    } finally {
+      setIsLoadingSchema(false);
     }
   };
 
   const handleUpgradeClick = async () => {
     if (!jsonContent || !outdatedSchemaInfo?.latestSaid) return;
 
-    const latest = getLatestSchemaForFamily(uploadedSchemaId || outdatedSchemaInfo.family);
-    const targetSaid = latest?.said || outdatedSchemaInfo.latestSaid;
-    const targetName = latest?.name || outdatedSchemaInfo.family || schema;
+    setIsLoadingSchema(true);
+    try {
+      const latest = getLatestSchemaForFamily(
+        uploadedSchemaId || outdatedSchemaInfo.family
+      );
+      const targetSaid = latest?.said || outdatedSchemaInfo.latestSaid;
+      const targetName = latest?.name || outdatedSchemaInfo.family || schema;
 
-    const jsonSchema = await extractJsonSchemaAsync(targetName, { exactSaid: targetSaid });
-    if (!jsonSchema) {
-      alert("Unable to load the latest schema plugin version.");
-      return;
+      const { canonicalName, enrichedFields } = await loadSchemaIntoStore(
+        dispatch,
+        {
+          schema: targetName,
+          exactSaid: targetSaid,
+          lang,
+        }
+      );
+
+      const migration = migrateRecordToSchema(jsonContent, enrichedFields);
+
+      dispatch(setInitialFormState(migration.formValues));
+      dispatch(setAllInstanceCounts(migration.instanceCounts));
+      dispatch(setMode("edit"));
+
+      const loadedVersion =
+        jsonContent.dcterms?.version ||
+        jsonContent.version ||
+        jsonContent["dcterms:version"] ||
+        "1.0.0";
+      dispatch(
+        setRecordMetadata({
+          originalSaid: jsonContent.d || null,
+          recordVersion: loadedVersion,
+          isVersionOf: jsonContent.dcterms?.isVersionOf || jsonContent.d || null,
+          schemaId: uploadedSchemaId,
+          isPublished: Boolean(jsonContent.d),
+        })
+      );
+      dispatch(
+        setUpgradeContext({
+          isUpgradeMode: true,
+          sourceSchemaId: uploadedSchemaId,
+          sourceSchemaVersion: outdatedSchemaInfo.currentVersion,
+          targetSchemaId: targetSaid,
+          targetSchemaVersion: outdatedSchemaInfo.latestVersion,
+          targetFamily: outdatedSchemaInfo.family,
+          unmappedFields: migration.unmappedFields,
+          missingRequiredFields: migration.missingRequiredFields,
+          mappedFieldCount: migration.mappedCount,
+        })
+      );
+
+      const baseRoute = latest?.route || ROUTE_MAP[canonicalName] || "/form";
+      navigate(
+        `${baseRoute}?schema=${encodeURIComponent(canonicalName)}&mode=upgrade&targetSchemaId=${encodeURIComponent(targetSaid)}`
+      );
+    } catch (err) {
+      console.error("Upgrade failed:", err);
+      notify(t("homepage.upgrade_load_failed"), "error");
+    } finally {
+      setIsLoadingSchema(false);
     }
-
-    const { fields, formatPatterns, depFormatPatterns } = extractAttributes(jsonSchema);
-    const enrichedFields = enrichFieldsWithPaths(fields);
-    const pages = extractPages(jsonSchema, enrichedFields);
-
-    const migration = migrateRecordToSchema(jsonContent, enrichedFields);
-
-    dispatch(setSchemaName(targetName));
-    dispatch(setInitialFormState(migration.formValues));
-    dispatch(setFields(enrichedFields));
-    dispatch(setPages(pages));
-    dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
-    dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
-    dispatch(setViewMode(getInitialViewMode(enrichedFields)));
-    dispatch(setAllInstanceCounts(migration.instanceCounts));
-    dispatch(setMode("edit"));
-
-    const loadedVersion =
-      jsonContent.dcterms?.version ||
-      jsonContent.version ||
-      jsonContent["dcterms:version"] ||
-      "1.0.0";
-    dispatch(
-      setRecordMetadata({
-        originalSaid: jsonContent.d || null,
-        recordVersion: loadedVersion,
-        isVersionOf: jsonContent.dcterms?.isVersionOf || jsonContent.d || null,
-        schemaId: uploadedSchemaId,
-        isPublished: Boolean(jsonContent.d),
-      })
-    );
-    dispatch(
-      setUpgradeContext({
-        isUpgradeMode: true,
-        sourceSchemaId: uploadedSchemaId,
-        sourceSchemaVersion: outdatedSchemaInfo.currentVersion,
-        targetSchemaId: targetSaid,
-        targetSchemaVersion: outdatedSchemaInfo.latestVersion,
-        targetFamily: outdatedSchemaInfo.family,
-        unmappedFields: migration.unmappedFields,
-        missingRequiredFields: migration.missingRequiredFields,
-        mappedFieldCount: migration.mappedCount,
-      })
-    );
-
-    const baseRoute = latest?.route || ROUTE_MAP[targetName] || "/form";
-    navigate(
-      `${baseRoute}?schema=${encodeURIComponent(targetName)}&mode=upgrade&targetSchemaId=${encodeURIComponent(targetSaid)}`
-    );
   };
 
-  //
   const handleEditClick = async () => {
     if (!jsonContent) {
-      alert(t("homepage.edit_click_no_content"));
+      notify(t("homepage.edit_click_no_content"), "warning");
       return;
     }
     if (!schema) {
-      alert(t("homepage.edit_click_no_schemaId"));
+      notify(t("homepage.edit_click_no_schemaId"), "warning");
       return;
     }
 
-    if (jsonContent) {
-      const jsonSchema = await extractJsonSchemaAsync(schema);
-      const { fields, formatPatterns, depFormatPatterns } =
-        extractAttributes(jsonSchema);
-      // Enrich fields with paths BEFORE dispatching
-      const enrichedFields = enrichFieldsWithPaths(fields);
-      const pages = extractPages(jsonSchema, enrichedFields);
+    setIsLoadingSchema(true);
+    try {
+      const { canonicalName, enrichedFields } = await loadSchemaIntoStore(
+        dispatch,
+        {
+          schema,
+          exactSaid: uploadedSchemaId || null,
+          lang,
+        }
+      );
 
-      // Normalize jsonContent to fix any legacy incorrectly nested fields
       const normalizedJson = normalizeNestedFields(jsonContent, enrichedFields);
-      const formValues = flatten(normalizedJson);
+      const formValues = flattenFormData(normalizedJson);
       dispatch(setInitialFormState(formValues));
-
-      dispatch(setFields(enrichedFields));
-      dispatch(setPages(pages));
-      dispatch(setFormatPatterns(serializeRegexPatterns(formatPatterns)));
-      dispatch(setDepFormatPatterns(serializeRegexPatterns(depFormatPatterns)));
-      dispatch(setViewMode(getInitialViewMode(enrichedFields)));
-
-      const instanceCount = buildInstanceCountsFromValues(formValues);
-      dispatch(setAllInstanceCounts(instanceCount));
-
+      dispatch(setAllInstanceCounts(buildInstanceCountsFromValues(formValues)));
       dispatch(setMode("edit"));
 
-      const route = await getFormRoute();
-      navigate(route + `?schema=${encodeURIComponent(schema)}`);
+      const baseRoute = ROUTE_MAP[canonicalName] || "/form";
+      navigate(`${baseRoute}?schema=${encodeURIComponent(canonicalName)}`);
+    } catch (err) {
+      console.error("Failed to open edit form:", err);
+      notify(t("homepage.schema_load_failed"), "error");
+    } finally {
+      setIsLoadingSchema(false);
     }
   };
+
+  const accordionSummaryLines = useMemo(
+    () => t("homepage.accordion_summary_1").split("\n"),
+    [t]
+  );
 
   return (
     <div className="HomePage">
@@ -508,294 +416,284 @@ function HomePage() {
         content_heading={t("homepage.content_heading")}
         content={t("homepage.content")}
       />
-      {/* <HomeQuickStart
-        quick_start_heading={t("homepage.quick_start_heading")}
-        step_1={t("homepage.step_1")}
-        watch_tutorial_video={t("homepage.watch_tutorial_video")}
-        or={t("homepage.or")}
-        read_the_tutorial={t("homepage.read_the_tutorial")}
-        instead={t("homepage.instead")}
-        step_2={t("homepage.step_2")}
-        step_3={t("homepage.step_3")}
-        step_4={t("homepage.step_4")}
-      /> */}
 
-      <br />
-      <Stack
-        direction={{ sm: "column", md: "row" }}
-        spacing={{ xs: 3, sm: 3, md: 4, lg: 8 }}
-        alignItems={{ xs: "center", sm: "center", md: "flex-start" }}
-        justifyContent="space-between"
-        sx={{
-          marginTop: "50px",
-          mb: "60px",
-          padding: {
-            sm: "0px 50px",
-            md: "0px 70px",
-            lg: "0px 140px",
-            xl: "0px 300px",
-          },
-        }}
-      >
-        <Box width={{ xs: "90%", sm: "75%", md: "50%" }}>
-          <div className="MainContent" style={{ padding: "0px 10px" }}>
-            <AccordionExpand
-              accordion_question={t("homepage.accordion_question_1")}
-              accordion_summary={
-                // t("homepage.accordion_summary_1")}
-                t("homepage.accordion_summary_1")
-                  .split("\n")
-                  .map((line, i) => (
-                    <React.Fragment key={i}>
-                      {line}
-                      {i <
-                        t("homepage.accordion_summary_1").split("\n").length -
-                          1 && <br />}
-                    </React.Fragment>
-                  ))
-              }
-            />
-            <br />
-            {/* <AccordionExpand
-              accordion_question={t("homepage.accordion_question_2")}
-              accordion_summary={t("homepage.accordion_summary_2")}
-            />
-            <br />
-            <AccordionExpand
-              accordion_question={t("homepage.accordion_question_3")}
-              accordion_summary={t("homepage.accordion_summary_3")}
-            /> */}
-          </div>
-        </Box>
-        <Box
-          width={{ xs: "90%", sm: "90%", md: "50%" }}
-          pb={"40px"}
-          alignItems="center"
-          style={{
-            textAlign: "center",
-            backgroundColor: theme.secondaryColor,
+      <Box component="main" id="main-content">
+        <Stack
+          direction={{ sm: "column", md: "row" }}
+          spacing={{ xs: 3, sm: 3, md: 4, lg: 8 }}
+          alignItems={{ xs: "center", sm: "center", md: "flex-start" }}
+          justifyContent="space-between"
+          sx={{
+            marginTop: "50px",
+            mb: "60px",
+            padding: {
+              xs: "0px 16px",
+              sm: "0px 50px",
+              md: "0px 70px",
+              lg: "0px 140px",
+              xl: "0px 300px",
+            },
           }}
         >
-          <p style={{ fontSize: "1.5rem", fontWeight: "500" }}>
-            {t("homepage.quick_links")}
-          </p>
-          <Box sx={{ mb: "20px" }}>
-            {!schemaLocked && (
-              <FormHelperText sx={{ textAlign: "center", fontSize: "15px" }}>
-                {t("homepage.select_schema")}
-              </FormHelperText>
-            )}
-
-            {/* Schema Selection Menu */}
-            <FormControl sx={{ width: "75%" }}>
-              <Select
-                value={schema}
-                onChange={handleSchemaSelect}
-                displayEmpty
-                disabled={schemaLocked} // disabled only when file set the schema
-              >
-                <MenuItem value="" sx={{ color: "rgba(100, 100, 100, 1)" }}>
-                  <em>None</em>
-                </MenuItem>
-
-                {SCHEMA_REGISTRY.map((schemaItem) => (
-                  <MenuItem key={schemaItem.name} value={schemaItem.name}>
-                    {schemaItem.name}
-                  </MenuItem>
+          <Box width={{ xs: "95%", sm: "75%", md: "50%" }}>
+            <div className="MainContent" style={{ padding: "0px 10px" }}>
+              <AccordionExpand
+                accordion_question={t("homepage.accordion_question_1")}
+                accordion_summary={accordionSummaryLines.map((line, i) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < accordionSummaryLines.length - 1 && <br />}
+                  </React.Fragment>
                 ))}
-
-                {/* <MenuItem value="q-002-test">q2-002-test</MenuItem>
-                <MenuItem value="schema_catalogue_record">
-                  schema_catalogue_record
-                </MenuItem>
-                <MenuItem value="OpenAIRE">OpenAIRE</MenuItem>
-                <MenuItem value="Dublin Core (Repository-specific)">
-                  Dublin Core (Repository-specific)
-                </MenuItem>
-                <MenuItem value="Dublin Core (Project-specific)">
-                  Dublin Core (Project-specific)
-                </MenuItem>
-                <MenuItem value="DataCite">DataCite</MenuItem>
-                <MenuItem value="DCAT [Demo]">DCAT [Demo]</MenuItem>
-                <MenuItem value="Project (Minimal)">Project (Minimal)</MenuItem>
-                <MenuItem value="RAiD (Project)">RAiD (Project)</MenuItem> */}
-              </Select>
-            </FormControl>
+              />
+            </div>
           </Box>
-
-          {/* Write link - enabled when any schema is selected AND no uploaded file */}
-          {isSchemaSelected && !hasUploadedFile && (
-            <Box
-              component={Link}
-              onClick={handleNavigate}
-              sx={{
-                fontSize: "1.25rem",
-                fontWeight: "500",
-                color: schema ? theme.primaryColor : "rgba(100, 100, 100, 1)",
-                textDecoration: "underline",
-                textUnderlineOffset: "2px",
-                textDecorationColor: theme.underlineColor,
-                cursor: "pointer",
-                "&:hover": {
-                  textDecorationColor: theme.primaryColor,
-                },
-              }}
-            >
-              {t("homepage.write")}
-            </Box>
-          )}
-
-          <hr
-            style={{
-              width: "90%",
-              border: `1px ${theme.primaryColor} solid`,
-              marginTop: "20px",
+          <Box
+            width={{ xs: "95%", sm: "90%", md: "50%" }}
+            pb={"40px"}
+            alignItems="center"
+            sx={{
+              textAlign: "center",
+              backgroundColor: theme.secondaryColor,
+              borderRadius: 1,
             }}
-          />
+          >
+            <Typography
+              component="h2"
+              sx={{ fontSize: "1.5rem", fontWeight: 500, my: 2.5 }}
+            >
+              {t("homepage.quick_links")}
+            </Typography>
+            <Box sx={{ mb: "20px" }}>
+              {!schemaLocked && (
+                <FormHelperText
+                  id={schemaSelectLabelId}
+                  sx={{ textAlign: "center", fontSize: "15px" }}
+                >
+                  {t("homepage.select_schema")}
+                </FormHelperText>
+              )}
 
-          {/* Upload button - enabled when any schema is selected */}
-          <UploadButton
-            onFileSelect={handleFileSelect}
-            upload_file={
-              hasUploadedFile
-                ? t("homepage.upload_different")
-                : t("homepage.upload_file")
-            }
-          />
-
-          <Box sx={{ width: "100%", mb: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
-            {hasUploadedFile && outdatedSchemaInfo && (
-              <Alert severity="warning" sx={{ mb: 1.5, textAlign: "left", width: "85%" }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  Form Questionnaire Outdated
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
-                  This catalogue record was created using an earlier version of the{" "}
-                  <strong>{outdatedSchemaInfo.family}</strong> form questionnaire (v
-                  {outdatedSchemaInfo.currentVersion}). A newer version of the form (v
-                  {outdatedSchemaInfo.latestVersion}) is available.
-                </Typography>
-                <Typography variant="caption" sx={{ display: "block", mt: 0.5, color: "text.secondary" }}>
-                  You can still view the record on its original version, or upgrade it to pre-fill matching fields in the latest form.
-                </Typography>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleUpgradeClick}
-                  sx={{
-                    mt: 1.25,
-                    backgroundColor: theme.primaryColor,
-                    "&:hover": { backgroundColor: theme.primaryColor },
-                    textTransform: "none",
-                    fontWeight: 600,
+              <FormControl sx={{ width: "75%" }}>
+                <Select
+                  value={schema}
+                  onChange={handleSchemaSelect}
+                  displayEmpty
+                  disabled={schemaLocked || isLoadingSchema}
+                  inputProps={{
+                    "aria-label": t("homepage.select_schema"),
+                    "aria-labelledby": !schemaLocked ? schemaSelectLabelId : undefined,
                   }}
                 >
-                  Upgrade to v{outdatedSchemaInfo.latestVersion}
-                </Button>
-              </Alert>
-            )}
+                  <MenuItem value="" sx={{ color: "rgba(100, 100, 100, 1)" }}>
+                    <em>{t("homepage.none")}</em>
+                  </MenuItem>
 
-            {hasUploadedFile && uploadedFiles?.[0]?.name && (
-              <Typography
+                  {SCHEMA_REGISTRY.map((schemaItem) => (
+                    <MenuItem key={schemaItem.name} value={schemaItem.name}>
+                      {schemaItem.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* Accessible keyboard-navigable Write button (replaces Link without `to`) */}
+            {isSchemaSelected && !hasUploadedFile && (
+              <Button
+                type="button"
+                variant="text"
+                disabled={isLoadingSchema}
+                onClick={handleNavigate}
+                startIcon={
+                  isLoadingSchema ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : null
+                }
                 sx={{
-                  whiteSpace: "normal",
-                  overflowWrap: "anywhere",
-                  wordWrap: "break-word",
-                  wordBreak: "break-word",
-                  margin: 1,
+                  fontSize: "1.25rem",
+                  fontWeight: 500,
+                  textTransform: "none",
+                  color: theme.primaryColor,
+                  textDecoration: "underline",
+                  textUnderlineOffset: "2px",
+                  textDecorationColor: theme.underlineColor,
+                  "&:hover": {
+                    textDecoration: "underline",
+                    textDecorationColor: theme.primaryColor,
+                    backgroundColor: theme.hoverUnselectedBgColor,
+                  },
                 }}
               >
-                {t("homepage.file_uploaded")}
-                {uploadedFiles[0].name}
-              </Typography>
+                {isLoadingSchema
+                  ? t("homepage.loading_schema")
+                  : t("homepage.write")}
+              </Button>
             )}
-          </Box>
 
-          {hasUploadedFile && (
-            <Button
-              variant="contained"
-              onClick={handleCancelUpload}
-              sx={{
-                mb: 1,
-                width: "50%",
-                backgroundColor: "red",
-                "&:hover": {
-                  backgroundColor: "red",
-                },
-                boxShadow: undefined,
-                cursor: "pointer",
-              }}
-            >
-              {t("homepage.clear_upload")}
-            </Button>
-          )}
-
-          {hasUploadedFile && isSchemaSelected && (
             <hr
               style={{
-                width: "80%",
-                border: `1px ${theme.primaryColor} solid`,
-                marginBottom: 20,
+                width: "90%",
+                border: 0,
+                borderTop: `2px ${theme.primaryColor} solid`,
+                marginTop: "20px",
               }}
             />
-          )}
 
-          {/* View and Edit buttons - only enabled when files uploaded */}
-          {hasUploadedFile && isSchemaSelected && (
-            <Stack
-              direction="column"
-              spacing={2}
-              justifyContent="center"
-              alignItems="center"
+            <UploadButton
+              onFileSelect={handleFileSelect}
+              upload_file={
+                hasUploadedFile
+                  ? t("homepage.upload_different")
+                  : t("homepage.upload_file")
+              }
+            />
+
+            <Box
+              sx={{
+                width: "100%",
+                mb: 2,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
             >
+              {hasUploadedFile && outdatedSchemaInfo && (
+                <Alert
+                  severity="warning"
+                  sx={{ mb: 1.5, textAlign: "left", width: "85%" }}
+                >
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                    {t("homepage.outdated_title")}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
+                    {t("homepage.outdated_body_prefix")}{" "}
+                    <strong>{outdatedSchemaInfo.family}</strong>{" "}
+                    {t("homepage.outdated_body_mid")} (v
+                    {outdatedSchemaInfo.currentVersion}).{" "}
+                    {t("homepage.outdated_body_suffix")} v
+                    {outdatedSchemaInfo.latestVersion}.
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ display: "block", mt: 0.5, color: "text.secondary" }}
+                  >
+                    {t("homepage.outdated_upgrade_hint")}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    disabled={isLoadingSchema}
+                    onClick={handleUpgradeClick}
+                    sx={{
+                      mt: 1.25,
+                      backgroundColor: theme.primaryColor,
+                      transition: "filter 0.15s ease",
+                      "&:hover": {
+                        backgroundColor: theme.primaryColor,
+                        filter: "brightness(0.93)",
+                      },
+                      textTransform: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {t("homepage.upgrade_to")} v{outdatedSchemaInfo.latestVersion}
+                  </Button>
+                </Alert>
+              )}
+
+              {hasUploadedFile && uploadedFiles?.[0]?.name && (
+                <Typography
+                  sx={{
+                    whiteSpace: "normal",
+                    overflowWrap: "anywhere",
+                    wordWrap: "break-word",
+                    wordBreak: "break-word",
+                    margin: 1,
+                  }}
+                >
+                  {t("homepage.file_uploaded")}
+                  {uploadedFiles[0].name}
+                </Typography>
+              )}
+            </Box>
+
+            {hasUploadedFile && (
               <Button
                 variant="contained"
-                disabled={!hasUploadedFile || !isSchemaSelected}
-                onClick={handleViewClick}
+                onClick={handleCancelUpload}
                 sx={{
-                  width: "75%",
-                  backgroundColor:
-                    hasUploadedFile && isSchemaSelected
-                      ? theme.primaryColor
-                      : "rgba(255, 255, 255, 0.25)",
+                  mb: 1,
+                  width: "50%",
+                  backgroundColor: "#d32f2f",
+                  transition: "background-color 0.15s ease",
                   "&:hover": {
-                    backgroundColor: theme.primaryColor,
+                    backgroundColor: "#b71c1c",
                   },
-                  color: hasUploadedFile && isSchemaSelected ? "white" : "gray",
-                  boxShadow:
-                    hasUploadedFile && isSchemaSelected ? undefined : "none",
-                  cursor:
-                    hasUploadedFile && isSchemaSelected ? "pointer" : "default",
+                  cursor: "pointer",
                 }}
               >
-                {t("homepage.view")}
+                {t("homepage.clear_upload")}
               </Button>
-              <Button
-                variant="contained"
-                disabled={!hasUploadedFile || !isSchemaSelected}
-                onClick={handleEditClick}
-                sx={{
-                  width: "75%",
-                  backgroundColor:
-                    hasUploadedFile && isSchemaSelected
-                      ? theme.primaryColor
-                      : "rgba(255, 255, 255, 0.25)",
-                  "&:hover": {
-                    backgroundColor: theme.primaryColor,
-                  },
-                  color: hasUploadedFile && isSchemaSelected ? "white" : "gray",
-                  boxShadow:
-                    hasUploadedFile && isSchemaSelected ? undefined : "none",
-                  cursor:
-                    hasUploadedFile && isSchemaSelected ? "pointer" : "default",
+            )}
+
+            {hasUploadedFile && isSchemaSelected && (
+              <hr
+                style={{
+                  width: "80%",
+                  border: 0,
+                  borderTop: `2px ${theme.primaryColor} solid`,
+                  marginBottom: 20,
                 }}
+              />
+            )}
+
+            {hasUploadedFile && isSchemaSelected && (
+              <Stack
+                direction="column"
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
               >
-                {t("homepage.edit")}
-              </Button>
-            </Stack>
-          )}
-        </Box>
-      </Stack>
+                <Button
+                  variant="contained"
+                  disabled={!hasUploadedFile || !isSchemaSelected || isLoadingSchema}
+                  onClick={handleViewClick}
+                  sx={{
+                    width: "75%",
+                    backgroundColor: theme.primaryColor,
+                    color: "white",
+                    transition: "filter 0.15s ease",
+                    "&:hover": {
+                      backgroundColor: theme.primaryColor,
+                      filter: "brightness(0.93)",
+                    },
+                  }}
+                >
+                  {t("homepage.view")}
+                </Button>
+                <Button
+                  variant="contained"
+                  disabled={!hasUploadedFile || !isSchemaSelected || isLoadingSchema}
+                  onClick={handleEditClick}
+                  sx={{
+                    width: "75%",
+                    backgroundColor: theme.primaryColor,
+                    color: "white",
+                    transition: "filter 0.15s ease",
+                    "&:hover": {
+                      backgroundColor: theme.primaryColor,
+                      filter: "brightness(0.93)",
+                    },
+                  }}
+                >
+                  {t("homepage.edit")}
+                </Button>
+              </Stack>
+            )}
+          </Box>
+        </Stack>
+      </Box>
       <Footer powered_by={t("powered_by")} supported_by={t("supported_by")} />
     </div>
   );
