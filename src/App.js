@@ -29,6 +29,41 @@ function App() {
           );
         }
 
+        if (data.type === "CLEAR_RECORD") {
+          try {
+            window.sessionStorage.removeItem("contexthub_pending_record");
+            window.sessionStorage.removeItem("contexthub_pending_upgrade");
+            window.sessionStorage.removeItem("contexthub_is_published");
+          } catch {}
+          return;
+        }
+
+        if (data.type === "UPGRADE_RECORD" || data.upgrade === true) {
+          const record = data.record || data.data || data.payload;
+          if (data.isPublished !== undefined) {
+            try {
+              window.sessionStorage.setItem("contexthub_is_published", String(Boolean(data.isPublished)));
+            } catch {}
+          }
+          if (record && typeof record === "object") {
+            try {
+              window.sessionStorage.setItem(
+                "contexthub_pending_upgrade",
+                JSON.stringify({
+                  record,
+                  sourceSchemaId: data.sourceSchemaId || record["@schema_id"] || null,
+                  targetSchemaId: data.targetSchemaId || null,
+                  isPublished: data.isPublished !== undefined ? Boolean(data.isPublished) : true,
+                  version: data.version || null,
+                })
+              );
+            } catch (storageErr) {
+              console.warn("Could not store pending upgrade record in sessionStorage:", storageErr);
+            }
+          }
+          return;
+        }
+
         if (
           data.type === "SET_RECORD" ||
           data.type === "LOAD_RECORD" ||

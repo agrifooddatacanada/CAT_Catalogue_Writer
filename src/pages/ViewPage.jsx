@@ -33,6 +33,8 @@ import {
   selectIsVersionOf,
   selectVersionNotes,
   selectIsPublished,
+  selectLoadedSchemaId,
+  selectUpgradeContext,
   setVersionNotes,
 } from "../store/slices/uploadFileSlice";
 import {
@@ -65,6 +67,8 @@ function ViewPage() {
   const isVersionOfPrior = useSelector(selectIsVersionOf);
   const savedVersionNotes = useSelector(selectVersionNotes);
   const isPublishedRedux = useSelector(selectIsPublished);
+  const loadedSchemaId = useSelector(selectLoadedSchemaId);
+  const upgradeContext = useSelector(selectUpgradeContext);
 
   const isPublishedFromParam = searchParams.get("isPublished");
   const isPublishedSession = (() => {
@@ -83,6 +87,10 @@ function ViewPage() {
 
   // The catalogue record version ALWAYS inherits the version of the resource it describes
   const resourceVersion = savedRecordVersion || "1.0.0";
+  const isDataset =
+    schema === "dataset_catalogue_record" ||
+    schema === "ContextHub_dataset_catalogue_record" ||
+    String(schema || "").toLowerCase().includes("dataset");
   const [currentNotes, setCurrentNotesState] = useState(
     savedVersionNotes || ""
   );
@@ -190,8 +198,15 @@ function ViewPage() {
   const generateCatalogueRecord = (jsonData) => {
     const dataForSaid = deepClone(jsonData);
 
-    // Clean existing identifiers that should not be hashed directly
-    const cleanKeys = ["catalogue_id", "d", "@context", "@schema_id", "@type"];
+    // Clean existing identifiers & schema version headers that should not be hashed or overwritten by spread
+    const cleanKeys = [
+      "catalogue_id",
+      "d",
+      "@context",
+      "@schema_id",
+      "@schema_version",
+      "@type",
+    ];
     cleanKeys.forEach((key) => {
       if (key in dataForSaid) delete dataForSaid[key];
     });
@@ -200,8 +215,10 @@ function ViewPage() {
     const canonicalizedState = canonicalize(dataForSaid);
     const formData = JSON.parse(canonicalizedState);
 
-    // Determine normalized SemVer (inherited from described resource) and timestamp
-    const semVer = normalizeVersion(resourceVersion, "1.0.0");
+    // Determine version (dataset descriptions depend on external dataset release versions, e.g. 2024.1, v2, Draft-B)
+    const semVer = isDataset
+      ? (resourceVersion || "1.0.0")
+      : normalizeVersion(resourceVersion, "1.0.0");
     const timestamp = new Date().toISOString();
 
     // Preserve and enrich Dublin Core terms
@@ -228,12 +245,21 @@ function ViewPage() {
     }
 
     formData.dcterms = updatedDcterms;
+    if (isDataset) {
+      formData.datasetVersion = semVer;
+      formData.version = semVer;
+    }
 
-    // Get context and schema ID
+    // Get context and schema ID (prefer explicit targetSchemaId during upgrade)
     const contextUrl = getContextUrl(schema);
-    const schemaId = getSchemaId(schema);
+    const schemaId =
+      (upgradeContext.isUpgradeMode && upgradeContext.targetSchemaId) ||
+      getSchemaId(schema);
     const schemaMeta = KNOWN_SCHEMA_MANIFEST[schemaId];
-    const schemaPluginVersion = schemaMeta?.version || "1.0.0";
+    const schemaPluginVersion =
+      (upgradeContext.isUpgradeMode && upgradeContext.targetSchemaVersion) ||
+      schemaMeta?.version ||
+      "1.0.0";
     const finalContext = injectDcatNamespace(contextUrl);
 
     // Build standard DCAT CatalogRecord structure
@@ -272,6 +298,9 @@ function ViewPage() {
     const payload = {
       type: "CATALOGUE_RECORD",
       record: objWithSaid,
+      isUpgrade: Boolean(upgradeContext.isUpgradeMode),
+      sourceSchemaId: upgradeContext.sourceSchemaId || loadedSchemaId || null,
+      targetSchemaId: objWithSaid["@schema_id"] || null,
     };
 
     let delivered = false;
@@ -386,7 +415,24 @@ function ViewPage() {
           }}
         >
           {(() => {
-            const currentSchemaId = getSchemaId(schema);
+            if (upgradeContext.isUpgradeMode) {
+              return (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                    Schema Plugin Upgraded
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
+                    This catalogue record has been upgraded from{" "}
+                    <strong>
+                      {upgradeContext.targetFamily || schema} (v{upgradeContext.sourceSchemaVersion || "1.0.0"})
+                    </strong>{" "}
+                    to <strong>v{upgradeContext.targetSchemaVersion || "latest"}</strong>.
+                    {originalSaid && " Its lineage links to the previous published record via dcterms:isVersionOf."}
+                  </Typography>
+                </Alert>
+              );
+            }
+            const currentSchemaId = loadedSchemaId || getSchemaId(schema);
             const outdatedInfo = getSchemaPluginOutdatedStatus(currentSchemaId);
             if (!outdatedInfo.isOutdated) return null;
             return (
@@ -431,7 +477,11 @@ function ViewPage() {
                 Resource Version:
               </Typography>
               <Chip
-                label={`v${resourceVersion}`}
+                label={
+                  isDataset
+                    ? (resourceVersion || "1.0.0")
+                    : (resourceVersion?.startsWith("v") ? resourceVersion : `v${resourceVersion}`)
+                }
                 size="small"
                 color="primary"
                 sx={{ fontWeight: 700, px: 0.5 }}

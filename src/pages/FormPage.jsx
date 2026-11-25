@@ -23,6 +23,9 @@ import { extractAttributes } from "../utils/extractAttributes";
 import { enrichFieldsWithPaths } from "../utils/enrichFieldsWithPaths";
 import { serializeRegexPatterns } from "../utils/regexUtils";
 import {
+  Alert,
+  Chip,
+  Collapse,
   Link,
   Typography,
   Drawer,
@@ -30,6 +33,9 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import UpgradeIcon from "@mui/icons-material/Upgrade";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import theme from "../theme";
 import { setMode, selectMode } from "../store/slices/modeSlice";
 import { setViewMode } from "../store/slices/formUiSlice";
@@ -41,9 +47,21 @@ import { checkIsIframe } from "../utils/iframeUtils";
 import { setInitialFormState } from "../store/slices/formValueSlice";
 import { buildInstanceCountsFromValues } from "../utils/instanceCounts";
 import { setAllInstanceCounts } from "../store/slices/instanceCountsSlice";
-import { setIsUploaded, setRecordMetadata } from "../store/slices/uploadFileSlice";
+import {
+  setIsUploaded,
+  setRecordMetadata,
+  setUpgradeContext,
+  clearUpgradeContext,
+  selectUpgradeContext,
+} from "../store/slices/uploadFileSlice";
 import { escapeKey } from "../utils/pathEncoding";
 import { normalizeNestedFields } from "../utils/normalizeJson";
+import { migrateRecordToSchema } from "../utils/schemaMigration";
+import {
+  KNOWN_SCHEMA_MANIFEST,
+  getSchemaPluginOutdatedStatus,
+} from "../utils/schemaRegistry";
+import { getSchemaId } from "../utils/schemaMapping";
 
 // FLATTEN NESTED OBJECT TO SINGLE LEVEL WITH DOT NOTATION KEYS
 function flatten(obj, parentKey = "", result = {}) {
@@ -113,27 +131,52 @@ function FormPage() {
   const reduxSchema = useSelector(selectSchemaName);
   const fields = useSelector(selectFields);
   const mode = useSelector(selectMode);
+  const upgradeContext = useSelector(selectUpgradeContext);
+
+  const [showUnmappedDetails, setShowUnmappedDetails] = useState(false);
 
   // Try URL search param first, then route param, then Redux
   const schemaFromUrl = searchParams.get("schema") || schemaSlug;
+  const targetSchemaIdParam = searchParams.get("targetSchemaId");
+  const sourceSchemaIdParam = searchParams.get("sourceSchemaId");
+  const modeParam = searchParams.get("mode");
+  const isUpgradeFromUrl = modeParam === "upgrade";
   const schema = reduxSchema || schemaFromUrl;
-  const isEditMode = mode === "edit" || searchParams.get("mode") === "edit";
+  const isEditMode =
+    mode === "edit" || modeParam === "edit" || isUpgradeFromUrl || upgradeContext.isUpgradeMode;
 
   const isPublishedParam =
     searchParams.get("isPublished") === "true" ||
     searchParams.get("published") === "true";
+  const versionParam = searchParams.get("version");
 
   const recordAppliedRef = useRef(false);
   const pendingRecordRef = useRef(null);
   const lastAppliedRecordJsonRef = useRef("");
 
   const applyRecordToForm = useCallback(
-    (jsonData, targetFields = fields, published = isPublishedParam) => {
+    (
+      jsonData,
+      targetFields = fields,
+      published = isPublishedParam,
+      versionOverride = null,
+      options = {}
+    ) => {
       if (!jsonData || typeof jsonData !== "object") return;
+
+      const isUpgrade = Boolean(options?.upgrade || isUpgradeFromUrl);
+      const sourceSchemaId =
+        options?.sourceSchemaId || sourceSchemaIdParam || jsonData["@schema_id"] || null;
+      const targetSchemaId =
+        options?.targetSchemaId || targetSchemaIdParam || getSchemaId(schema) || null;
 
       let jsonStr = "";
       try {
-        jsonStr = JSON.stringify(jsonData);
+        jsonStr = JSON.stringify({
+          data: jsonData,
+          upgrade: isUpgrade,
+          targetSchemaId,
+        });
       } catch {
         jsonStr = "";
       }
@@ -143,21 +186,63 @@ function FormPage() {
       }
 
       if (!targetFields || !Array.isArray(targetFields) || targetFields.length === 0) {
-        pendingRecordRef.current = jsonData;
+        pendingRecordRef.current = {
+          jsonData,
+          published,
+          versionOverride,
+          options: { upgrade: isUpgrade, sourceSchemaId, targetSchemaId },
+        };
         return;
       }
 
       try {
-        const normalizedJson = normalizeNestedFields(jsonData, targetFields);
-        const formValues = flatten(normalizedJson);
+        let formValues;
+        let instanceCount;
+
+        if (isUpgrade) {
+          const migration = migrateRecordToSchema(jsonData, targetFields);
+          formValues = migration.formValues;
+          instanceCount = migration.instanceCounts;
+
+          const outdatedStatus = getSchemaPluginOutdatedStatus(sourceSchemaId);
+          const sourceMeta = sourceSchemaId ? KNOWN_SCHEMA_MANIFEST[sourceSchemaId] : null;
+          const targetMeta = targetSchemaId ? KNOWN_SCHEMA_MANIFEST[targetSchemaId] : null;
+
+          dispatch(
+            setUpgradeContext({
+              isUpgradeMode: true,
+              sourceSchemaId,
+              sourceSchemaVersion:
+                sourceMeta?.version ||
+                outdatedStatus?.currentVersion ||
+                jsonData["@schema_version"] ||
+                "1.0.0",
+              targetSchemaId: targetSchemaId || outdatedStatus?.latestSaid || null,
+              targetSchemaVersion:
+                targetMeta?.version || outdatedStatus?.latestVersion || "1.0.0",
+              targetFamily: targetMeta?.family || sourceMeta?.family || schema || null,
+              unmappedFields: migration.unmappedFields,
+              missingRequiredFields: migration.missingRequiredFields,
+              mappedFieldCount: migration.mappedCount,
+            })
+          );
+        } else {
+          const normalizedJson = normalizeNestedFields(jsonData, targetFields);
+          formValues = flatten(normalizedJson);
+          instanceCount = buildInstanceCountsFromValues(formValues);
+          dispatch(clearUpgradeContext());
+        }
 
         dispatch(setInitialFormState(formValues));
-        const instanceCount = buildInstanceCountsFromValues(formValues);
         dispatch(setAllInstanceCounts(instanceCount));
         dispatch(setIsUploaded(true));
         dispatch(setMode("edit"));
 
         const loadedVersion =
+          versionOverride ||
+          versionParam ||
+          jsonData.datasetVersion ||
+          jsonData.versionLabel ||
           jsonData.dcterms?.version ||
           jsonData.version ||
           jsonData["dcterms:version"] ||
@@ -173,18 +258,31 @@ function FormPage() {
             originalSaid: published ? (jsonData.d || null) : null,
             recordVersion: loadedVersion,
             isVersionOf: loadedIsVersionOf,
-            schemaId: jsonData["@schema_id"] || null,
+            schemaId: sourceSchemaId || jsonData["@schema_id"] || null,
             isPublished: published,
           })
         );
         lastAppliedRecordJsonRef.current = jsonStr;
         recordAppliedRef.current = true;
         pendingRecordRef.current = null;
+        try {
+          window.sessionStorage.removeItem("contexthub_pending_record");
+          window.sessionStorage.removeItem("contexthub_pending_upgrade");
+        } catch {}
       } catch (err) {
         console.error("Error applying record to form:", err);
       }
     },
-    [dispatch, fields, isPublishedParam]
+    [
+      dispatch,
+      fields,
+      isPublishedParam,
+      versionParam,
+      isUpgradeFromUrl,
+      sourceSchemaIdParam,
+      targetSchemaIdParam,
+      schema,
+    ]
   );
 
   // AUTO-LOAD RECORD from URL params, sessionStorage, or postMessage
@@ -234,13 +332,40 @@ function FormPage() {
       }
     }
 
-    // 2. Check pending record stored in sessionStorage by App.js
+    // 2. Check pending record / pending upgrade stored in sessionStorage by App.js.
+    //    Only consume it when explicitly in edit or upgrade mode; otherwise discard any stale record
+    //    from an earlier edit session in the same tab so new forms always start clean.
+    const currentModeParam = searchParams.get("mode");
     try {
+      const storedPendingUpgrade = window.sessionStorage.getItem("contexthub_pending_upgrade");
+      window.sessionStorage.removeItem("contexthub_pending_upgrade");
+      if (currentModeParam === "upgrade" && storedPendingUpgrade) {
+        const parsedUpgrade = JSON.parse(storedPendingUpgrade);
+        if (parsedUpgrade?.record && typeof parsedUpgrade.record === "object") {
+          applyRecordToForm(
+            parsedUpgrade.record,
+            fields,
+            parsedUpgrade.isPublished ?? isPublishedParam,
+            parsedUpgrade.version || versionParam,
+            {
+              upgrade: true,
+              sourceSchemaId: parsedUpgrade.sourceSchemaId || parsedUpgrade.record["@schema_id"] || null,
+              targetSchemaId: parsedUpgrade.targetSchemaId || targetSchemaIdParam || null,
+            }
+          );
+        }
+      }
+
       const storedPending = window.sessionStorage.getItem("contexthub_pending_record");
-      if (storedPending) {
+      window.sessionStorage.removeItem("contexthub_pending_record");
+      if ((currentModeParam === "edit" || currentModeParam === "upgrade") && storedPending) {
         const parsed = JSON.parse(storedPending);
         if (parsed && typeof parsed === "object") {
-          applyRecordToForm(parsed);
+          applyRecordToForm(parsed, fields, isPublishedParam, versionParam, {
+            upgrade: currentModeParam === "upgrade",
+            sourceSchemaId: sourceSchemaIdParam || parsed["@schema_id"] || null,
+            targetSchemaId: targetSchemaIdParam || null,
+          });
         }
       }
     } catch (e) {
@@ -253,7 +378,25 @@ function FormPage() {
         const msg = event.data;
         if (!msg || typeof msg !== "object") return;
 
+        if (msg.type === "CLEAR_RECORD") {
+          try {
+            window.sessionStorage.removeItem("contexthub_pending_record");
+            window.sessionStorage.removeItem("contexthub_pending_upgrade");
+            window.sessionStorage.removeItem("contexthub_is_published");
+          } catch {}
+          pendingRecordRef.current = null;
+          recordAppliedRef.current = false;
+          lastAppliedRecordJsonRef.current = "";
+          dispatch(setInitialFormState({}));
+          dispatch(setAllInstanceCounts({}));
+          dispatch(setIsUploaded(false));
+          dispatch(clearUpgradeContext());
+          dispatch(setMode("write"));
+          return;
+        }
+
         if (
+          msg.type === "UPGRADE_RECORD" ||
           msg.type === "SET_RECORD" ||
           msg.type === "LOAD_RECORD" ||
           msg.type === "SET_DATA" ||
@@ -268,11 +411,20 @@ function FormPage() {
             msg.isPublished !== undefined
               ? Boolean(msg.isPublished)
               : isPublishedParam;
+          const msgVersion = msg.version || versionParam;
+          const isUpgradeMsg =
+            msg.type === "UPGRADE_RECORD" ||
+            Boolean(msg.upgrade) ||
+            currentModeParam === "upgrade";
           try {
             window.sessionStorage.setItem("contexthub_is_published", String(msgPublished));
           } catch {}
           if (record && typeof record === "object") {
-            applyRecordToForm(record, fields, msgPublished);
+            applyRecordToForm(record, fields, msgPublished, msgVersion, {
+              upgrade: isUpgradeMsg,
+              sourceSchemaId: msg.sourceSchemaId || sourceSchemaIdParam || record["@schema_id"] || null,
+              targetSchemaId: msg.targetSchemaId || targetSchemaIdParam || null,
+            });
           }
         }
       } catch (err) {
@@ -297,7 +449,16 @@ function FormPage() {
     }
 
     return () => window.removeEventListener("message", handleMessage);
-  }, [searchParams, applyRecordToForm, fields, isPublishedParam]);
+  }, [
+    searchParams,
+    applyRecordToForm,
+    dispatch,
+    fields,
+    isPublishedParam,
+    versionParam,
+    sourceSchemaIdParam,
+    targetSchemaIdParam,
+  ]);
 
   // AUTO-LOAD SCHEMA
   useEffect(() => {
@@ -305,7 +466,10 @@ function FormPage() {
       if (!schema || Array.isArray(fields)) return; // already loaded
 
       try {
-        const jsonSchema = await extractJsonSchemaAsync(schema);
+        const jsonSchema = await extractJsonSchemaAsync(
+          schema,
+          targetSchemaIdParam ? { exactSaid: targetSchemaIdParam } : undefined
+        );
         if (!jsonSchema) throw new Error("Schema fetch failed");
 
         dispatch(setSchemaName(schema));
@@ -326,7 +490,18 @@ function FormPage() {
         dispatch(setFields(enrichedFields));
 
         if (pendingRecordRef.current) {
-          applyRecordToForm(pendingRecordRef.current, enrichedFields);
+          const pending = pendingRecordRef.current;
+          if (pending && pending.jsonData) {
+            applyRecordToForm(
+              pending.jsonData,
+              enrichedFields,
+              pending.published,
+              pending.versionOverride,
+              pending.options
+            );
+          } else {
+            applyRecordToForm(pending, enrichedFields);
+          }
         }
       } catch (error) {
         console.error("Schema load failed:", error);
@@ -334,7 +509,7 @@ function FormPage() {
     };
 
     loadSchema();
-  }, [schema, dispatch, fields, fields?.length, applyRecordToForm]); // deps: schema changes or fields empty
+  }, [schema, dispatch, fields, fields?.length, applyRecordToForm, targetSchemaIdParam]); // deps: schema changes or fields empty
 
   // Loading states
   if (!schema) {
@@ -505,6 +680,141 @@ function FormPage() {
                   )}
                 </Box>
               </Box>
+            )}
+
+            {upgradeContext.isUpgradeMode && (
+              <Alert
+                severity="info"
+                icon={<UpgradeIcon />}
+                sx={{
+                  mb: 2.5,
+                  borderRadius: 2,
+                  border: "1px solid #bfdbfe",
+                  backgroundColor: "#eff6ff",
+                  "& .MuiAlert-message": { width: "100%" },
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: 1,
+                    mb: 0.75,
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1e3a8a" }}>
+                    Upgrading Form Questionnaire
+                  </Typography>
+                  {upgradeContext.sourceSchemaVersion && (
+                    <Chip
+                      label={`From v${upgradeContext.sourceSchemaVersion}`}
+                      size="small"
+                      sx={{ fontFamily: "monospace", fontSize: "0.72rem", height: 22 }}
+                    />
+                  )}
+                  {upgradeContext.targetSchemaVersion && (
+                    <Chip
+                      label={`To v${upgradeContext.targetSchemaVersion}`}
+                      size="small"
+                      color="primary"
+                      sx={{ fontFamily: "monospace", fontSize: "0.72rem", height: 22 }}
+                    />
+                  )}
+                </Box>
+                <Typography variant="body2" sx={{ fontSize: "0.85rem", color: "#1e40af" }}>
+                  Matching fields from your previous catalogue record ({upgradeContext.mappedFieldCount} values)
+                  have been pre-filled automatically. Please review and manually enter any new or changed fields.
+                </Typography>
+
+                {upgradeContext.missingRequiredFields.length > 0 && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: "#9a3412", display: "block", mb: 0.5 }}>
+                      Required fields needing manual input ({upgradeContext.missingRequiredFields.length}):
+                    </Typography>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {upgradeContext.missingRequiredFields.map((f) => (
+                        <Chip
+                          key={f.path}
+                          label={f.label}
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                          sx={{ fontSize: "0.72rem", height: 22, backgroundColor: "#fffbeb" }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {upgradeContext.unmappedFields.length > 0 && (
+                  <Box sx={{ mt: 1 }}>
+                    <Button
+                      size="small"
+                      onClick={() => setShowUnmappedDetails((prev) => !prev)}
+                      endIcon={showUnmappedDetails ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "0.78rem",
+                        fontWeight: 600,
+                        px: 0,
+                        color: "#1d4ed8",
+                      }}
+                    >
+                      {showUnmappedDetails ? "Hide" : "Show"} {upgradeContext.unmappedFields.length} unmapped
+                      {upgradeContext.unmappedFields.length === 1 ? " value" : " values"} from the previous version
+                    </Button>
+                    <Collapse in={showUnmappedDetails}>
+                      <Box
+                        sx={{
+                          mt: 1,
+                          p: 1.25,
+                          borderRadius: 1.5,
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #dbeafe",
+                          maxHeight: 200,
+                          overflowY: "auto",
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.75 }}>
+                          These fields did not match the new schema structure and were omitted from the upgraded record. Copy any values you still need into the new form fields:
+                        </Typography>
+                        {upgradeContext.unmappedFields.map((entry, idx) => (
+                          <Box
+                            key={`${entry.key}-${idx}`}
+                            sx={{
+                              display: "flex",
+                              gap: 1.5,
+                              py: 0.4,
+                              borderTop: idx > 0 ? "1px solid #f1f5f9" : "none",
+                              fontSize: "0.78rem",
+                            }}
+                          >
+                            <Typography
+                              component="span"
+                              sx={{
+                                fontFamily: "monospace",
+                                fontWeight: 600,
+                                color: "#334155",
+                                minWidth: 160,
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {entry.key}
+                            </Typography>
+                            <Typography
+                              component="span"
+                              sx={{ color: "#475569", wordBreak: "break-word" }}
+                            >
+                              {entry.value}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Collapse>
+                  </Box>
+                )}
+              </Alert>
             )}
 
             {activePageLabel && (
