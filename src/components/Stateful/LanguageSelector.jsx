@@ -84,12 +84,17 @@ export default function SelectLanguage({
           <MenuItem
             value="eng"
             sx={{
+              fontWeight: 500,
               "&.Mui-selected": {
                 backgroundColor: selected_item_bgColor,
                 color: selected_item_color,
+                fontWeight: 700,
+              },
+              "&.Mui-selected:hover": {
+                backgroundColor: selected_item_bgColor,
               },
               "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.5)",
+                backgroundColor: "rgba(199, 157, 3, 0.18)",
               },
             }}
           >
@@ -98,12 +103,17 @@ export default function SelectLanguage({
           <MenuItem
             value="fra"
             sx={{
+              fontWeight: 500,
               "&.Mui-selected": {
                 backgroundColor: selected_item_bgColor,
                 color: selected_item_color,
+                fontWeight: 700,
+              },
+              "&.Mui-selected:hover": {
+                backgroundColor: selected_item_bgColor,
               },
               "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.5)",
+                backgroundColor: "rgba(199, 157, 3, 0.18)",
               },
             }}
           >

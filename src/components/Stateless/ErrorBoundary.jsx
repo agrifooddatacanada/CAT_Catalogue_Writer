@@ -56,7 +56,9 @@ class ErrorBoundary extends React.Component {
                 onClick={this.handleReload}
                 sx={{
                   backgroundColor: theme.primaryColor,
-                  "&:hover": { backgroundColor: theme.primaryColor, filter: "brightness(0.92)" },
+                  color: theme.primaryContrastText,
+                  fontWeight: 600,
+                  "&:hover": { backgroundColor: theme.primaryHoverColor },
                 }}
               >
                 Reload Page

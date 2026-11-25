@@ -328,7 +328,11 @@ function ViewPage() {
           component={RouterLink}
           to="/"
           variant="contained"
-          sx={{ backgroundColor: theme.primaryColor }}
+          sx={{
+            backgroundColor: theme.primaryColor,
+            color: theme.primaryContrastText,
+            "&:hover": { backgroundColor: theme.primaryHoverColor },
+          }}
         >
           {t("formpage.go_home")}
         </Button>
@@ -424,7 +428,7 @@ function ViewPage() {
             <Box>
               <Typography
                 variant="subtitle1"
-                sx={{ fontWeight: 600, color: theme.primaryColor }}
+                sx={{ fontWeight: 700, color: theme.primaryTextColor }}
               >
                 {isPublished
                   ? t("viewpage.lineage_version_title")
@@ -525,10 +529,11 @@ function ViewPage() {
             variant="contained"
             sx={{
               backgroundColor: theme.primaryColor,
-              transition: "filter 0.15s ease",
+              color: theme.primaryContrastText,
+              fontWeight: 600,
+              transition: "background-color 0.15s ease",
               "&:hover": {
-                backgroundColor: theme.primaryColor,
-                filter: "brightness(0.93)",
+                backgroundColor: theme.primaryHoverColor,
               },
             }}
             onClick={handleEditClick}
@@ -541,10 +546,11 @@ function ViewPage() {
             variant="contained"
             sx={{
               backgroundColor: theme.primaryColor,
-              transition: "filter 0.15s ease",
+              color: theme.primaryContrastText,
+              fontWeight: 600,
+              transition: "background-color 0.15s ease",
               "&:hover": {
-                backgroundColor: theme.primaryColor,
-                filter: "brightness(0.93)",
+                backgroundColor: theme.primaryHoverColor,
               },
             }}
             onClick={() => downloadJson(formState)}
@@ -558,10 +564,11 @@ function ViewPage() {
               variant="contained"
               sx={{
                 backgroundColor: theme.primaryColor,
-                transition: "filter 0.15s ease",
+                color: theme.primaryContrastText,
+                fontWeight: 600,
+                transition: "background-color 0.15s ease",
                 "&:hover": {
-                  backgroundColor: theme.primaryColor,
-                  filter: "brightness(0.93)",
+                  backgroundColor: theme.primaryHoverColor,
                 },
               }}
               onClick={() => postMessageToParent(formState)}
@@ -577,10 +584,11 @@ function ViewPage() {
               disabled={updating}
               sx={{
                 backgroundColor: theme.primaryColor,
-                transition: "filter 0.15s ease",
+                color: theme.primaryContrastText,
+                fontWeight: 600,
+                transition: "background-color 0.15s ease",
                 "&:hover": {
-                  backgroundColor: theme.primaryColor,
-                  filter: "brightness(0.93)",
+                  backgroundColor: theme.primaryHoverColor,
                 },
               }}
               onClick={() => updateContextHub(formState)}

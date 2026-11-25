@@ -512,15 +512,15 @@ function HomePage() {
                 }
                 sx={{
                   fontSize: "1.25rem",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   textTransform: "none",
-                  color: theme.primaryColor,
+                  color: theme.primaryTextColor,
                   textDecoration: "underline",
-                  textUnderlineOffset: "2px",
+                  textUnderlineOffset: "3px",
                   textDecorationColor: theme.underlineColor,
                   "&:hover": {
                     textDecoration: "underline",
-                    textDecorationColor: theme.primaryColor,
+                    textDecorationColor: theme.primaryTextColor,
                     backgroundColor: theme.hoverUnselectedBgColor,
                   },
                 }}
@@ -588,10 +588,10 @@ function HomePage() {
                     sx={{
                       mt: 1.25,
                       backgroundColor: theme.primaryColor,
-                      transition: "filter 0.15s ease",
+                      color: theme.primaryContrastText,
+                      transition: "background-color 0.15s ease",
                       "&:hover": {
-                        backgroundColor: theme.primaryColor,
-                        filter: "brightness(0.93)",
+                        backgroundColor: theme.primaryHoverColor,
                       },
                       textTransform: "none",
                       fontWeight: 600,
@@ -662,11 +662,11 @@ function HomePage() {
                   sx={{
                     width: "75%",
                     backgroundColor: theme.primaryColor,
-                    color: "white",
-                    transition: "filter 0.15s ease",
+                    color: theme.primaryContrastText,
+                    fontWeight: 600,
+                    transition: "background-color 0.15s ease",
                     "&:hover": {
-                      backgroundColor: theme.primaryColor,
-                      filter: "brightness(0.93)",
+                      backgroundColor: theme.primaryHoverColor,
                     },
                   }}
                 >
@@ -679,11 +679,11 @@ function HomePage() {
                   sx={{
                     width: "75%",
                     backgroundColor: theme.primaryColor,
-                    color: "white",
-                    transition: "filter 0.15s ease",
+                    color: theme.primaryContrastText,
+                    fontWeight: 600,
+                    transition: "background-color 0.15s ease",
                     "&:hover": {
-                      backgroundColor: theme.primaryColor,
-                      filter: "brightness(0.93)",
+                      backgroundColor: theme.primaryHoverColor,
                     },
                   }}
                 >
