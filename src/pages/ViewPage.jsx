@@ -22,6 +22,7 @@ import theme from "../theme";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectHasFormData,
+  selectHasFormChanges,
   selectFields,
   selectAllFormValues,
   selectLoadedSchemaMeta,
@@ -69,6 +70,7 @@ function ViewPage() {
 
   const schema = useSelector(selectSchemaName);
   const isUploadedJson = useSelector(selectHasFormData);
+  const hasFormChanges = useSelector(selectHasFormChanges);
   const flatFormState = useSelector(selectAllFormValues);
   const jsonSchema = useSelector(selectFields);
   const loadedSchemaMeta = useSelector(selectLoadedSchemaMeta);
@@ -353,6 +355,12 @@ function ViewPage() {
   const outdatedInfo = upgradeContext.isUpgradeMode
     ? null
     : getSchemaPluginOutdatedStatus(currentSchemaId);
+  const isUnchangedPublishedEdit =
+    isPublished &&
+    Boolean(originalSaid) &&
+    !upgradeContext.isUpgradeMode &&
+    !hasFormChanges &&
+    !currentNotes.trim();
 
   return (
     <div className="ViewPage">
@@ -514,6 +522,14 @@ function ViewPage() {
 
         <DynamicForm language={lang} />
 
+        {isUnchangedPublishedEdit && (
+          <Alert severity="info" sx={{ mt: 2.5, borderRadius: 2 }}>
+            <Typography variant="body2">
+              {t("viewpage.no_changes_notice")}
+            </Typography>
+          </Alert>
+        )}
+
         <Stack
           direction="row"
           spacing={1.5}
@@ -556,6 +572,7 @@ function ViewPage() {
           {(isIframeMode || buttonLabelParam) && (
             <Button
               variant="contained"
+              disabled={isUnchangedPublishedEdit}
               sx={{
                 backgroundColor: theme.primaryColor,
                 transition: "filter 0.15s ease",
@@ -574,7 +591,7 @@ function ViewPage() {
           {canPostToDataUrl && (
             <Button
               variant="contained"
-              disabled={updating}
+              disabled={updating || isUnchangedPublishedEdit}
               sx={{
                 backgroundColor: theme.primaryColor,
                 transition: "filter 0.15s ease",

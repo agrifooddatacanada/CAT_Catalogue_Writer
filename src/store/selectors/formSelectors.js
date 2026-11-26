@@ -13,7 +13,45 @@ export const selectLoadedSchemaMeta = (state) =>
 
 // Direct selectors
 export const selectFormState = (state) => state.formValues.formState;
+export const selectInitialFormState = (state) =>
+  state.formValues.initialFormState;
 export const selectAllFormValues = selectFormState;
+
+const IGNORED_CHANGE_KEYS = new Set([
+  "d",
+  "catalogue_id",
+  "@context",
+  "@type",
+  "@schema_id",
+  "@schema_version",
+  "modified",
+  "isVersionOf",
+  "dcterms.modified",
+  "dcterms.isVersionOf",
+  "dcterms.adms:versionNotes",
+  "dcterms___$dot$___modified",
+  "dcterms___$dot$___isVersionOf",
+  "dcterms___$dot$___adms:versionNotes",
+]);
+
+function normalizeFormSnapshot(values) {
+  if (!values || typeof values !== "object") return "{}";
+  const entries = [];
+  for (const key of Object.keys(values).sort()) {
+    if (IGNORED_CHANGE_KEYS.has(key)) continue;
+    const val = values[key];
+    if (val === undefined || val === null || val === "") continue;
+    if (Array.isArray(val) && val.length === 0) continue;
+    entries.push([key, val]);
+  }
+  return JSON.stringify(entries);
+}
+
+export const selectHasFormChanges = createSelector(
+  [selectFormState, selectInitialFormState],
+  (formState, initialFormState) =>
+    normalizeFormSnapshot(formState) !== normalizeFormSnapshot(initialFormState),
+);
 
 export const selectHasFormData = createSelector(
   [selectAllFormValues],

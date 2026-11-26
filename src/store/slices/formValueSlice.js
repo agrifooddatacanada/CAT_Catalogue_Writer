@@ -4,11 +4,14 @@ const formValueSlice = createSlice({
   name: "formValueSlice",
   initialState: {
     formState: {},
+    initialFormState: {},
   },
   reducers: {
     // Use ONLY for initial load or full reset
     setInitialFormState: (state, action) => {
-      state.formState = action.payload || {};
+      const next = action.payload || {};
+      state.formState = next;
+      state.initialFormState = JSON.parse(JSON.stringify(next));
     },
     // Replace entire form (if you really need it)
     setFormState: (state, action) => {
@@ -34,6 +37,7 @@ const formValueSlice = createSlice({
     // Optional: clear everything
     clearFormValues: (state) => {
       state.formState = {};
+      state.initialFormState = {};
     },
     // Mark field as touched (user interacted)
     setFieldTouched: (state, action) => {

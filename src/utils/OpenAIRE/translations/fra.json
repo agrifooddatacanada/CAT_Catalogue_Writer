@@ -90,6 +90,7 @@
     "fields": "champs",
     "submit_blocked_empty": "Remplissez au moins un champ avant de réviser votre enregistrement.",
     "submit_blocked_title": "Complétez ou corrigez les champs suivants pour réviser votre enregistrement :",
+    "submit_blocked_unchanged": "Aucune modification détectée. Modifiez au moins un champ pour mettre à jour cet enregistrement.",
     "issue_missing": "obligatoire",
     "issue_invalid": "format invalide",
     "jump_to_section": "Aller à la section"
@@ -124,7 +125,8 @@
     "updated_in_contexthub_tab": "Enregistrement mis à jour dans ContextHub ! Vous pouvez fermer cet onglet.",
     "contexthub_fallback_download": "Impossible de joindre directement la fenêtre ContextHub. Votre fichier a été téléchargé afin que vous puissiez le téléverser manuellement.",
     "contexthub_update_success": "Catalogue mis à jour avec succès sur ContextHub en tant que nouvelle révision !",
-    "contexthub_update_failed": "Échec de la mise à jour de ContextHub :"
+    "contexthub_update_failed": "Échec de la mise à jour de ContextHub :",
+    "no_changes_notice": "Aucune modification détectée par rapport à l’enregistrement préchargé. Cliquez sur Modifier pour changer au moins un champ ou saisissez des notes de révision avant de mettre à jour ContextHub."
   },
   "forminputmultiple": {
     "actions": "Actions",

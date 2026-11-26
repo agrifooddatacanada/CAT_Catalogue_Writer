@@ -7,6 +7,7 @@ import { TranslationProvider } from "./utils/OpenAIRE/TranslationContext";
 import { NotificationProvider } from "./components/Stateless/NotificationContext";
 import ErrorBoundary from "./components/Stateless/ErrorBoundary";
 import HomePage from "./pages/HomePage";
+import FormPage from "./pages/FormPage";
 import {
   isAllowedOrigin,
   rememberVerifiedOrigin,
@@ -15,7 +16,6 @@ import {
   safeSessionSet,
 } from "./utils/postMessageSecurity";
 
-const FormPage = lazy(() => import("./pages/FormPage"));
 const ViewPage = lazy(() => import("./pages/ViewPage"));
 const ViewHelpPage = lazy(() => import("./pages/ViewHelpPage"));
 const FormHelpPage = lazy(() => import("./pages/FormHelpPage"));

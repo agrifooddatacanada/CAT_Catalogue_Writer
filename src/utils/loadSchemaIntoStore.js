@@ -21,12 +21,27 @@ import { setViewMode } from "../store/slices/formUiSlice";
  */
 export async function loadSchemaIntoStore(
   dispatch,
-  { schema, exactSaid = null, lang = "eng", preserveUiState = false }
+  {
+    schema,
+    exactSaid = null,
+    lang = "eng",
+    preserveUiState = false,
+    shouldCommit = null,
+  }
 ) {
   const jsonSchema = await extractJsonSchemaAsync(
     schema,
     exactSaid ? { exactSaid } : undefined
   );
+  if (typeof shouldCommit === "function" && !shouldCommit()) {
+    return {
+      cancelled: true,
+      jsonSchema: null,
+      canonicalName: "",
+      enrichedFields: [],
+      pages: [],
+    };
+  }
   if (!jsonSchema) {
     throw new Error(`Schema "${schema}" could not be loaded.`);
   }
@@ -36,6 +51,16 @@ export async function loadSchemaIntoStore(
     extractAttributes(jsonSchema, "capture_base", lang);
   const enrichedFields = enrichFieldsWithPaths(rawFields);
   const pages = extractPages(jsonSchema, enrichedFields, lang);
+
+  if (typeof shouldCommit === "function" && !shouldCommit()) {
+    return {
+      cancelled: true,
+      jsonSchema: null,
+      canonicalName: "",
+      enrichedFields: [],
+      pages: [],
+    };
+  }
 
   dispatch(setSchemaName(canonicalName));
   dispatch(setPages(pages));
@@ -54,6 +79,7 @@ export async function loadSchemaIntoStore(
   );
 
   return {
+    cancelled: false,
     jsonSchema,
     canonicalName,
     enrichedFields,
