@@ -50,6 +50,7 @@ import { migrateRecordToSchema } from "../utils/schemaMigration";
 import {
   KNOWN_SCHEMA_MANIFEST,
   getSchemaPluginOutdatedStatus,
+  resolveSchemaName,
 } from "../utils/schemaRegistry";
 import { getSchemaId } from "../utils/schemaMapping";
 import { flattenFormData } from "../utils/formStateFlatten";
@@ -420,11 +421,45 @@ function FormPage() {
     targetSchemaIdParam,
   ]);
 
+  // Flush any pending record once schema fields are available in Redux.
+  // Prevents records received before schema load completes from ever being dropped
+  // across React StrictMode remounts or language/effect re-runs.
+  useEffect(() => {
+    if (!Array.isArray(fields) || fields.length === 0) return;
+    if (!pendingRecordRef.current) return;
+
+    const pending = pendingRecordRef.current;
+    if (pending && pending.jsonData) {
+      applyRecordToForm(
+        pending.jsonData,
+        fields,
+        pending.published,
+        pending.versionOverride,
+        pending.options
+      );
+    } else {
+      applyRecordToForm(pending, fields);
+    }
+  }, [fields, applyRecordToForm]);
+
   // AUTO-LOAD SCHEMA & RE-EXTRACT ON LANGUAGE CHANGE (preserving user formValues & UI state)
   useEffect(() => {
     if (!schema) return undefined;
 
-    const alreadyLoaded = Array.isArray(fields) && fields.length > 0;
+    const canonicalSchemaName = resolveSchemaName(schema);
+    const schemaMatchesLoaded =
+      !loadedSchemaMeta?.schemaKey ||
+      loadedSchemaMeta.schemaKey === canonicalSchemaName;
+    const exactSaidMatchesLoaded =
+      !targetSchemaIdParam ||
+      !loadedSchemaMeta?.exactSaid ||
+      loadedSchemaMeta.exactSaid === targetSchemaIdParam;
+
+    const alreadyLoaded =
+      Array.isArray(fields) &&
+      fields.length > 0 &&
+      schemaMatchesLoaded &&
+      exactSaidMatchesLoaded;
     const needsLanguageReload =
       alreadyLoaded && loadedSchemaMeta?.lang && loadedSchemaMeta.lang !== lang;
 
@@ -437,27 +472,31 @@ function FormPage() {
 
     const loadSchema = async () => {
       try {
-        const { enrichedFields } = await loadSchemaIntoStore(dispatch, {
+        const result = await loadSchemaIntoStore(dispatch, {
           schema,
-          exactSaid: targetSchemaIdParam || loadedSchemaMeta?.exactSaid || null,
+          exactSaid:
+            targetSchemaIdParam ||
+            (schemaMatchesLoaded ? loadedSchemaMeta?.exactSaid : null) ||
+            null,
           lang,
           preserveUiState: needsLanguageReload,
+          shouldCommit: () => !cancelled,
         });
 
-        if (cancelled) return;
+        if (cancelled || result?.cancelled) return;
 
         if (!needsLanguageReload && pendingRecordRef.current) {
           const pending = pendingRecordRef.current;
           if (pending && pending.jsonData) {
             applyRecordToForm(
               pending.jsonData,
-              enrichedFields,
+              result.enrichedFields,
               pending.published,
               pending.versionOverride,
               pending.options
             );
           } else {
-            applyRecordToForm(pending, enrichedFields);
+            applyRecordToForm(pending, result.enrichedFields);
           }
         }
       } catch (error) {
@@ -477,6 +516,7 @@ function FormPage() {
     lang,
     dispatch,
     fields,
+    loadedSchemaMeta?.schemaKey,
     loadedSchemaMeta?.lang,
     loadedSchemaMeta?.exactSaid,
     applyRecordToForm,
