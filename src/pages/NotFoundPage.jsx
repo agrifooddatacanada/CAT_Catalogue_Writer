@@ -44,9 +44,10 @@ function NotFoundPage() {
             onClick={() => navigate("/")}
             sx={{
               backgroundColor: theme.primaryColor,
+              color: theme.primaryContrastText,
+              fontWeight: 600,
               "&:hover": {
-                backgroundColor: theme.primaryColor,
-                filter: "brightness(0.92)",
+                backgroundColor: theme.primaryHoverColor,
               },
             }}
           >

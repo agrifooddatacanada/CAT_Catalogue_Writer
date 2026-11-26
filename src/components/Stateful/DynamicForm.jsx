@@ -505,14 +505,14 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
                 size="large"
                 sx={{
                   "& .MuiPaginationItem-root": {
-                    color: theme.primaryColor,
+                    color: theme.primaryTextColor,
+                    fontWeight: 600,
                   },
                   "& .MuiPaginationItem-root.Mui-selected": {
                     backgroundColor: theme.primaryColor,
-                    color: theme.backgroundColor,
+                    color: theme.primaryContrastText,
                     "&:hover": {
-                      backgroundColor: theme.primaryColor,
-                      filter: "brightness(0.93)",
+                      backgroundColor: theme.primaryHoverColor,
                     },
                   },
                   "& .MuiPaginationItem-root:hover": {
@@ -612,10 +612,11 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
                     dispatch(setCurrentPage(1));
                   }}
                   sx={{
-                    color: theme.primaryColor,
-                    borderColor: theme.primaryColor,
+                    color: theme.primaryTextColor,
+                    borderColor: theme.borderColor,
+                    fontWeight: 600,
                     "&:hover": {
-                      borderColor: theme.primaryColor,
+                      borderColor: theme.primaryHoverColor,
                       backgroundColor: theme.hoverUnselectedBgColor,
                     },
                   }}
@@ -636,10 +637,11 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
                     dispatch(setCurrentPage(1));
                   }}
                   sx={{
-                    color: theme.primaryColor,
-                    borderColor: theme.primaryColor,
+                    color: theme.primaryTextColor,
+                    borderColor: theme.borderColor,
+                    fontWeight: 600,
                     "&:hover": {
-                      borderColor: theme.primaryColor,
+                      borderColor: theme.primaryHoverColor,
                       backgroundColor: theme.hoverUnselectedBgColor,
                     },
                   }}
@@ -653,10 +655,11 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
                   disabled={!rootIsValid || isUnchangedEdit}
                   sx={{
                     backgroundColor: theme.primaryColor,
-                    transition: "filter 0.15s ease",
+                    color: theme.primaryContrastText,
+                    fontWeight: 600,
+                    transition: "background-color 0.15s ease",
                     "&:hover": {
-                      backgroundColor: theme.primaryColor,
-                      filter: "brightness(0.93)",
+                      backgroundColor: theme.primaryHoverColor,
                     },
                   }}
                   endIcon={<SendIcon />}
@@ -683,15 +686,15 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
             right: 32,
             zIndex: 1000,
             backgroundColor: theme.primaryColor,
-            transition: "filter 0.15s ease, transform 0.15s ease",
+            color: theme.primaryContrastText,
+            transition: "background-color 0.15s ease, transform 0.15s ease",
             "&:hover": {
-              backgroundColor: theme.primaryColor,
-              filter: "brightness(0.9)",
+              backgroundColor: theme.primaryHoverColor,
               transform: "translateY(-2px)",
             },
           }}
         >
-          <KeyboardArrowUpIcon sx={{ color: theme.backgroundColor }} />
+          <KeyboardArrowUpIcon sx={{ color: theme.primaryContrastText }} />
         </Fab>
       )}
     </>

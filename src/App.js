@@ -1,7 +1,9 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, CssBaseline } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { muiTheme } from "./theme";
 import { setUserContext } from "./store/slices/userContextSlice";
 import { TranslationProvider } from "./utils/OpenAIRE/TranslationContext";
 import { NotificationProvider } from "./components/Stateless/NotificationContext";
@@ -127,25 +129,28 @@ function App() {
   }, [dispatch]);
 
   return (
-    <ErrorBoundary>
-      <TranslationProvider>
-        <NotificationProvider>
-          <Router>
-            <Suspense fallback={<RouteFallback />}>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/form" element={<FormPage />} />
-                <Route path="/form/:schemaSlug" element={<FormPage />} />
-                <Route path="/view" element={<ViewPage />} />
-                <Route path="/view-help" element={<ViewHelpPage />} />
-                <Route path="/form-help" element={<FormHelpPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </Suspense>
-          </Router>
-        </NotificationProvider>
-      </TranslationProvider>
-    </ErrorBoundary>
+    <ThemeProvider theme={muiTheme}>
+      <CssBaseline />
+      <ErrorBoundary>
+        <TranslationProvider>
+          <NotificationProvider>
+            <Router>
+              <Suspense fallback={<RouteFallback />}>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/form" element={<FormPage />} />
+                  <Route path="/form/:schemaSlug" element={<FormPage />} />
+                  <Route path="/view" element={<ViewPage />} />
+                  <Route path="/view-help" element={<ViewHelpPage />} />
+                  <Route path="/form-help" element={<FormHelpPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Suspense>
+            </Router>
+          </NotificationProvider>
+        </TranslationProvider>
+      </ErrorBoundary>
+    </ThemeProvider>
   );
 }
 

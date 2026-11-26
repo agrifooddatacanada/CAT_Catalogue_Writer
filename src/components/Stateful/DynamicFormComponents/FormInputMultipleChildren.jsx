@@ -529,10 +529,11 @@ const FormInputMultipleChildren = ({ valuePath, parentPageIndex }) => {
       {shouldShowAddButton && (
         <Button
           sx={{
-            color: theme.primaryColor,
-            borderColor: theme.primaryColor,
+            color: theme.primaryTextColor,
+            borderColor: theme.borderColor,
+            fontWeight: 600,
             "&:hover": {
-              borderColor: theme.primaryColor,
+              borderColor: theme.primaryHoverColor,
               backgroundColor: theme.hoverUnselectedBgColor,
             },
             mt: 1.5,

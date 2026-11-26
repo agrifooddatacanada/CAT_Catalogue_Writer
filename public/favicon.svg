@@ -1,36 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Catalogue Record Writer">
-  <!-- Brand gold rounded tile -->
-  <rect x="2" y="2" width="60" height="60" rx="14" fill="#F2C200" />
-  <rect x="3" y="3" width="58" height="58" rx="13" fill="none" stroke="#1C1917" stroke-opacity="0.14" stroke-width="2" />
+  <!-- Brand yellow rounded tile matching #E5B000 -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#E5B000" />
+  <rect x="3" y="3" width="58" height="58" rx="13" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="2" />
 
-  <!-- Structured Catalogue Record document -->
+  <!-- Structured Catalogue Record document in crisp white -->
   <path
     d="M15 11 H36 L45 20 V49 C45 51.2 43.2 53 41 53 H15 C12.8 53 11 51.2 11 49 V15 C11 12.8 12.8 11 15 11 Z"
-    fill="#1C1917"
+    fill="#FFFFFF"
   />
   <!-- Folded corner accent -->
-  <path d="M36 11 V18 C36 19.1 36.9 20 38 20 H45 Z" fill="#F2C200" fill-opacity="0.9" />
+  <path d="M36 11 V18 C36 19.1 36.9 20 38 20 H45 Z" fill="#E5B000" fill-opacity="0.45" />
 
   <!-- Structured metadata key-value rows -->
-  <circle cx="18.5" cy="24.5" r="2.3" fill="#F2C200" />
-  <rect x="23.5" y="22.5" width="15" height="4" rx="2" fill="#FFFFFF" />
+  <circle cx="18.5" cy="24.5" r="2.3" fill="#E5B000" />
+  <rect x="23.5" y="22.5" width="15" height="4" rx="2" fill="#E5B000" />
 
-  <circle cx="18.5" cy="33.5" r="2.3" fill="#F2C200" />
-  <rect x="23.5" y="31.5" width="15.5" height="4" rx="2" fill="#FFFFFF" />
+  <circle cx="18.5" cy="33.5" r="2.3" fill="#E5B000" />
+  <rect x="23.5" y="31.5" width="15.5" height="4" rx="2" fill="#E5B000" />
 
-  <circle cx="18.5" cy="42.5" r="2.3" fill="#F2C200" />
-  <rect x="23.5" y="40.5" width="9.5" height="4" rx="2" fill="#FFFFFF" />
+  <circle cx="18.5" cy="42.5" r="2.3" fill="#E5B000" />
+  <rect x="23.5" y="40.5" width="9.5" height="4" rx="2" fill="#E5B000" />
 
   <!-- Writer pen angled onto the bottom-right of the record -->
   <g transform="translate(46, 44) rotate(45)">
-    <!-- Gold cutout halo for crisp separation at 16px -->
-    <rect x="-5.8" y="-14" width="11.6" height="23" rx="3" fill="#F2C200" />
-    <path d="M-5.8 6 L0 16 L5.8 6 Z" fill="#F2C200" />
+    <!-- Yellow cutout halo for crisp separation at 16px -->
+    <rect x="-5.8" y="-14" width="11.6" height="23" rx="3" fill="#E5B000" />
+    <path d="M-5.8 6 L0 16 L5.8 6 Z" fill="#E5B000" />
     <!-- Pen barrel -->
-    <rect x="-3.6" y="-12" width="7.2" height="17.5" rx="2" fill="#1C1917" />
-    <!-- Gold collar highlight -->
-    <rect x="-3.6" y="-7.5" width="7.2" height="2.4" fill="#F2C200" />
+    <rect x="-3.6" y="-12" width="7.2" height="17.5" rx="2" fill="#FFFFFF" />
+    <!-- Yellow collar band -->
+    <rect x="-3.6" y="-7.5" width="7.2" height="2.4" fill="#E5B000" />
     <!-- Pen nib -->
-    <path d="M-3.6 5.5 L0 12.2 L3.6 5.5 Z" fill="#FFFFFF" stroke="#1C1917" stroke-width="1.6" stroke-linejoin="round" />
+    <path d="M-3.6 5.5 L0 12.6 L3.6 5.5 Z" fill="#FFFFFF" />
+    <path d="M-1.5 9.6 L0 12.6 L1.5 9.6 Z" fill="#E5B000" />
   </g>
 </svg>
