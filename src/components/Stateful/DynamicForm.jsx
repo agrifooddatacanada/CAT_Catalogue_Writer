@@ -23,8 +23,10 @@ import { setAllInstanceCounts } from "../../store/slices/instanceCountsSlice";
 import {
   selectAllFormValues,
   selectFields,
+  selectHasFormChanges,
   selectPages,
 } from "../../store/selectors/formSelectors";
+import { selectUpgradeContext } from "../../store/slices/uploadFileSlice";
 import FieldChecker from "./DynamicFormComponents/FieldChecker";
 import {
   selectIsRootFormValid,
@@ -129,11 +131,15 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
 
   const rootIsValid = useSelector(selectIsRootFormValid);
   const validationSummary = useSelector(selectValidationSummary);
+  const hasFormChanges = useSelector(selectHasFormChanges);
+  const upgradeContext = useSelector(selectUpgradeContext);
 
   const mode = useSelector(selectMode);
   const readOnly = mode === "view";
   const isEditMode =
     propIsEditMode !== undefined ? propIsEditMode : mode === "edit";
+  const isUnchangedEdit =
+    isEditMode && !upgradeContext?.isUpgradeMode && !hasFormChanges;
 
   const getActiveItems = () => {
     if (!hasSchemaPages) return [];
@@ -230,7 +236,7 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (!rootIsValid) return;
+    if (!rootIsValid || isUnchangedEdit) return;
 
     const nestedState = { ...formState };
     const cleanKeys = ["catalogue_id", "d", "@context"];
@@ -574,6 +580,14 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
             </Alert>
           )}
 
+          {!readOnly && !showNextButton && rootIsValid && isUnchangedEdit && (
+            <Alert severity="info" sx={{ mt: 3, borderRadius: 2 }}>
+              <Typography variant="body2">
+                {t("dynamicform.submit_blocked_unchanged")}
+              </Typography>
+            </Alert>
+          )}
+
           {/* Standard LTR Navigation Bar: Back on left, Next / Review on right */}
           {!readOnly && (
             <Box
@@ -636,7 +650,7 @@ function DynamicForm({ isEditMode: propIsEditMode }) {
                 <Button
                   variant="contained"
                   type="submit"
-                  disabled={!rootIsValid}
+                  disabled={!rootIsValid || isUnchangedEdit}
                   sx={{
                     backgroundColor: theme.primaryColor,
                     transition: "filter 0.15s ease",

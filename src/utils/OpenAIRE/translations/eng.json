@@ -90,6 +90,7 @@
     "fields": "fields",
     "submit_blocked_empty": "Fill in at least one field before reviewing your record.",
     "submit_blocked_title": "Complete or fix the following fields to review your record:",
+    "submit_blocked_unchanged": "No changes detected. Modify at least one field to update this catalogue record.",
     "issue_missing": "required",
     "issue_invalid": "invalid format",
     "jump_to_section": "Go to section"
@@ -124,7 +125,8 @@
     "updated_in_contexthub_tab": "Catalogue record updated in ContextHub! You can close this tab.",
     "contexthub_fallback_download": "Could not directly reach the ContextHub window. Your catalogue record has been downloaded so you can upload it manually.",
     "contexthub_update_success": "Catalogue updated successfully on ContextHub as a new revision!",
-    "contexthub_update_failed": "Failed to update ContextHub:"
+    "contexthub_update_failed": "Failed to update ContextHub:",
+    "no_changes_notice": "No changes detected from the preloaded catalogue record. Click Edit to modify at least one field or enter revision notes before updating ContextHub."
   },
   "forminputmultiple": {
     "actions": "Actions",
