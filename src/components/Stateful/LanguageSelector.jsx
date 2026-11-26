@@ -94,7 +94,7 @@ export default function SelectLanguage({
                 backgroundColor: selected_item_bgColor,
               },
               "&:hover": {
-                backgroundColor: "rgba(199, 157, 3, 0.18)",
+                backgroundColor: "rgba(229, 176, 0, 0.16)",
               },
             }}
           >
@@ -113,7 +113,7 @@ export default function SelectLanguage({
                 backgroundColor: selected_item_bgColor,
               },
               "&:hover": {
-                backgroundColor: "rgba(199, 157, 3, 0.18)",
+                backgroundColor: "rgba(229, 176, 0, 0.16)",
               },
             }}
           >
