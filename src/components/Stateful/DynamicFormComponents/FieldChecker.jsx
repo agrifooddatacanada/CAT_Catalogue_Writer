@@ -76,7 +76,7 @@ const FieldChecker = ({ valuePath, depth = 0, parentPageIndex }) => {
     );
   }
 
-  // Multiple categories -> multi-select checkbox group
+  // Multiple categories -> multi-select checkbox group or searchable dropdown
   if (multiple && categories && categories.length > 0) {
     return (
       <>
