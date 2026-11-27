@@ -427,10 +427,11 @@ const NestedChildFormContent = ({
           disabled={!canSave}
           sx={{
             backgroundColor: theme.primaryColor,
-            transition: "filter 0.15s ease",
+            color: theme.primaryContrastText,
+            fontWeight: 600,
+            transition: "background-color 0.15s ease",
             "&:hover": {
-              backgroundColor: theme.primaryColor,
-              filter: "brightness(0.93)",
+              backgroundColor: theme.primaryHoverColor,
             },
           }}
           startIcon={<SaveIcon />}

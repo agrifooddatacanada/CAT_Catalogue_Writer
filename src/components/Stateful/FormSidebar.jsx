@@ -186,22 +186,22 @@ function FormSidebar({ onNavigate, onClose, isDrawer = false, onCollapse }) {
   const getViewModeChipSx = (modeKey) => ({
     backgroundColor:
       viewMode === modeKey ? theme.primaryColor : theme.backgroundColor,
-    color: viewMode === modeKey ? theme.backgroundColor : theme.primaryColor,
+    color:
+      viewMode === modeKey ? theme.primaryContrastText : theme.primaryTextColor,
     borderColor:
-      viewMode === modeKey ? theme.backgroundColor : theme.primaryColor,
-    border:
-      viewMode === modeKey ? "1px solid transparent" : "1px solid currentColor",
+      viewMode === modeKey ? theme.primaryColor : theme.borderColor,
+    border: "1px solid",
     borderRadius: "16px",
-    fontSize: 15,
-    fontWeight: 400,
+    fontSize: 14,
+    fontWeight: viewMode === modeKey ? 700 : 600,
     height: 32,
     cursor: "pointer",
     "&:hover": {
       backgroundColor:
         viewMode === modeKey
-          ? theme.primaryColor
+          ? theme.primaryHoverColor
           : theme.hoverUnselectedBgColor,
-      borderColor: theme.primaryColor,
+      borderColor: theme.primaryHoverColor,
     },
   });
 
@@ -371,7 +371,7 @@ function FormSidebar({ onNavigate, onClose, isDrawer = false, onCollapse }) {
           px: 2,
           py: 1.5,
           backgroundColor: theme.primaryColor,
-          color: "#fff",
+          color: theme.primaryContrastText,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -384,7 +384,7 @@ function FormSidebar({ onNavigate, onClose, isDrawer = false, onCollapse }) {
           sx={{
             fontSize: "1.05rem",
             fontWeight: 700,
-            color: "#fff",
+            color: theme.primaryContrastText,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -397,9 +397,9 @@ function FormSidebar({ onNavigate, onClose, isDrawer = false, onCollapse }) {
             onClick={onClose}
             size="small"
             sx={{
-              color: "#fff",
+              color: theme.primaryContrastText,
               "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                backgroundColor: "rgba(255, 255, 255, 0.18)",
               },
             }}
             aria-label={t("sidebar.close_sidebar")}
@@ -413,9 +413,9 @@ function FormSidebar({ onNavigate, onClose, isDrawer = false, onCollapse }) {
               onClick={onCollapse}
               size="small"
               sx={{
-                color: "#fff",
+                color: theme.primaryContrastText,
                 "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  backgroundColor: "rgba(255, 255, 255, 0.18)",
                 },
               }}
               aria-label={t("sidebar.collapse_sidebar")}
@@ -483,10 +483,11 @@ function FormSidebar({ onNavigate, onClose, isDrawer = false, onCollapse }) {
             sx={{
               "&.Mui-selected": {
                 backgroundColor: theme.secondaryColor,
-                color: theme.primaryColor,
+                color: theme.primaryTextColor,
+                fontWeight: 600,
               },
               "&.Mui-selected:hover": {
-                backgroundColor: theme.secondaryColor,
+                backgroundColor: theme.selectedMenuBgColor,
               },
             }}
           >
@@ -519,10 +520,13 @@ function FormSidebar({ onNavigate, onClose, isDrawer = false, onCollapse }) {
                   pl: 2 + (page.depth || 0) * 2,
                   "&.Mui-selected": {
                     backgroundColor: theme.secondaryColor,
-                    color: theme.primaryColor,
+                    color: theme.primaryTextColor,
+                    "& .MuiListItemText-primary": {
+                      fontWeight: 600,
+                    },
                   },
                   "&.Mui-selected:hover": {
-                    backgroundColor: theme.secondaryColor,
+                    backgroundColor: theme.selectedMenuBgColor,
                   },
                 }}
               >

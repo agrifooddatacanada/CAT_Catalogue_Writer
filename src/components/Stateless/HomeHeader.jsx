@@ -24,15 +24,15 @@ function HomeHeader({ semantic_engine, catalogue }) {
         sx={{
           padding: { xs: "8px 12px", sm: "6px 16px", md: "6px 32px" },
           backgroundColor: theme.primaryColor,
-          color: "white",
+          color: theme.primaryContrastText,
         }}
       >
-        <Box>
+        <Box sx={{ textShadow: "0 1px 2px rgba(0, 0, 0, 0.12)" }}>
           <Box
             component="div"
             sx={{
               fontSize: { xs: "18px", sm: "29px", md: "40px" },
-              lineHeight: "0.85",
+              lineHeight: "0.95",
               fontWeight: "700",
             }}
           >
@@ -43,6 +43,7 @@ function HomeHeader({ semantic_engine, catalogue }) {
             sx={{
               marginTop: { xs: "2px", sm: "3px" },
               fontSize: { xs: "14px", sm: "18px", md: "22px" },
+              fontWeight: "500",
             }}
           >
             {catalogue}
@@ -51,13 +52,13 @@ function HomeHeader({ semantic_engine, catalogue }) {
         <Stack direction={"row"} spacing={2} alignItems="center">
           <Box>
             <SelectLanguage
-              helperText_color="white"
+              helperText_color={theme.primaryContrastText}
               select_bgColor={theme.primaryColor}
-              select_color="white"
+              select_color={theme.primaryContrastText}
               menu_bgColor={theme.primaryColor}
-              menu_color="white"
+              menu_color={theme.primaryContrastText}
               selected_item_bgColor="rgba(255, 255, 255, 0.25)"
-              selected_item_color="rgba(225, 225, 225, 1)"
+              selected_item_color={theme.primaryContrastText}
             />
           </Box>
           {!isIframeMode && (

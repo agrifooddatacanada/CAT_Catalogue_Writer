@@ -32,14 +32,13 @@ function PageHeaders({
           minHeight: isIframeMode ? 52 : { xs: "auto", md: 72 },
           px: { xs: 1.5, sm: 2, md: 3 },
           py: isIframeMode ? 0.5 : { xs: 1, md: 0 },
-          color: theme.primaryColor,
+          color: theme.primaryTextColor,
           gap: { xs: 1, md: 2 },
           maxWidth: "100%",
           boxSizing: "border-box",
           overflow: "visible",
         }}
       >
-        {/* Logos and mobile language selector (hidden in iframe mode) */}
         {!isIframeMode && (
           <Stack
             direction={"row"}
@@ -51,7 +50,6 @@ function PageHeaders({
               gap: 1,
             }}
           >
-            {/* Logos & Home link */}
             <Stack
               direction="row"
               alignItems="center"
@@ -113,7 +111,6 @@ function PageHeaders({
               </Box>
             </Stack>
 
-            {/* Language Selector for mobile/compact screens */}
             <Box
               sx={{
                 display: { xs: "block", md: "none" },
@@ -122,19 +119,18 @@ function PageHeaders({
               }}
             >
               <SelectLanguage
-                helperText_color={theme.primaryColor}
+                helperText_color={theme.primaryTextColor}
                 select_bgColor="white"
-                select_color={theme.primaryColor}
-                menu_bgColor="rgba(235, 235, 235, 0.95)"
-                menu_color={theme.primaryColor}
-                selected_item_bgColor="rgba(215, 215, 215, 1)"
-                selected_item_color="rgba(175, 175, 175, 1)"
+                select_color={theme.primaryTextColor}
+                menu_bgColor={theme.secondaryColor}
+                menu_color={theme.primaryTextColor}
+                selected_item_bgColor={theme.selectedMenuBgColor}
+                selected_item_color={theme.selectedMenuTextColor}
               />
             </Box>
           </Stack>
         )}
 
-        {/* Page Title & Controls */}
         <Stack
           direction="row"
           alignItems="center"
@@ -160,7 +156,7 @@ function PageHeaders({
               sx={{
                 minWidth: 0,
                 margin: 0,
-                color: theme.primaryColor,
+                color: theme.primaryTextColor,
                 fontSize: { xs: "16px", sm: "18px", md: "22px" },
                 fontWeight: 700,
                 lineHeight: 1.2,
@@ -172,7 +168,6 @@ function PageHeaders({
               {page_heading}
             </Typography>
 
-            {/* Keyboard-focusable Tooltip button */}
             {tooltip_description && (
               <Tooltip
                 title={tooltip_description}
@@ -186,7 +181,7 @@ function PageHeaders({
                   sx={{
                     flexShrink: 0,
                     ml: 0.5,
-                    color: "rgba(100,100,100,1)",
+                    color: theme.descriptionColor,
                   }}
                 >
                   <HelpOutlineIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
@@ -195,7 +190,6 @@ function PageHeaders({
             )}
           </Stack>
 
-          {/* Right Controls: Home, Help Button & Language Selector */}
           <Stack
             direction="row"
             alignItems="center"
@@ -213,13 +207,13 @@ function PageHeaders({
                     textTransform: "none",
                     fontSize: { xs: "12px", sm: "13px" },
                     fontWeight: 600,
-                    color: theme.primaryColor,
-                    borderColor: theme.primaryColor,
+                    color: theme.primaryTextColor,
+                    borderColor: theme.borderColor,
                     px: { xs: 1, sm: 1.5 },
                     py: { xs: 0.5, sm: 0.65 },
                     whiteSpace: "nowrap",
                     "&:hover": {
-                      borderColor: theme.primaryColor,
+                      borderColor: theme.primaryHoverColor,
                       backgroundColor: theme.hoverUnselectedBgColor,
                     },
                   }}
@@ -239,15 +233,14 @@ function PageHeaders({
                   py: { xs: 0.6, sm: 0.8 },
                   fontSize: { xs: "12px", sm: "13px" },
                   backgroundColor: theme.primaryColor,
-                  color: "white",
+                  color: theme.primaryContrastText,
                   boxShadow: "none",
                   whiteSpace: "nowrap",
                   textTransform: "none",
                   fontWeight: 600,
-                  transition: "filter 0.15s ease, box-shadow 0.15s ease",
+                  transition: "background-color 0.15s ease, box-shadow 0.15s ease",
                   "&:hover": {
-                    backgroundColor: theme.primaryColor,
-                    filter: "brightness(0.93)",
+                    backgroundColor: theme.primaryHoverColor,
                     boxShadow: "0 2px 6px rgba(0, 0, 0, 0.14)",
                   },
                 }}
@@ -264,13 +257,13 @@ function PageHeaders({
               }}
             >
               <SelectLanguage
-                helperText_color={theme.primaryColor}
+                helperText_color={theme.primaryTextColor}
                 select_bgColor="white"
-                select_color={theme.primaryColor}
-                menu_bgColor="rgba(235, 235, 235, 0.95)"
-                menu_color={theme.primaryColor}
-                selected_item_bgColor="rgba(215, 215, 215, 1)"
-                selected_item_color="rgba(175, 175, 175, 1)"
+                select_color={theme.primaryTextColor}
+                menu_bgColor={theme.secondaryColor}
+                menu_color={theme.primaryTextColor}
+                selected_item_bgColor={theme.selectedMenuBgColor}
+                selected_item_color={theme.selectedMenuTextColor}
               />
             </Box>
           </Stack>

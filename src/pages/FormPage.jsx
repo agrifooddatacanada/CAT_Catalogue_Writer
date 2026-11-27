@@ -528,7 +528,16 @@ function FormPage() {
     return (
       <Box component="main" sx={{ textAlign: "center", p: 6 }}>
         <Typography sx={{ mb: 2 }}>{t("formpage.no_schema")}</Typography>
-        <Button component={RouterLink} to="/" variant="contained" sx={{ backgroundColor: theme.primaryColor }}>
+        <Button
+          component={RouterLink}
+          to="/"
+          variant="contained"
+          sx={{
+            backgroundColor: theme.primaryColor,
+            color: theme.primaryContrastText,
+            "&:hover": { backgroundColor: theme.primaryHoverColor },
+          }}
+        >
           {t("formpage.go_home")}
         </Button>
       </Box>
@@ -554,7 +563,8 @@ function FormPage() {
               }}
               sx={{
                 backgroundColor: theme.primaryColor,
-                "&:hover": { backgroundColor: theme.primaryColor, filter: "brightness(0.93)" },
+                color: theme.primaryContrastText,
+                "&:hover": { backgroundColor: theme.primaryHoverColor },
               }}
             >
               {t("formpage.retry")}
@@ -686,17 +696,16 @@ function FormPage() {
                   <Button
                     variant="contained"
                     onClick={() => setSidebarDrawerOpen(true)}
-                    startIcon={<MenuIcon sx={{ color: "#fff" }} />}
+                    startIcon={<MenuIcon sx={{ color: theme.primaryContrastText }} />}
                     sx={{
                       backgroundColor: theme.primaryColor,
-                      color: "#fff",
+                      color: theme.primaryContrastText,
                       fontWeight: 600,
                       textTransform: "none",
                       boxShadow: "none",
-                      transition: "filter 0.15s ease",
+                      transition: "background-color 0.15s ease, box-shadow 0.15s ease",
                       "&:hover": {
-                        backgroundColor: theme.primaryColor,
-                        filter: "brightness(0.93)",
+                        backgroundColor: theme.primaryHoverColor,
                         boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
                       },
                       flexShrink: 0,

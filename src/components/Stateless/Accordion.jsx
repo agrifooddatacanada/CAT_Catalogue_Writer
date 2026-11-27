@@ -29,7 +29,7 @@ export default function AccordionExpand({ accordion_question, accordion_summary 
       >
         <AccordionSummary
           expandIcon={
-            <ExpandMoreIcon sx={{ color: borderColor, fontSize: "40px" }} />
+            <ExpandMoreIcon sx={{ color: theme.primaryTextColor, fontSize: "40px" }} />
           }
           aria-controls={contentId}
           id={headerId}
