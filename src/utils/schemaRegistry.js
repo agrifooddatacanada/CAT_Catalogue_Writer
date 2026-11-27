@@ -89,12 +89,12 @@ export const incrementVersion = (version, releaseType = "patch") => {
 export const KNOWN_SCHEMA_MANIFEST = {
   "EHyGYfN7TNAUsfG9cpvC1uqC-RfahoO6TdaYtYw1cH4R": {
     family: "Project description",
-    version: "1.0.0",
+    version: "0.2.0",
     status: "deprecated",
   },
   "EEWsnDGmkD53-TbApvjmMW-gRurySkBaX_fPN_BrPGna": {
     family: "Project description",
-    version: "2.0.0",
+    version: "1.0.0",
     isVersionOf: "EHyGYfN7TNAUsfG9cpvC1uqC-RfahoO6TdaYtYw1cH4R",
     status: "active",
   },
@@ -103,10 +103,15 @@ export const KNOWN_SCHEMA_MANIFEST = {
     version: "0.1.0",
     status: "deprecated",
   },
-  "EKXaGk0pzYY8hMX0uAzyU3gOTPw1saFN-IPzgHWw7I1I": {
+  "EPfNmX2yI8Ctn_HxVzqTwZyzVkP_whK2kOtJPeYWD3pT": {
     family: "ContextHub_schema_catalogue_record",
     version: "1.0.0",
     status: "active",
+  },
+  "EKXaGk0pzYY8hMX0uAzyU3gOTPw1saFN-IPzgHWw7I1I": {
+    family: "ContextHub_schema_catalogue_record",
+    version: "0.1.0",
+    status: "deprecated",
   },
   "EA5-t0oGau19k-wmR4-WsxD44ed6-WpUQUC26ztoTta3": {
     family: "Basic DMP",
@@ -124,8 +129,13 @@ export const KNOWN_SCHEMA_MANIFEST = {
     version: "1.0.0",
     status: "active",
   },
-  "EEN8xyuq_v4jFlbxwhDvm5UqFMGvqDq6VVPbvOp91LoK": {
+  "EMEb1rkdFU80zKjzCKVrRe8V69m8HTm1brZV7v8BbAJ5": {
     family: "ContextHub_dataset_catalogue_record",
+    version: "1.0.0",
+    status: "active",
+  },
+  "EBnRcfUjeyJ_U8RHxfYuhlo7PokXxzpqsT5djkSHE_vh": {
+    family: "ContextHub_sample_catalogue_record",
     version: "1.0.0",
     status: "active",
   },
@@ -208,9 +218,11 @@ const FALLBACK_SCHEMA_INDEX = {
   visible: [
     { name: "Basic DMP", said: "EA5-t0oGau19k-wmR4-WsxD44ed6-WpUQUC26ztoTta3", filePath: "./schemas/Basic_OCA_package.json" },
     { name: "cataloguerecord_DCAT.top", said: "EFyyq7pbgewSwaeAZlBKl4Zk2nciNTfB2CpnEjphcnQ8", filePath: "./schemas/cataloguerecord_DCAT.top_OCA_package.json" },
+    { name: "ContextHub_dataset_catalogue_record", said: "EMEb1rkdFU80zKjzCKVrRe8V69m8HTm1brZV7v8BbAJ5", filePath: "./schemas/ContextHub_dataset_catalogue_record_OCA_package.json" },
     { name: "ContextHub_project_catalogue_record", said: "EE4QpFQwDzOP1xjn9iffzZm5Wx1RlybSeU7RKIFsGkTs", filePath: "./schemas/ContextHub_project_catalogue_record_OCA_package.json" },
     { name: "ContextHub_questionnaire_catalogue_record", said: "ELj685L9fDdQUFJV-5EffI1sUMrYu2j1jKOhy8u3SXi8", filePath: "./schemas/ContextHub_questionnaire_catalogue_record_OCA_package.json" },
-    { name: "ContextHub_schema_catalogue_record", said: "EKXaGk0pzYY8hMX0uAzyU3gOTPw1saFN-IPzgHWw7I1I", filePath: "./schemas/ContextHub_schema_catalogue_record_OCA_package.json" },
+    { name: "ContextHub_sample_catalogue_record", said: "EBnRcfUjeyJ_U8RHxfYuhlo7PokXxzpqsT5djkSHE_vh", filePath: "./schemas/ContextHub_sample_catalogue_record_OCA_package.json" },
+    { name: "ContextHub_schema_catalogue_record", said: "EPfNmX2yI8Ctn_HxVzqTwZyzVkP_whK2kOtJPeYWD3pT", filePath: "./schemas/ContextHub_schema_catalogue_record_OCA_package.json" },
     { name: "Dublin_Core_Project", said: "EJ4icsxrpbxRHy0Eo_zHMB9_kTkrZ4hmT7r4CKLtL41_", filePath: "./schemas/Dublin_Core_Project_OCA_package.json" },
     { name: "Dublin_Core_Repository", said: "EDqM_wwgWgRrEd609T9X8wTasxpp1e_QJYmdBxFVRoii", filePath: "./schemas/Dublin_Core_Repository_OCA_package.json" },
     { name: "OpenAIRE Application Profile Parent", said: "ELFQbADu3w__7hDbaF6iY_1nOa68LgJWmqf3B_dTV0e5", filePath: "./schemas/OpenAIRE_OCA_package.json" },
@@ -219,6 +231,7 @@ const FALLBACK_SCHEMA_INDEX = {
   ],
   hidden: [
     { name: "Basic DMP", said: "EOuPm5G8zb5M2RrIa87yHEwhWqWJdHb8GmfC4eRpi-E2", filePath: "./schemas/hidden/Basic_DMP_OCA_package_v6.json" },
+    { name: "ContextHub_schema_catalogue_record", said: "EKXaGk0pzYY8hMX0uAzyU3gOTPw1saFN-IPzgHWw7I1I", filePath: "./schemas/hidden/ContextHub_schema_catalogue_record_OCA_package.json" },
     { name: "DataCite", said: "####digest_of_oca_datacite_package####", filePath: "./schemas/hidden/DataCite_OCA_package.json" },
     { name: "dataset_catalogue_record", said: "ED7BjGJlzWOIBFuInwEtOH0-a7ZDHTUejbK17NJKgPc7", filePath: "./schemas/hidden/dataset_catalogue_record_OCA_package.json" },
     { name: "OpenAIRE Application Profile Parent", said: "ELFQbADu3w__7hDbaF6iY_1nOa68LgJWmqf3B_dTV0e5", filePath: "./schemas/hidden/OpenAIRE_OCA_package_Original.json" },
