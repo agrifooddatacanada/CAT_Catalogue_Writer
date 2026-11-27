@@ -1,0 +1,980 @@
+{
+  "d": "EKXaGk0pzYY8hMX0uAzyU3gOTPw1saFN-IPzgHWw7I1I",
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "bundle": {
+      "v": "OCAS11JSON001373_",
+      "d": "EGpREQ2QLMQXgiNaG-wVO1to-sIWyK9hWzMVV4yp9NzV",
+      "capture_base": {
+        "d": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "adms.versionNotes": "Text",
+          "dcat.contactPoint": "refs:EGSkL3Z_SBoEtSdmu5xotCFUHwzhwu97ZV3OAkH8gpVF",
+          "dcat.keyword": [
+            "Text"
+          ],
+          "dcat.version": "Text",
+          "dcterms.accessRights": "Text",
+          "dcterms.creator": "refs:ECim4LQGVXgkQx2pOC7a_WrTBQc0rkRCHggD5hU5Z3Bv",
+          "dcterms.description": "Text",
+          "dcterms.issued": "Text",
+          "dcterms.language": "Text",
+          "dcterms.license": "Text",
+          "dcterms.publisher": "refs:EE_JbdjQXkB-hguMQIRJvKnGk41oq5fQAlLECQ5MuM-R",
+          "dcterms.title": "Text",
+          "dcterms.type": "Text",
+          "prov.qualifiedAttribution": "refs:EJPEriSt9Rgo5qJC8ydrPltcyw_wYPiDAnrXg_G4qc43"
+        },
+        "classification": "",
+        "flagged_attributes": []
+      },
+      "overlays": {
+        "entry": [
+          {
+            "d": "EN8pHYvsujQifN5muaxPQHuH65NBjyfp6CeYD8Tj1gR5",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "dcterms.accessRights": {
+                "Closed Access": "Closed Access",
+                "Open Access": "Open Access",
+                "Restricted Access": "Restricted Access"
+              },
+              "dcterms.language": {
+                "eng": "eng",
+                "fra": "fra"
+              },
+              "dcterms.license": {
+                "CC BY": "Attribution",
+                "CC BY-NC": "Attribution-NonCommercial",
+                "CC BY-NC-ND": "Attribution-NonCommercial-NoDerivs",
+                "CC BY-NC-SA": "Attribution-NonCommercial-ShareAlike",
+                "CC BY-ND": "Attribution-NoDerivs",
+                "CC BY-SA": "Attribution-ShareAlike",
+                "CC0": "Public Domain Dedication",
+                "No license specified": "No license specified",
+                "Open Government Licence - Canada": "Open Government Licence - Canada",
+                "PDM": "Public Domain Mark"
+              },
+              "dcterms.type": {
+                "schema": "schema"
+              }
+            }
+          }
+        ],
+        "entry_code": {
+          "d": "EHog5rf10xGLHC3KT26of0lFgqQw5eMNiewUrNA4ExRa",
+          "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": {
+            "dcterms.accessRights": [
+              "Closed Access",
+              "Open Access",
+              "Restricted Access"
+            ],
+            "dcterms.language": [
+              "eng",
+              "fra"
+            ],
+            "dcterms.license": [
+              "CC BY",
+              "CC BY-NC",
+              "CC BY-NC-ND",
+              "CC BY-NC-SA",
+              "CC BY-ND",
+              "CC BY-SA",
+              "CC0",
+              "No license specified",
+              "Open Government Licence - Canada",
+              "PDM"
+            ],
+            "dcterms.type": [
+              "schema"
+            ]
+          }
+        },
+        "format": {
+          "d": "EETZBnvIU3Un6pYH73JZk-fI_E3lDxOF0buzY6ULqlrD",
+          "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "adms.versionNotes": "^.{0,250}$",
+            "dcat.keyword": "^.{0,50}$",
+            "dcat.version": "^.{0,50}$",
+            "dcterms.accessRights": "^.{0,50}$",
+            "dcterms.description": "^[\\s\\S]{0,800}$",
+            "dcterms.language": "^.{0,50}$",
+            "dcterms.license": "^.{0,50}$",
+            "dcterms.title": "^.{0,250}$",
+            "dcterms.type": "^[A-Za-z]{0,50}$"
+          }
+        },
+        "information": [
+          {
+            "d": "EEKVGx3W5gX2gK2cUYTQc1Ndpoy8wy9g_GkmaxRBEDRl",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
+            "type": "spec/overlays/information/1.1",
+            "language": "eng",
+            "attribute_information": {
+              "adms.versionNotes": "Notes about the changes from the previous version to this version.",
+              "dcat.contactPoint": "Relevant contact information for the cataloged resource. Use of vCard is recommended",
+              "dcat.keyword": "A keyword or tag describing the resource.",
+              "dcat.version": "The version indicator (name or identifier) of a resource.",
+              "dcterms.accessRights": "Information about who can access the resource or an indication of its security status.",
+              "dcterms.creator": "foaf:agent of the entity/entities responsible for producing the resource. Consider this to be the ICT?",
+              "dcterms.description": "A free-text account of the resource.",
+              "dcterms.issued": "Date of formal issuance of the resource.",
+              "dcterms.language": "A language of the resource. This refers to the natural language used for textual metadata (i.e., titles, descriptions, etc.) of a cataloged resource (i.e., dataset or service) or the textual values of a dataset distribution",
+              "dcterms.license": "A legal document under which the resource is made available.",
+              "dcterms.publisher": "foaf:agent. The entity responsible for making the resource available..",
+              "dcterms.title": "A name given to the resource",
+              "dcterms.type": "The nature of the catalogued resource",
+              "prov.qualifiedAttribution": "The list of creators with their associated roles."
+            }
+          }
+        ],
+        "label": [
+          {
+            "d": "EBV_k8dgVeFaXPK_Ldm11BzF9Q8iva2dhpTRUK7pPLkV",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_categories": [],
+            "attribute_labels": {
+              "adms.versionNotes": "Version Notes",
+              "dcat.contactPoint": "Contact Point",
+              "dcat.keyword": "Keyword",
+              "dcat.version": "Version",
+              "dcterms.accessRights": "Access Rights",
+              "dcterms.creator": "Creator",
+              "dcterms.description": "Description",
+              "dcterms.issued": "Issued",
+              "dcterms.language": "Language",
+              "dcterms.license": "License",
+              "dcterms.publisher": "Publisher",
+              "dcterms.title": "Title",
+              "dcterms.type": "Catalogued resource type",
+              "prov.qualifiedAttribution": "Qualified Attribution"
+            },
+            "category_labels": {}
+          }
+        ],
+        "meta": [
+          {
+            "d": "EDwRQ7s1gTX7UOSiCvwZz_FzCjR4Pu7d4WjkKYCmjswU",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "description": "The ContextHub catalogue record describing a schema based on DCAT.",
+            "name": "ContextHub_schema_catalogue_record"
+          }
+        ]
+      }
+    },
+    "dependencies": [
+      {
+        "v": "OCAS11JSON000987_",
+        "d": "EJPEriSt9Rgo5qJC8ydrPltcyw_wYPiDAnrXg_G4qc43",
+        "capture_base": {
+          "d": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "foaf.name": "Text",
+            "hadRole": [
+              "Text"
+            ],
+            "id": "Text",
+            "type": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "entry": [
+            {
+              "d": "EADLYcZAmtLuX4axWXZNzYZS7XoKkootBYdK4bRk69F1",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
+              "type": "spec/overlays/entry/1.1",
+              "language": "eng",
+              "attribute_entries": {
+                "hadRole": {
+                  "conceptualization": "Conceptualization",
+                  "investigation": "Investigation",
+                  "project-administration": "Project administration",
+                  "resources": "Resources",
+                  "supervision": "Supervision",
+                  "validation": "Validation",
+                  "writing-original-draft": "Writing - original draft",
+                  "writing-review-editing": "Writing - review and editing"
+                },
+                "type": {
+                  "prov-Person": "Person"
+                }
+              }
+            }
+          ],
+          "entry_code": {
+            "d": "EMo0rkF47j4UDsttZYVEPMOOXe_-uFXZbJbOz34zQy9u",
+            "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
+            "type": "spec/overlays/entry_code/1.1",
+            "attribute_entry_codes": {
+              "hadRole": [
+                "conceptualization",
+                "investigation",
+                "project-administration",
+                "resources",
+                "supervision",
+                "validation",
+                "writing-original-draft",
+                "writing-review-editing"
+              ],
+              "type": [
+                "prov-Person"
+              ]
+            }
+          },
+          "format": {
+            "d": "ECr1zajAW2IVuacHJbZpgleA9E8kT6IyBBq4uZiY6RCn",
+            "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "foaf.name": "^.{0,250}$",
+              "id": "^.{0,250}$",
+              "type": "^[A-Za-z]{0,50}$"
+            }
+          },
+          "information": [
+            {
+              "d": "EN6WDpD1y16wkt7-e7kuc1gHkCB1kIVYJ99ciUYKrgVP",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
+              "type": "spec/overlays/information/1.1",
+              "language": "eng",
+              "attribute_information": {
+                "foaf.name": "Follow the convention of FirstName LastName"
+              }
+            }
+          ],
+          "label": [
+            {
+              "d": "EGxFxtK5xomlmi5XaDeQi_fkecPbWAehdAT6_aXhz0Hj",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "foaf.name": "The name of the contributor",
+                "hadRole": "The role of the contributor",
+                "id": "The ORCID identifier of the contributor",
+                "type": "The type of entry for attribution"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "EL3yM_vjtKy-Qa9nJY9tM_qMHGCkmexkEB0DtK4Gf1ho",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "Child schema for prov.qualifiedAttribution",
+              "name": "prov.qualifiedAttribution"
+            }
+          ]
+        }
+      },
+      {
+        "v": "OCAS11JSON00073d_",
+        "d": "ECim4LQGVXgkQx2pOC7a_WrTBQc0rkRCHggD5hU5Z3Bv",
+        "capture_base": {
+          "d": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "name": "Text",
+            "type": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "entry": [
+            {
+              "d": "EFHU6z2aVn0dIBzRj2iMD6_dvBpCcwpPE8qjQX76k5ab",
+              "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+              "type": "spec/overlays/entry/1.1",
+              "language": "eng",
+              "attribute_entries": {
+                "type": {
+                  "foaf-Organization": "Organization",
+                  "foaf-Person": "Person"
+                }
+              }
+            }
+          ],
+          "entry_code": {
+            "d": "EGObILqOkBmswpJ-f1ocj3cjFU73Q_QCek_al_gpnoOw",
+            "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+            "type": "spec/overlays/entry_code/1.1",
+            "attribute_entry_codes": {
+              "type": [
+                "foaf-Organization",
+                "foaf-Person"
+              ]
+            }
+          },
+          "format": {
+            "d": "EEbhUfQ9slksAhyZ92oN7MRos2fFqFnXGI-2UoEOIIak",
+            "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "name": "^.{0,250}$",
+              "type": "^.{0,50}$"
+            }
+          },
+          "information": [
+            {
+              "d": "EJ5Qtd9Jl95zHQy7qum8Ul2SQ3x5JVoub0YOC_rceuyF",
+              "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+              "type": "spec/overlays/information/1.1",
+              "language": "eng",
+              "attribute_information": {
+                "name": "For personal names use the convention of FirstName LastName."
+              }
+            }
+          ],
+          "label": [
+            {
+              "d": "EJlbCNhHxIm7A3lM-8UaI2cBtkKMq-uXhLmC0bMDWA2c",
+              "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "name": "The organization or personal name of the creator",
+                "type": "The type of creator"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "EMr-rU2CF3udwfMDg6IsIPQyP5r-E7L2CjqbsnWQNu_V",
+              "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "Child schema for dcterms.creator",
+              "name": "dcterms.creator"
+            }
+          ]
+        }
+      },
+      {
+        "v": "OCAS11JSON00068a_",
+        "d": "EE_JbdjQXkB-hguMQIRJvKnGk41oq5fQAlLECQ5MuM-R",
+        "capture_base": {
+          "d": "EGANSNjJPvtF5IDacpSHTpiF2_Sgl-j-A0Y_zdDBlyBQ",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "foaf.homepage": "Text",
+            "foaf.name": "Text",
+            "type": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "entry": [
+            {
+              "d": "EK0isgmbL-seadzyh36L4IUOprfTwGglWha1FB7F9Nvl",
+              "capture_base": "EGANSNjJPvtF5IDacpSHTpiF2_Sgl-j-A0Y_zdDBlyBQ",
+              "type": "spec/overlays/entry/1.1",
+              "language": "eng",
+              "attribute_entries": {
+                "type": {
+                  "foaf-Organization": "Organization"
+                }
+              }
+            }
+          ],
+          "entry_code": {
+            "d": "ECk3rwY6xEghf-kNYWeQZAbJptd3C2mkZWzyEeHTTMEF",
+            "capture_base": "EGANSNjJPvtF5IDacpSHTpiF2_Sgl-j-A0Y_zdDBlyBQ",
+            "type": "spec/overlays/entry_code/1.1",
+            "attribute_entry_codes": {
+              "type": [
+                "foaf-Organization"
+              ]
+            }
+          },
+          "format": {
+            "d": "EJG_CxSVaIWweESl0s5nssH1Yc6zIcCeq7ppi5w8oA4A",
+            "capture_base": "EGANSNjJPvtF5IDacpSHTpiF2_Sgl-j-A0Y_zdDBlyBQ",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "foaf.homepage": "https?\\:\\/\\/[a-zA-Z0-9-\\.]+\\.[a-zA-Z]{2,}",
+              "foaf.name": "^.{0,250}$",
+              "type": "^[A-Za-z]{0,50}$"
+            }
+          },
+          "label": [
+            {
+              "d": "ELWr-C_BiI_GrL4p4bp1kBm-72FUDiDoCoIyb_l_GfgW",
+              "capture_base": "EGANSNjJPvtF5IDacpSHTpiF2_Sgl-j-A0Y_zdDBlyBQ",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "foaf.homepage": "The homepage of the publisher",
+                "foaf.name": "The name of the publisher",
+                "type": "The type of publisher"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "EME2PRsiMn-K1vZLrN-Qi8Albw4AdLsNvHt8uXOaVB7L",
+              "capture_base": "EGANSNjJPvtF5IDacpSHTpiF2_Sgl-j-A0Y_zdDBlyBQ",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "Child schema for dcterms.publisher",
+              "name": "dcterms.publisher"
+            }
+          ]
+        }
+      },
+      {
+        "v": "OCAS11JSON00068c_",
+        "d": "EGSkL3Z_SBoEtSdmu5xotCFUHwzhwu97ZV3OAkH8gpVF",
+        "capture_base": {
+          "d": "ENKgz95XMPUUAZqjZ0oeiQgFp3C5twsuw3Pu_ZX4AjmH",
+          "type": "spec/capture_base/1.1",
+          "attributes": {
+            "fn": "Text",
+            "hasEmail": "Text",
+            "type": "Text"
+          },
+          "classification": "",
+          "flagged_attributes": []
+        },
+        "overlays": {
+          "entry": [
+            {
+              "d": "EG4ncQ0vPT6OMimf_VeaRjYybxfVsSp9N9aGMDDdjn-O",
+              "capture_base": "ENKgz95XMPUUAZqjZ0oeiQgFp3C5twsuw3Pu_ZX4AjmH",
+              "type": "spec/overlays/entry/1.1",
+              "language": "eng",
+              "attribute_entries": {
+                "type": {
+                  "individual": "Individual",
+                  "organization": "Organization"
+                }
+              }
+            }
+          ],
+          "entry_code": {
+            "d": "EBegRIzbfNGYfZqqx8e2HiKiTYXq6aT3hVNa9jIlnK2c",
+            "capture_base": "ENKgz95XMPUUAZqjZ0oeiQgFp3C5twsuw3Pu_ZX4AjmH",
+            "type": "spec/overlays/entry_code/1.1",
+            "attribute_entry_codes": {
+              "type": [
+                "individual",
+                "organization"
+              ]
+            }
+          },
+          "format": {
+            "d": "EOjpeK8jJaUmAyLAsrC-_lqKlUMq25ahCL8VgLTBoHdL",
+            "capture_base": "ENKgz95XMPUUAZqjZ0oeiQgFp3C5twsuw3Pu_ZX4AjmH",
+            "type": "spec/overlays/format/1.1",
+            "attribute_formats": {
+              "fn": "^.{0,250}$",
+              "hasEmail": "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+",
+              "type": "^.{0,50}$"
+            }
+          },
+          "label": [
+            {
+              "d": "EGCdlZfpze8iq13fDi4ypWwtzxl3q7q4ODLhQLAOV0jE",
+              "capture_base": "ENKgz95XMPUUAZqjZ0oeiQgFp3C5twsuw3Pu_ZX4AjmH",
+              "type": "spec/overlays/label/1.1",
+              "language": "eng",
+              "attribute_categories": [],
+              "attribute_labels": {
+                "fn": "The full name of the contact",
+                "hasEmail": "The email address for the contact",
+                "type": "The type of the contact"
+              },
+              "category_labels": {}
+            }
+          ],
+          "meta": [
+            {
+              "d": "EID9wP4uWl_I_zbZId-PK1EM-UqzsUB81HVxWSvVwWs1",
+              "capture_base": "ENKgz95XMPUUAZqjZ0oeiQgFp3C5twsuw3Pu_ZX4AjmH",
+              "type": "spec/overlays/meta/1.1",
+              "language": "eng",
+              "description": "Child schema for dcat.contactPoint",
+              "name": "dcat.contactPoint"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "extensions": {
+    "adc": {
+      "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG": {
+        "d": "EFdKEx3zImmAdEG6ooBKVyxrsgmD7j5CYTdigYTriefu",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "ED4QKEm0HWlA3IGGZgGPmzhJeJnnL-dzv5uKMgvxXbGU",
+              "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "type",
+                    "id",
+                    "foaf.name",
+                    "hadRole"
+                  ],
+                  "named_section": "658824d7-eb80-488d-9e95-c65176285d13"
+                }
+              ],
+              "page_order": [
+                "658824d7-eb80-488d-9e95-c65176285d13"
+              ],
+              "page_labels": {
+                "658824d7-eb80-488d-9e95-c65176285d13": "Attribution"
+              },
+              "sidebar_label": {
+                "658824d7-eb80-488d-9e95-c65176285d13": "Attribution"
+              },
+              "description": {
+                "658824d7-eb80-488d-9e95-c65176285d13": "Attribution of the contributors of the schema and the roles that they played.",
+                "foaf.name": "Follow the convention of FirstName LastName"
+              },
+              "title": "prov.qualifiedAttribution",
+              "interaction": [
+                {
+                  "arguments": {
+                    "foaf.name": {
+                      "description": "Follow the convention of FirstName LastName",
+                      "type": "Text"
+                    },
+                    "hadRole": {
+                      "input_type": "checkbox-multi",
+                      "type": "Array[Text]"
+                    },
+                    "id": {
+                      "type": "Text"
+                    },
+                    "type": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EPHXZJ7fF4WgxoHQfsrwAOgoLyWAxZJ-RjMPcWy69Lqi",
+            "capture_base": "EDTmZYf0vHu92zenDsYoBhE5r1tcyzImdtMYB643t3qG",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "type",
+              "id",
+              "foaf.name",
+              "hadRole"
+            ],
+            "entry_code_ordering": {
+              "type": [
+                "prov-Person"
+              ],
+              "hadRole": [
+                "conceptualization",
+                "investigation",
+                "project-administration",
+                "resources",
+                "supervision",
+                "validation",
+                "writing-original-draft",
+                "writing-review-editing"
+              ]
+            }
+          }
+        }
+      },
+      "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI": {
+        "d": "EN2sIT0LR4JZzSR9tVDuo86GshYV70VNbSmk7-b6JlEV",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EKXVmakp2GxO_pmZVhVMdizSzU7zrwTMU1OicZ31l2f6",
+              "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "name",
+                    "type"
+                  ],
+                  "named_section": "bccfe2c4-61eb-4da7-ab9c-80aa0ad3608c"
+                }
+              ],
+              "page_order": [
+                "bccfe2c4-61eb-4da7-ab9c-80aa0ad3608c"
+              ],
+              "page_labels": {
+                "bccfe2c4-61eb-4da7-ab9c-80aa0ad3608c": "Creator"
+              },
+              "sidebar_label": {
+                "bccfe2c4-61eb-4da7-ab9c-80aa0ad3608c": "Creator"
+              },
+              "description": {
+                "bccfe2c4-61eb-4da7-ab9c-80aa0ad3608c": "The creator.",
+                "name": "For personal names use the convention of FirstName LastName."
+              },
+              "title": "dcterms.creator",
+              "interaction": [
+                {
+                  "arguments": {
+                    "name": {
+                      "description": "For personal names use the convention of FirstName LastName.",
+                      "type": "Text"
+                    },
+                    "type": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EGIliEgG-xICZYaGizDi2OXIE9ohmXK35RiWRHvHW1Ir",
+            "capture_base": "ED16cWGqoHVCWv2btfaLZuQ1MHPab_TPRiQOUdagXioI",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "type",
+              "name"
+            ],
+            "entry_code_ordering": {
+              "type": [
+                "foaf-Organization",
+                "foaf-Person"
+              ]
+            }
+          }
+        }
+      },
+      "EGANSNjJPvtF5IDacpSHTpiF2_Sgl-j-A0Y_zdDBlyBQ": {
+        "d": "EGu7UO8n3G4eb9IXL1yn1D-HlYVdR4ewoKboaU6I6V12",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EGAlEbreLr9bQ_Myg00guDduWgToJgIlqzjrYt4UDsij",
+              "capture_base": "EGANSNjJPvtF5IDacpSHTpiF2_Sgl-j-A0Y_zdDBlyBQ",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "type",
+                    "foaf.name",
+                    "foaf.homepage"
+                  ],
+                  "named_section": "3abcf1cb-14c3-4121-90db-470921c630ae"
+                }
+              ],
+              "page_order": [
+                "3abcf1cb-14c3-4121-90db-470921c630ae"
+              ],
+              "page_labels": {
+                "3abcf1cb-14c3-4121-90db-470921c630ae": "Publisher"
+              },
+              "sidebar_label": {
+                "3abcf1cb-14c3-4121-90db-470921c630ae": "Publisher"
+              },
+              "description": {
+                "3abcf1cb-14c3-4121-90db-470921c630ae": "The publisher."
+              },
+              "title": "dcterms.publisher",
+              "interaction": [
+                {
+                  "arguments": {
+                    "foaf.homepage": {
+                      "type": "Text"
+                    },
+                    "foaf.name": {
+                      "type": "Text"
+                    },
+                    "type": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EJ-7Wep5vPd9YQdct1sEMeRJdcsc3YaVEPrMnA81dIre",
+            "capture_base": "EGANSNjJPvtF5IDacpSHTpiF2_Sgl-j-A0Y_zdDBlyBQ",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "type",
+              "foaf.name",
+              "foaf.homepage"
+            ],
+            "entry_code_ordering": {
+              "type": [
+                "foaf-Organization"
+              ]
+            }
+          }
+        }
+      },
+      "ENKgz95XMPUUAZqjZ0oeiQgFp3C5twsuw3Pu_ZX4AjmH": {
+        "d": "EJ1pfoxBTMl1ivVX7N3YgEe-LRMvKXcpYnqKer52Rt3C",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EFS4lm9-7PK5lnXSb7aN7ZLHUV89g68g-aGAbJ1Lfvjk",
+              "capture_base": "ENKgz95XMPUUAZqjZ0oeiQgFp3C5twsuw3Pu_ZX4AjmH",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "type",
+                    "fn",
+                    "hasEmail"
+                  ],
+                  "named_section": "c35e45fc-cd8d-4850-9815-41cad37e4350"
+                }
+              ],
+              "page_order": [
+                "c35e45fc-cd8d-4850-9815-41cad37e4350"
+              ],
+              "page_labels": {
+                "c35e45fc-cd8d-4850-9815-41cad37e4350": "Contact Point"
+              },
+              "sidebar_label": {
+                "c35e45fc-cd8d-4850-9815-41cad37e4350": "Contact Point"
+              },
+              "description": {
+                "c35e45fc-cd8d-4850-9815-41cad37e4350": "Relevant contact information for the schema."
+              },
+              "title": "dcat.contactPoint",
+              "interaction": [
+                {
+                  "arguments": {
+                    "fn": {
+                      "type": "Text"
+                    },
+                    "hasEmail": {
+                      "type": "Text"
+                    },
+                    "type": {
+                      "type": "Text"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EONSZ3z-CLSjBppyfeAHK9s6Tc7-GhVAi2QG3gMfU46V",
+            "capture_base": "ENKgz95XMPUUAZqjZ0oeiQgFp3C5twsuw3Pu_ZX4AjmH",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "type",
+              "fn",
+              "hasEmail"
+            ],
+            "entry_code_ordering": {
+              "type": [
+                "individual",
+                "organization"
+              ]
+            }
+          }
+        }
+      },
+      "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI": {
+        "d": "EDtqNjpjvmRzXWyhMFkR7BJVsGATbBrQ9ZP3jFDTTOgm",
+        "type": "community/adc/extension/1.0",
+        "overlays": {
+          "form": [
+            {
+              "d": "EARRwKbQwKROGpnos83JNAyAck1h5HBbyoRf1eRvYl05",
+              "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
+              "type": "community/overlays/adc/form/1.0",
+              "language": "eng",
+              "pages": [
+                {
+                  "attribute_order": [
+                    "dcterms.type",
+                    "dcterms.title",
+                    "dcterms.description",
+                    "dcterms.language",
+                    "dcterms.issued",
+                    "prov.qualifiedAttribution",
+                    "dcat.contactPoint",
+                    "dcterms.creator",
+                    "dcterms.publisher",
+                    "dcterms.license",
+                    "dcterms.accessRights",
+                    "dcat.version",
+                    "adms.versionNotes"
+                  ],
+                  "named_section": "b62fb7d2-81f5-4247-a9e9-5809313e3837"
+                }
+              ],
+              "page_order": [
+                "b62fb7d2-81f5-4247-a9e9-5809313e3837"
+              ],
+              "page_labels": {
+                "b62fb7d2-81f5-4247-a9e9-5809313e3837": "Describe Your Schema"
+              },
+              "sidebar_label": {
+                "b62fb7d2-81f5-4247-a9e9-5809313e3837": "Describe Your Schema"
+              },
+              "description": {
+                "b62fb7d2-81f5-4247-a9e9-5809313e3837": "Page 1",
+                "dcterms.type": "The nature of the catalogued resource",
+                "dcterms.title": "A name given to the resource",
+                "dcterms.description": "A free-text account of the resource.",
+                "dcterms.language": "A language of the resource. This refers to the natural language used for textual metadata (i.e., titles, descriptions, etc.) of a cataloged resource (i.e., dataset or service) or the textual values of a dataset distribution",
+                "dcterms.issued": "Date of formal issuance of the resource.",
+                "prov.qualifiedAttribution": "The list of creators with their associated roles.",
+                "dcat.contactPoint": "Relevant contact information for the cataloged resource. Use of vCard is recommended",
+                "dcterms.creator": "foaf:agent of the entity/entities responsible for producing the resource. Consider this to be the ICT?",
+                "dcterms.publisher": "foaf:agent. The entity responsible for making the resource available..",
+                "dcterms.license": "A legal document under which the resource is made available.",
+                "dcterms.accessRights": "Information about who can access the resource or an indication of its security status.",
+                "dcat.version": "The version indicator (name or identifier) of a resource.",
+                "adms.versionNotes": "Notes about the changes from the previous version to this version."
+              },
+              "title": "ContextHub_schema_catalogue_record",
+              "interaction": [
+                {
+                  "arguments": {
+                    "adms.versionNotes": {
+                      "description": "Notes about the changes from the previous version to this version.",
+                      "type": "Text"
+                    },
+                    "dcat.contactPoint": {
+                      "description": "Relevant contact information for the cataloged resource. Use of vCard is recommended",
+                      "type": "reference"
+                    },
+                    "dcat.version": {
+                      "description": "The version indicator (name or identifier) of a resource.",
+                      "type": "Text"
+                    },
+                    "dcterms.accessRights": {
+                      "description": "Information about who can access the resource or an indication of its security status.",
+                      "type": "Text"
+                    },
+                    "dcterms.creator": {
+                      "description": "foaf:agent of the entity/entities responsible for producing the resource. Consider this to be the ICT?",
+                      "type": "reference"
+                    },
+                    "dcterms.description": {
+                      "description": "A free-text account of the resource.",
+                      "type": "Text"
+                    },
+                    "dcterms.issued": {
+                      "description": "Date of formal issuance of the resource.",
+                      "type": "Text"
+                    },
+                    "dcterms.language": {
+                      "description": "A language of the resource. This refers to the natural language used for textual metadata (i.e., titles, descriptions, etc.) of a cataloged resource (i.e., dataset or service) or the textual values of a dataset distribution",
+                      "type": "Text"
+                    },
+                    "dcterms.license": {
+                      "description": "A legal document under which the resource is made available.",
+                      "type": "Text"
+                    },
+                    "dcterms.publisher": {
+                      "description": "foaf:agent. The entity responsible for making the resource available..",
+                      "type": "reference"
+                    },
+                    "dcterms.title": {
+                      "description": "A name given to the resource",
+                      "type": "Text"
+                    },
+                    "dcterms.type": {
+                      "description": "The nature of the catalogued resource",
+                      "type": "Text"
+                    },
+                    "prov.qualifiedAttribution": {
+                      "description": "The list of creators with their associated roles.",
+                      "type": "reference"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "ordering": {
+            "d": "EA7qAe2cguw4A8Hp1fC-ScotokJCC41nbnqpm14QMdhy",
+            "capture_base": "EJRQHb6p4iBOt1oB6jdeG6cQhU9gY9KuI7oyAtuky8fI",
+            "type": "community/overlays/adc/ordering/1.0",
+            "attribute_ordering": [
+              "dcterms.type",
+              "dcterms.title",
+              "dcterms.description",
+              "dcat.contactPoint",
+              "dcterms.creator",
+              "dcterms.issued",
+              "dcterms.language",
+              "dcterms.license",
+              "dcat.version",
+              "dcterms.publisher",
+              "dcat.keyword",
+              "dcterms.accessRights",
+              "prov.qualifiedAttribution",
+              "adms.versionNotes"
+            ],
+            "entry_code_ordering": {
+              "dcterms.type": [
+                "schema"
+              ],
+              "dcterms.language": [
+                "eng",
+                "fra"
+              ],
+              "dcterms.license": [
+                "CC BY",
+                "CC BY-SA",
+                "CC BY-NC",
+                "CC BY-ND",
+                "CC BY-NC-SA",
+                "CC BY-NC-ND",
+                "CC0",
+                "Open Government Licence - Canada",
+                "PDM",
+                "No license specified"
+              ],
+              "dcterms.accessRights": [
+                "Open Access",
+                "Restricted Access",
+                "Closed Access"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

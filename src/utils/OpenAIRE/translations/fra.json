@@ -140,6 +140,8 @@
   },
   "forminputsingle": {
     "select": "Sélectionner",
+    "select_all_that_apply": "Sélectionnez tout ce qui s'applique",
+    "no_options": "Aucune option correspondante",
     "none": "Aucun",
     "enter": "Entrer",
     "show_more": "Afficher plus",

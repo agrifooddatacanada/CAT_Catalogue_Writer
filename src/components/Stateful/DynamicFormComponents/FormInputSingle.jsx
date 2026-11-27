@@ -10,11 +10,13 @@ import React, {
 } from "react";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Checkbox,
   Chip,
   CircularProgress,
+  createFilterOptions,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -23,6 +25,7 @@ import {
   RadioGroup,
   Select,
   TextareaAutosize,
+  TextField,
   Typography,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -63,6 +66,7 @@ import { selectMode } from "../../../store/slices/modeSlice";
 import {
   incrementInstanceCount,
   decrementInstanceCount,
+  setInstanceCount,
 } from "../../../store/slices/instanceCountsSlice";
 import FieldDescription from "./FieldDescription";
 
@@ -102,6 +106,27 @@ function parseStoredDateValue(val, placeholder) {
 
 const EMPTY_OBJECT = {};
 
+export const MULTI_CATEGORY_SEARCH_THRESHOLD = 15;
+
+export function parseCategoryOption(option) {
+  if (typeof option !== "string") {
+    const str = String(option ?? "");
+    return { code: str, label: str, raw: str };
+  }
+  const parenIdx = option.indexOf(" (");
+  if (parenIdx !== -1 && option.endsWith(")")) {
+    const code = option.slice(0, parenIdx);
+    const label = option.slice(parenIdx + 2, -1);
+    return { code, label: label || code, raw: option };
+  }
+  return { code: option, label: option, raw: option };
+}
+
+const categoryFilterOptions = createFilterOptions({
+  limit: 100,
+  stringify: (option) => `${option.label} ${option.code}`,
+});
+
 const FormInputSingle = ({ valuePath, depth = 0 }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -121,9 +146,28 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
   const required = Boolean(field?.required);
   const multiple = Boolean(field?.multiple);
   const categories = field?.categories || null;
+  const hasChildren = Boolean(field?.children && field.children.length > 0);
 
-  const isMultiCategory = Boolean(multiple && categories && categories.length > 0);
+  const isMultiCategory = Boolean(
+    multiple && !hasChildren && categories && categories.length > 0,
+  );
+  const isSearchableMultiCategory = Boolean(
+    isMultiCategory && categories.length > MULTI_CATEGORY_SEARCH_THRESHOLD,
+  );
   const instanceCount = useSelector(selectInstanceCount(valuePath)) || 0;
+
+  const parsedCategoryOptions = useMemo(
+    () => (Array.isArray(categories) ? categories.map(parseCategoryOption) : []),
+    [categories],
+  );
+
+  const categoryOptionByCode = useMemo(() => {
+    const map = new Map();
+    parsedCategoryOptions.forEach((opt) => {
+      map.set(opt.code, opt);
+    });
+    return map;
+  }, [parsedCategoryOptions]);
 
   // Memoize prefix selector and skip scanning formState when not needed
   const selectPrefixedValues = useMemo(
@@ -143,6 +187,51 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
           )
         : [],
     [isMultiCategory, instanceCount, fieldValues, valuePath],
+  );
+
+  const nonEmptyExistingValues = useMemo(
+    () =>
+      existingValues.filter(
+        (val) => val !== undefined && val !== null && val !== "",
+      ),
+    [existingValues],
+  );
+
+  const selectedCategoryOptions = useMemo(
+    () =>
+      nonEmptyExistingValues.map(
+        (code) =>
+          categoryOptionByCode.get(code) || {
+            code,
+            label: code,
+            raw: code,
+          },
+      ),
+    [nonEmptyExistingValues, categoryOptionByCode],
+  );
+
+  const handleMultiCategoryReplace = useCallback(
+    (newCodes) => {
+      const uniqueCodes = [];
+      const seen = new Set();
+      for (const code of newCodes) {
+        if (code !== undefined && code !== null && code !== "" && !seen.has(code)) {
+          seen.add(code);
+          uniqueCodes.push(code);
+        }
+      }
+
+      uniqueCodes.forEach((code, idx) => {
+        dispatch(setFieldValue({ path: `${valuePath}[${idx}]`, value: code }));
+      });
+
+      for (let i = uniqueCodes.length; i < instanceCount; i++) {
+        dispatch(removeFieldValue(`${valuePath}[${i}]`));
+      }
+
+      dispatch(setInstanceCount({ path: valuePath, count: uniqueCodes.length }));
+    },
+    [dispatch, valuePath, instanceCount],
   );
 
   const handleDelete = useCallback(
@@ -442,13 +531,17 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     return checkDuplicateContributorOrcid(allFormValues, valuePath, value);
   }, [isOrcidField, value, allFormValues, valuePath]);
 
+  const effectiveValidationValue = isMultiCategory
+    ? nonEmptyExistingValues
+    : value;
+
   const validationError = useMemo(
     () =>
       getValidationError({
         field,
         fieldPath: valuePath,
         valuePath,
-        value,
+        value: effectiveValidationValue,
         readOnly,
         formatPatterns,
         depFormatPatterns,
@@ -458,7 +551,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     [
       field,
       valuePath,
-      value,
+      effectiveValidationValue,
       readOnly,
       formatPatterns,
       depFormatPatterns,
@@ -501,9 +594,10 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
     value === "" ||
     (Array.isArray(value) && value.length === 0);
 
-  const describedBy = [field.description ? descId : null, showError ? errorId : null]
-    .filter(Boolean)
-    .join(" ") || undefined;
+  const describedBy =
+    [!multiple && field.description ? descId : null, showError ? errorId : null]
+      .filter(Boolean)
+      .join(" ") || undefined;
 
   return (
     <Box>
@@ -523,9 +617,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
         </Box>
       )}
 
-      {multiple && typeof type === "string" && type.includes("Text") ? null : (
-        <FieldDescription valuePath={valuePath} id={descId} />
-      )}
+      {!multiple && <FieldDescription valuePath={valuePath} id={descId} />}
 
       {/* ContextHub Verified ORCID Option Banner */}
       {isOrcidField &&
@@ -749,7 +841,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               )}
             </FormControl>
           )
-        ) : readOnly && instanceCount === 0 ? (
+        ) : readOnly && nonEmptyExistingValues.length === 0 ? (
           <Box
             sx={{
               display: "flex",
@@ -764,7 +856,119 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
           </Box>
         ) : (
           <Box sx={{ mt: depth === 0 ? 1 : 0 }}>
-            {!readOnly && (
+            {!readOnly && isSearchableMultiCategory && (
+              <FormControl fullWidth size="small" {...fieldErrorProps}>
+                <Autocomplete
+                  multiple
+                  disableCloseOnSelect
+                  size="small"
+                  id={inputId}
+                  options={parsedCategoryOptions}
+                  value={selectedCategoryOptions}
+                  filterOptions={categoryFilterOptions}
+                  getOptionLabel={(option) => option.label}
+                  isOptionEqualToValue={(option, val) => option.code === val.code}
+                  noOptionsText={t("forminputsingle.no_options")}
+                  onChange={(_, newSelected) => {
+                    handleMultiCategoryReplace(
+                      newSelected.map((opt) => opt.code),
+                    );
+                  }}
+                  onBlur={handleBlur}
+                  renderOption={(props, option, { selected }) => {
+                    const { key, ...optionProps } = props;
+                    return (
+                      <li key={key} {...optionProps}>
+                        <Checkbox
+                          size="small"
+                          checked={selected}
+                          tabIndex={-1}
+                          disableRipple
+                          sx={{ mr: 1, p: 0.5 }}
+                        />
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "baseline",
+                            justifyContent: "space-between",
+                            gap: 1.5,
+                            width: "100%",
+                            minWidth: 0,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            component="span"
+                            sx={{ overflowWrap: "anywhere" }}
+                          >
+                            {option.label}
+                          </Typography>
+                          {option.code !== option.label && (
+                            <Typography
+                              variant="caption"
+                              component="span"
+                              sx={{
+                                color: "text.secondary",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {option.code}
+                            </Typography>
+                          )}
+                        </Box>
+                      </li>
+                    );
+                  }}
+                  renderValue={(selectedItems, getItemProps) =>
+                    selectedItems.map((option, index) => {
+                      const { key, ...itemProps } = getItemProps({ index });
+                      return (
+                        <Chip
+                          key={key}
+                          size="small"
+                          label={option.label}
+                          title={option.raw}
+                          {...itemProps}
+                        />
+                      );
+                    })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      error={showError}
+                      placeholder={
+                        selectedCategoryOptions.length === 0
+                          ? t("forminputsingle.select_all_that_apply")
+                          : ""
+                      }
+                      slotProps={{
+                        htmlInput: {
+                          ...params.inputProps,
+                          "aria-label": displayName,
+                          "aria-describedby": describedBy,
+                          "aria-invalid": showError || undefined,
+                        },
+                      }}
+                    />
+                  )}
+                />
+
+                {showError && (
+                  <Typography
+                    id={errorId}
+                    variant="caption"
+                    color="error"
+                    sx={{ mt: 0.5, ml: 1 }}
+                  >
+                    {validationError}
+                  </Typography>
+                )}
+              </FormControl>
+            )}
+
+            {!readOnly && !isSearchableMultiCategory && (
               <FormControl
                 fullWidth
                 size="small"
@@ -772,13 +976,12 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                 sx={{ p: 1 }}
               >
                 <FormGroup aria-label={displayName}>
-                  {categories.map((option) => {
-                    const code = option.split(" (")[0];
-                    const isChecked = existingValues.includes(code);
+                  {parsedCategoryOptions.map((option) => {
+                    const isChecked = existingValues.includes(option.code);
 
                     return (
                       <FormControlLabel
-                        key={code}
+                        key={option.code}
                         control={
                           <Checkbox
                             checked={isChecked}
@@ -788,11 +991,16 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                                 const newIndex = instanceCount;
                                 const newPath = `${valuePath}[${newIndex}]`;
                                 dispatch(
-                                  setFieldValue({ path: newPath, value: code }),
+                                  setFieldValue({
+                                    path: newPath,
+                                    value: option.code,
+                                  }),
                                 );
                                 dispatch(incrementInstanceCount(valuePath));
                               } else {
-                                const indexToDelete = existingValues.indexOf(code);
+                                const indexToDelete = existingValues.indexOf(
+                                  option.code,
+                                );
                                 if (indexToDelete !== -1) {
                                   handleDelete(indexToDelete);
                                 }
@@ -802,7 +1010,7 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
                             size="small"
                           />
                         }
-                        label={option}
+                        label={option.raw}
                         sx={{
                           m: 0,
                           "& .MuiFormControlLabel-label": readOnly
@@ -827,11 +1035,18 @@ const FormInputSingle = ({ valuePath, depth = 0 }) => {
               </FormControl>
             )}
 
-            {readOnly && existingValues.length > 0 && (
+            {readOnly && nonEmptyExistingValues.length > 0 && (
               <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                {existingValues.map((val, index) => (
-                  <Chip key={`${val}-${index}`} label={val} />
-                ))}
+                {nonEmptyExistingValues.map((val, index) => {
+                  const matched = categoryOptionByCode.get(val);
+                  return (
+                    <Chip
+                      key={`${val}-${index}`}
+                      label={matched ? matched.label : val}
+                      title={matched ? matched.raw : val}
+                    />
+                  );
+                })}
               </Box>
             )}
           </Box>
